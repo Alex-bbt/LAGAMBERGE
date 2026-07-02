@@ -1,0 +1,74 @@
+---
+import { site } from '../data/site.js';
+---
+
+<header class="site-header">
+  <div class="wrap bar">
+    <a href="/" class="brand">
+      <span class="dot" aria-hidden="true"></span>
+      {site.name}
+    </a>
+    <nav aria-label="Navigation principale">
+      <a href="/#defis">Les défis</a>
+      <a href="/actus">Actus</a>
+      <a href="/conseils">Conseils</a>
+      <a href="/#newsletter" class="nav-cta">Newsletter</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--cream) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 2.5px solid var(--ink);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 62px;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--tomato);
+    border: 2px solid var(--ink);
+    display: inline-block;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.6rem, 2vw, 1.4rem);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  nav a { text-decoration: none; }
+  nav a:not(.nav-cta):hover { text-decoration: underline wavy var(--tomato); }
+  .nav-cta {
+    background: var(--teal);
+    color: var(--cream);
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  @media (max-width: 620px) {
+    nav a:not(.nav-cta) { display: none; }
+  }
+</style>

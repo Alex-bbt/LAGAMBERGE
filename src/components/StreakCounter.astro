@@ -1,0 +1,201 @@
+---
+import { site, streakPercent } from '../data/site.js';
+const { day, totalDays, minKm, year } = site.streak;
+// Jalons "ronds" qui déclenchent une petite célébration automatique au chargement.
+const isMilestone = day % 100 === 0 || day === totalDays || day === Math.round(totalDays / 2);
+---
+
+<div class="streak card" data-day={day} data-milestone={isMilestone ? 'true' : 'false'}>
+  <div class="head">
+    <span class="eyebrow">Défi #1 · {year}</span>
+    <p class="rule">Au moins <strong>{minKm} km</strong>. Tous les jours. Sans exception.</p>
+  </div>
+
+  <div class="count">
+    <span class="big" id="streak-number">{day}</span>
+    <span class="slash">/ {totalDays}</span>
+    <span class="unit">jours</span>
+  </div>
+
+  <!-- La piste : une barre pointillée avec le petit coureur à sa position -->
+  <div class="track" role="img" aria-label={`Progression du streak : jour ${day} sur ${totalDays}`}>
+    <div class="track-fill" style={`width:${streakPercent}%`}></div>
+    <button
+      class="runner"
+      id="streak-runner"
+      style={`left:${streakPercent}%`}
+      aria-label="Le coureur (clique dessus pour voir…)"
+      type="button"
+    >🏃</button>
+    <span class="flag start">🏁</span>
+    <span class="flag end">🎉</span>
+  </div>
+
+  <p class="foot">
+    <strong>{streakPercent}%</strong> de l'année parcourus ·
+    ~<strong>{day * minKm} km</strong> minimum encaissés ·
+    <span id="streak-wink" class="wink">reste {totalDays - day} jours à tenir 😅</span>
+  </p>
+</div>
+
+<style>
+  .streak {
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .head { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .rule { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  .count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 1rem 0 1.25rem;
+    flex-wrap: wrap;
+  }
+  .big {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(4rem, 16vw, 7.5rem);
+    line-height: 0.85;
+    color: var(--tomato);
+    -webkit-text-stroke: 2px var(--ink);
+    display: inline-block;
+  }
+  .slash {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    color: var(--ink);
+  }
+  .unit {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    transform: rotate(-3deg);
+    background: var(--sun);
+    border: 2px solid var(--ink);
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  .track {
+    position: relative;
+    height: 20px;
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    background:
+      repeating-linear-gradient(90deg, var(--cream-deep) 0 10px, transparent 10px 20px);
+    margin: 2.5rem 0 1.25rem;
+  }
+  .track-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--teal);
+    border-radius: 999px;
+    max-width: 100%;
+  }
+  .runner {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.25));
+    transition: transform 0.15s ease;
+  }
+  .runner:hover { transform: translate(-50%, -60%) scale(1.15); }
+  .runner.sprint { animation: sprint 0.6s ease; }
+  @keyframes sprint {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -80%) scale(1.4) rotate(-8deg); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
+  .flag { position: absolute; top: 50%; transform: translateY(-50%); font-size: 1.1rem; }
+  .flag.start { left: -6px; }
+  .flag.end { right: -10px; }
+
+  .foot { margin: 0; font-size: 0.95rem; color: var(--ink-soft); }
+  .foot strong { color: var(--ink); }
+  .wink { display: inline-block; }
+
+  .streak.celebrate::after {
+    content: "🎉";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 5rem;
+    pointer-events: none;
+    animation: pop 1.1s ease forwards;
+  }
+  @keyframes pop {
+    0% { opacity: 0; transform: scale(0.3); }
+    30% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0; transform: scale(1.6); }
+  }
+</style>
+
+<script>
+  // ── EASTER EGG #1 : clique 5 fois sur le coureur ──────────────────────────
+  const runner = document.getElementById('streak-runner');
+  const wink = document.getElementById('streak-wink');
+  const messages = [
+    "reste {n} jours à tenir 😅",
+    "encore un p'tit kilomètre ? 👟",
+    "tu cliques au lieu de courir, je vois. 👀",
+    "ok, ça c'était pour toi. 💚",
+    "SPRINT FINAL. Allez allez allez ! 🏁",
+  ];
+  let clicks = 0;
+  const remaining = runner ? Number(runner.closest('.streak').dataset.day) : 0;
+
+  function confettiBurst(host) {
+    const colors = ['#ff5232', '#17baa8', '#ffce3a', '#211b17'];
+    for (let i = 0; i < 24; i++) {
+      const bit = document.createElement('span');
+      bit.textContent = '•';
+      bit.style.cssText = `position:absolute;left:50%;top:40%;font-size:${12 + Math.random() * 18}px;color:${colors[i % colors.length]};pointer-events:none;z-index:5;`;
+      host.appendChild(bit);
+      const dx = (Math.random() - 0.5) * 320;
+      const dy = -120 - Math.random() * 180;
+      bit.animate(
+        [
+          { transform: 'translate(0,0)', opacity: 1 },
+          { transform: `translate(${dx}px, ${dy}px) rotate(${Math.random() * 360}deg)`, opacity: 0 },
+        ],
+        { duration: 900 + Math.random() * 500, easing: 'cubic-bezier(.2,.7,.3,1)' }
+      ).onfinish = () => bit.remove();
+    }
+  }
+
+  if (runner) {
+    runner.addEventListener('click', () => {
+      clicks++;
+      runner.classList.remove('sprint');
+      void runner.offsetWidth; // reflow pour rejouer l'anim
+      runner.classList.add('sprint');
+      const idx = Math.min(clicks, messages.length) - 1;
+      if (wink) wink.textContent = messages[idx].replace('{n}', String(365 - runner.closest('.streak').dataset.day));
+      if (clicks >= 5) {
+        confettiBurst(runner.closest('.streak'));
+        clicks = 0;
+      }
+    });
+  }
+
+  // ── Célébration automatique aux jalons (jour 100, 200, moitié, dernier) ────
+  const streakEl = document.querySelector('.streak');
+  if (streakEl && streakEl.dataset.milestone === 'true') {
+    setTimeout(() => {
+      streakEl.classList.add('celebrate');
+      confettiBurst(streakEl);
+    }, 600);
+  }
+</script>

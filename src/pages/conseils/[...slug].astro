@@ -1,0 +1,76 @@
+---
+import Base from '../../layouts/Base.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const conseils = await getCollection('conseils');
+  return conseils.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(entry.data.date);
+---
+
+<Base title={entry.data.title} description={entry.data.resume}>
+  <article class="section">
+    <div class="wrap narrow">
+      <a href="/conseils" class="back">← Tous les conseils</a>
+      <header class="art-head">
+        <span class="emoji" aria-hidden="true">{entry.data.emoji}</span>
+        <h1>{entry.data.title}</h1>
+        <p class="meta">{dateFmt}</p>
+      </header>
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+
+  <section class="section">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .narrow { max-width: 720px; }
+  .back {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--tomato);
+  }
+  .back:hover { text-decoration: underline; }
+  .art-head { margin: 1.5rem 0 2rem; }
+  .emoji { font-size: 3rem; }
+  .art-head h1 { font-size: clamp(2rem, 5.5vw, 3rem); margin: 0.75rem 0 0.5rem; }
+  .meta { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
+
+  .prose :global(h2) {
+    font-size: 1.5rem;
+    margin: 2rem 0 0.5rem;
+  }
+  .prose :global(p) { margin: 0 0 1.1rem; font-size: 1.08rem; }
+  .prose :global(blockquote) {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-left: 5px solid var(--tomato);
+    background: var(--paper);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-style: normal;
+  }
+  .prose :global(blockquote p) { margin: 0; }
+  .prose :global(strong) { color: var(--ink); }
+</style>

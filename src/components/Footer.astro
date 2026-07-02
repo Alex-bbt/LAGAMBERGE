@@ -1,0 +1,93 @@
+---
+import { site } from '../data/site.js';
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <p class="big">La Gamberge</p>
+        <p class="muted">
+          Une épopée en petites foulées. Beaucoup de kilomètres, un peu de
+          n'importe quoi, zéro sérieux mal placé.
+        </p>
+      </div>
+
+      <div>
+        <p class="label">On se suit ?</p>
+        <ul class="links">
+          {site.socials.map((s) => (
+            <li>
+              <a href={s.url} target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">{s.emoji}</span> {s.name}
+                <span class="muted"> {s.handle}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <p class="label">Le site</p>
+        <ul class="links">
+          <li><a href="/#defis">Les défis en cours</a></li>
+          <li><a href="/actus">Actus & projets</a></li>
+          <li><a href="/conseils">Conseils course à pied</a></li>
+          <li><a href="/#newsletter">S'inscrire à la newsletter</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="baseline">
+      <span>© {new Date().getFullYear()} La Gamberge — fait avec des jambes fatiguées.</span>
+      <span class="muted">Mentions légales à venir (quand j'aurai fini ma sortie).</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--ink);
+    color: var(--cream);
+    border-top: 2.5px solid var(--ink);
+    padding: clamp(2.5rem, 6vw, 4rem) 0 2rem;
+    margin-top: 2rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 2rem;
+  }
+  .big {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem;
+  }
+  .label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    color: var(--sun);
+    margin: 0 0 0.75rem;
+  }
+  .muted { color: color-mix(in srgb, var(--cream) 62%, transparent); }
+  .links { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+  .links a { text-decoration: none; }
+  .links a:hover { text-decoration: underline; }
+  .baseline {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid color-mix(in srgb, var(--cream) 20%, transparent);
+    font-size: 0.85rem;
+  }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr; gap: 1.75rem; }
+  }
+</style>

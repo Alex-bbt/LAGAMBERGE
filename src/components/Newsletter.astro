@@ -1,0 +1,119 @@
+---
+import { site } from '../data/site.js';
+const endpoint = site.newsletterEndpoint || '';
+---
+
+<div class="news card" id="newsletter" data-endpoint={endpoint}>
+  <div class="news-copy">
+    <span class="eyebrow">La newsletter</span>
+    <h2>Les coulisses de la gamberge, dans ta boîte mail.</h2>
+    <p>
+      Une fois de temps en temps (promis, pas de spam quotidien) : où j'en suis
+      dans mes défis, mes galères, mes conseils, et deux-trois trucs que je ne
+      raconte pas ailleurs. Zéro blabla, que du vécu.
+    </p>
+  </div>
+
+  <form class="news-form" id="news-form" novalidate>
+    <label class="sr-only" for="news-email">Ton adresse email</label>
+    <input
+      type="email"
+      id="news-email"
+      name="email"
+      placeholder="ton-email@exemple.fr"
+      autocomplete="email"
+      required
+    />
+    <button type="submit" class="btn btn--tomato">Je m'inscris 🏃</button>
+    <p class="news-msg" id="news-msg" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<style>
+  .news {
+    padding: clamp(1.75rem, 5vw, 2.75rem);
+    background: var(--ink);
+    color: var(--cream);
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+  .news h2 { font-size: clamp(1.4rem, 3.5vw, 2rem); margin: 0.75rem 0; }
+  .news p { color: color-mix(in srgb, var(--cream) 78%, transparent); margin: 0; }
+  .news .eyebrow { background: var(--sun); color: var(--ink); }
+
+  .news-form { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .news-form input {
+    flex: 1 1 200px;
+    min-width: 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 999px;
+    border: 2.5px solid var(--cream);
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .news-form input:focus { outline: 3px solid var(--sun); outline-offset: 1px; }
+  .news-msg {
+    flex-basis: 100%;
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    min-height: 1.2em;
+    font-weight: 600;
+  }
+  .news-msg.ok { color: var(--sun); }
+  .news-msg.err { color: #ffb3a3; }
+
+  @media (max-width: 720px) {
+    .news { grid-template-columns: 1fr; gap: 1.25rem; }
+  }
+</style>
+
+<script>
+  const form = document.getElementById('news-form');
+  const input = document.getElementById('news-email');
+  const msg = document.getElementById('news-msg');
+  const endpoint = document.getElementById('newsletter')?.dataset.endpoint || '';
+
+  function isEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = input.value.trim();
+    msg.className = 'news-msg';
+    if (!isEmail(email)) {
+      msg.classList.add('err');
+      msg.textContent = "Hmm, cet email a l'air d'avoir sauté un entraînement. Réessaie ?";
+      return;
+    }
+
+    // Mode branché : un endpoint est configuré dans src/data/site.js
+    if (endpoint) {
+      try {
+        msg.textContent = 'Une seconde…';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        if (!res.ok) throw new Error('bad status');
+        msg.classList.add('ok');
+        msg.textContent = 'Inscrit·e ! Bienvenue dans la gamberge. 💚';
+        form.reset();
+      } catch (err) {
+        msg.classList.add('err');
+        msg.textContent = "Aïe, ça n'a pas voulu. Réessaie dans un instant ?";
+      }
+      return;
+    }
+
+    // Mode démo (V1) : pas encore de service branché.
+    msg.classList.add('ok');
+    msg.textContent = 'Noté ! (démo) — branche ton service d\'emailing pour que ça parte pour de vrai. 💌';
+    form.reset();
+  });
+</script>

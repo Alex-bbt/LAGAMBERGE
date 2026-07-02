@@ -1,0 +1,90 @@
+---
+import { site, qualsDone } from '../data/site.js';
+const labels = {
+  qualifie: 'Qualifié',
+  rate: 'Pas encore',
+  a_venir: 'À tenter',
+};
+---
+
+<div class="qual">
+  <div class="qual-head">
+    <span class="eyebrow">Défi #2 · Championnats de France</span>
+    <p class="rule">
+      <strong>{qualsDone} qualifs sur 4</strong> décrochées la même saison.
+      Date limite : <strong>{site.qualDeadline}</strong>. Ça se joue là, maintenant.
+    </p>
+  </div>
+
+  <div class="badges">
+    {site.quals.map((q) => (
+      <div class={`badge card ${q.status}`}>
+        <div class="stamp" aria-hidden="true">
+          {q.status === 'qualifie' ? '✓' : q.status === 'rate' ? '✗' : '…'}
+        </div>
+        <p class="dist">{q.distance}</p>
+        <p class="state">{labels[q.status]}</p>
+        <p class="note">{q.note}</p>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .qual-head { margin-bottom: 1.5rem; }
+  .rule { margin: 0.75rem 0 0; color: var(--ink-soft); max-width: 60ch; }
+  .rule strong { color: var(--ink); }
+
+  .badges {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .badge {
+    position: relative;
+    padding: 1.25rem 1rem 1.1rem;
+    text-align: center;
+    overflow: hidden;
+  }
+  .badge.qualifie { transform: rotate(-1deg); }
+  .badge.rate { transform: rotate(1.2deg); }
+  .badge:nth-child(3) { transform: rotate(-0.6deg); }
+
+  .stamp {
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 0.6rem;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    border: 2.5px solid var(--ink);
+  }
+  .qualifie .stamp { background: var(--teal); color: var(--cream); }
+  .rate .stamp { background: var(--tomato); color: var(--cream); }
+  .a_venir .stamp { background: var(--sun); color: var(--ink); }
+
+  .dist { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; margin: 0; }
+  .state {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0.25rem 0 0.6rem;
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+  }
+  .qualifie .state { background: var(--teal); color: var(--cream); }
+  .rate .state { background: #fff; color: var(--tomato); }
+  .a_venir .state { background: var(--sun); }
+  .note { font-size: 0.85rem; color: var(--ink-soft); margin: 0; line-height: 1.4; }
+
+  @media (max-width: 760px) {
+    .badges { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
