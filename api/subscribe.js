@@ -5,8 +5,11 @@
 // La clé Supabase reste côté serveur : elle n'est JAMAIS envoyée au navigateur.
 
 export default async function handler(req, res) {
+  // GET (ou autre) = petit point de contrôle : indique seulement si Supabase
+  // est bien configuré (booléen), sans jamais exposer la moindre valeur.
   if (req.method !== 'POST') {
-    res.status(405).json({ ok: false, error: 'method' });
+    const ready = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+    res.status(req.method === 'GET' ? 200 : 405).json({ ok: false, method: req.method, ready });
     return;
   }
 
