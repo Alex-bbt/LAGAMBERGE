@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import StreakCounter from '../components/StreakCounter.astro';
+import SeasonStats from '../components/SeasonStats.astro';
 import QualTracker from '../components/QualTracker.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import Socials from '../components/Socials.astro';
@@ -66,6 +67,9 @@ const previewProjects = site.projects.slice(0, 3);
       </div>
     </div>
   </section>
+
+  <!-- ============================ CHIFFRES ============================ -->
+  <SeasonStats />
 
   <!-- ============================ ACTUS ============================ -->
   <section class="section actus-preview">

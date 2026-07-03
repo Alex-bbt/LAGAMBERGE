@@ -30,6 +30,17 @@ export const site = {
     minKm: 5,        // distance minimale parcourue chaque jour
   },
 
+  // -- Chiffres de la saison (affichés dans la section « Les chiffres ») -----
+  //    👉 EN MODE STRAVA : ces valeurs sont recalculées automatiquement et
+  //       ces chiffres ne servent que de secours si Strava est indisponible.
+  //    👉 EN MODE MANUEL : mets-les à jour à la main de temps en temps.
+  season: {
+    year: 2026,
+    km: 1050,        // total de km courus dans l'année (secours)
+    sorties: 183,    // nombre de sorties course à pied (secours)
+    denivele: 8500,  // dénivelé positif cumulé en mètres (secours)
+  },
+
   // -- DÉFI #2 : les 4 qualifications aux Championnats de France -------------
   //    statuts possibles : "qualifie" | "rate" | "a_venir"
   //    👉 POUR METTRE À JOUR : change "status" (et "note" si tu veux).
