@@ -80,10 +80,17 @@ export const site = {
     },
     {
       name: "YouTube",
-      handle: "La Gamberge",
-      url: "https://youtube.com/@lagamberge",
+      handle: "@La_Gamberge",
+      url: "https://www.youtube.com/@La_Gamberge",
       emoji: "🎬",
       blurb: "Les formats longs, quand la gamberge mérite un épisode.",
+    },
+    {
+      name: "TikTok",
+      handle: "@lagambergeee",
+      url: "https://www.tiktok.com/@lagambergeee",
+      emoji: "🎵",
+      blurb: "Le format court, pour la gamberge express.",
     },
     {
       name: "Strava",
