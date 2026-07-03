@@ -136,12 +136,10 @@ export const site = {
   ],
 
   // -- Newsletter -----------------------------------------------------------
-  //    Pour la V1, le formulaire fonctionne en mode démo (message de
-  //    confirmation local). Pour le brancher à un vrai service (Brevo,
-  //    Buttondown, Mailchimp, Resend...), colle ici l'URL du formulaire ou
-  //    de l'API — le formulaire postera automatiquement dessus.
-  //    Laisse la chaîne vide ("") pour rester en mode démo.
-  newsletterEndpoint: "",
+  //    Les inscriptions sont enregistrées dans une base Supabase via la
+  //    fonction /api/subscribe. La configuration se fait avec des variables
+  //    d'environnement sur Vercel (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY).
+  //    Voir le guide : docs/newsletter-setup.md
 };
 
 // Petits utilitaires dérivés — pas besoin d'y toucher.

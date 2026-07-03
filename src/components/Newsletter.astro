@@ -1,9 +1,7 @@
 ---
-import { site } from '../data/site.js';
-const endpoint = site.newsletterEndpoint || '';
 ---
 
-<div class="news card" id="newsletter" data-endpoint={endpoint}>
+<div class="news card" id="newsletter">
   <div class="news-copy">
     <span class="eyebrow">La newsletter</span>
     <h2>Les coulisses de la gamberge, dans ta boîte mail.</h2>
@@ -15,6 +13,14 @@ const endpoint = site.newsletterEndpoint || '';
   </div>
 
   <form class="news-form" id="news-form" novalidate>
+    <label class="sr-only" for="news-prenom">Ton prénom</label>
+    <input
+      type="text"
+      id="news-prenom"
+      name="prenom"
+      placeholder="Ton prénom (optionnel)"
+      autocomplete="given-name"
+    />
     <label class="sr-only" for="news-email">Ton adresse email</label>
     <input
       type="email"
@@ -45,7 +51,7 @@ const endpoint = site.newsletterEndpoint || '';
 
   .news-form { display: flex; flex-wrap: wrap; gap: 0.75rem; }
   .news-form input {
-    flex: 1 1 200px;
+    flex: 1 1 160px;
     min-width: 0;
     font-family: var(--font-body);
     font-size: 1rem;
@@ -56,6 +62,7 @@ const endpoint = site.newsletterEndpoint || '';
     color: var(--ink);
   }
   .news-form input:focus { outline: 3px solid var(--sun); outline-offset: 1px; }
+  .news-form button { flex: 0 0 auto; }
   .news-msg {
     flex-basis: 100%;
     margin: 0.25rem 0 0;
@@ -68,14 +75,15 @@ const endpoint = site.newsletterEndpoint || '';
 
   @media (max-width: 720px) {
     .news { grid-template-columns: 1fr; gap: 1.25rem; }
+    .news-form input { flex: 1 1 100%; }
   }
 </style>
 
 <script>
   const form = document.getElementById('news-form');
-  const input = document.getElementById('news-email');
+  const email = document.getElementById('news-email');
+  const prenom = document.getElementById('news-prenom');
   const msg = document.getElementById('news-msg');
-  const endpoint = document.getElementById('newsletter')?.dataset.endpoint || '';
 
   function isEmail(v) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -83,37 +91,41 @@ const endpoint = site.newsletterEndpoint || '';
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = input.value.trim();
+    const val = email.value.trim();
     msg.className = 'news-msg';
-    if (!isEmail(email)) {
+
+    if (!isEmail(val)) {
       msg.classList.add('err');
       msg.textContent = "Hmm, cet email a l'air d'avoir sauté un entraînement. Réessaie ?";
       return;
     }
 
-    // Mode branché : un endpoint est configuré dans src/data/site.js
-    if (endpoint) {
-      try {
-        msg.textContent = 'Une seconde…';
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-        if (!res.ok) throw new Error('bad status');
+    msg.textContent = 'Une seconde…';
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email: val, prenom: prenom.value.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (data.ok) {
         msg.classList.add('ok');
-        msg.textContent = 'Inscrit·e ! Bienvenue dans la gamberge. 💚';
+        msg.textContent = data.already
+          ? 'Tu es déjà des nôtres — merci d\'insister 💚'
+          : 'Inscrit·e ! Bienvenue dans la gamberge. 💚';
         form.reset();
-      } catch (err) {
+      } else if (data.configured === false) {
+        // Supabase pas encore branché
+        msg.classList.add('ok');
+        msg.textContent = 'Presque ! La newsletter se branche en ce moment — reviens très vite. 🙏';
+      } else {
         msg.classList.add('err');
         msg.textContent = "Aïe, ça n'a pas voulu. Réessaie dans un instant ?";
       }
-      return;
+    } catch (err) {
+      msg.classList.add('err');
+      msg.textContent = "Aïe, pas de réseau on dirait. Réessaie dans un instant ?";
     }
-
-    // Mode démo (V1) : pas encore de service branché.
-    msg.classList.add('ok');
-    msg.textContent = 'Noté ! (démo) — branche ton service d\'emailing pour que ça parte pour de vrai. 💌';
-    form.reset();
   });
 </script>
