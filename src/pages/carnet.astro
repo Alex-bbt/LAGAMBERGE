@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import Carnet from '../components/Carnet.astro';
+import Newsletter from '../components/Newsletter.astro';
+---
+
+<Base
+  title="Carnet de bord"
+  description="Le journal de bord visuel de ma saison 2026 : chaque jour couru, et les moments qui ont compté."
+>
+  <section class="section">
+    <div class="wrap">
+      <header class="page-head">
+        <span class="eyebrow">Carnet de bord · 2026</span>
+        <h1>Ma saison, jour après jour</h1>
+        <p class="lede">
+          Chaque petit carré, c'est un jour de l'année. Plus il est foncé, plus
+          j'ai couru loin ce jour-là. Et quelques jours sortent du lot — une
+          réussite, une galère, un palier, une bêtise — cliquables pour lire ce
+          qui s'est vraiment passé.
+        </p>
+      </header>
+
+      <Carnet />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head { max-width: 60ch; margin-bottom: 2.25rem; }
+  .page-head h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 1rem 0 0.75rem; }
+  .lede { color: var(--ink-soft); font-size: 1.05rem; }
+</style>

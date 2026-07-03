@@ -25,6 +25,7 @@ Production : **https://www.lagamberge.com** (déployée sur Vercel, branche `mai
 api/
   streak.js          Endpoint GET /api/streak (streak + stats Strava en direct)
   subscribe.js       Endpoint POST /api/subscribe (inscription newsletter → Supabase)
+  journal.js         Endpoint GET /api/journal (jours spéciaux du carnet ← Supabase)
 lib/
   strava.mjs         Logique Strava PURE + testable (importée par api/streak.js)
 src/
@@ -32,9 +33,10 @@ src/
   styles/global.css  Design system (couleurs, typo, composants)
   layouts/Base.astro Squelette HTML (head, métas, header/footer)
   components/*.astro  Header, Footer, StreakCounter, SeasonStats, QualTracker,
-                      ProjectCard, Socials, Newsletter
+                      ProjectCard, Socials, Newsletter, Carnet
   pages/
     index.astro      Accueil (hero, défis, chiffres, actus, réseaux, newsletter)
+    carnet.astro     Carnet de bord (heatmap 2026 + timeline des jours spéciaux)
     actus.astro      Projets par statut
     conseils/        Liste + page article ([...slug].astro)
   content/conseils/  Articles en Markdown (collection de contenu Astro)
@@ -42,6 +44,7 @@ src/
 docs/
   strava-setup.md      Guide de configuration Strava (pour le propriétaire)
   newsletter-setup.md  Guide de configuration Supabase (pour le propriétaire)
+  carnet-setup.md      Guide des tables du carnet de bord (Supabase)
 ```
 
 ## Défi #1 — Streak Strava EN DIRECT, sans base de données
@@ -86,6 +89,35 @@ Variables d'environnement Vercel : `STRAVA_CLIENT_ID`,
   `SUPABASE_SERVICE_ROLE_KEY`.
 - Supabase **stocke** seulement ; l'envoi d'emails (Brevo/Resend) reste à
   brancher plus tard par-dessus cette liste.
+
+## Carnet de bord — heatmap 2026 + jours spéciaux Supabase
+
+Page `/carnet` : le journal de bord visuel de la saison. Deux couches
+superposées, chacune résiliente (jamais bloquante).
+
+- **Heatmap de distance** : une grille type « contributions GitHub » (un carré
+  par jour de 2026, coloré selon les km courus). Les distances viennent de
+  Strava via `computeDailyDistances` (fonction pure de `lib/strava.mjs`),
+  exposées dans le champ `dailyKm` de `/api/streak`. **Aucun appel Strava
+  supplémentaire** : le carnet réutilise `window.__streakData`, comme le streak.
+- **Jours spéciaux** : `api/journal.js` (GET) lit les tables Supabase
+  **`journal_categories`** (catégories + couleurs, lues **dynamiquement** —
+  jamais figées dans le code) et **`journal_entries`** (le jour, sa catégorie,
+  titre, texte, média optionnel). RLS **lecture publique seule** ; l'ajout/édition
+  se fait **uniquement dans le Table Editor Supabase** — aucune interface d'admin
+  sur le site. Réutilise `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (mêmes
+  variables que la newsletter). Voir `docs/carnet-setup.md`.
+- **`Carnet.astro`** rend la grille (année 2026) côté serveur, puis colore les
+  distances et marque les jours spéciaux côté client. Un jour spécial = anneau
+  à la couleur de sa catégorie (par-dessus la distance, qui reste visible) +
+  clic → **modale** (titre, texte, embed natif Instagram/YouTube via iframe
+  officiel). Sur mobile, la grille reste consultable (scroll) mais c'est la
+  **timeline verticale** des jours spéciaux qui prime.
+- ⚠️ **Piège Astro** : les éléments créés en JS (`createElement`) n'ont pas
+  l'attribut de scope (`data-astro-cid-*`) ; leurs styles doivent passer par
+  `:global(...)` (via un ancêtre rendu côté serveur), sinon ils sont ignorés.
+- Résilience : Strava ou Supabase absent/en échec → la page s'affiche quand
+  même (heatmap seule, ou grille neutre + message de carnet vide au bon ton).
 
 ## `src/data/site.js` — la source de vérité éditable
 
