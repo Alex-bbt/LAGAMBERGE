@@ -1,7 +1,8 @@
 ---
 import { site } from '../data/site.js';
 const s = site.season;
-const avg = s.sorties ? (s.km / s.sorties).toFixed(1) : '0';
+// Moyenne de km par jour (secours) : total km / jours écoulés du défi.
+const perDay = site.streak.day ? (s.km / site.streak.day).toFixed(1) : '0';
 ---
 
 <section id="chiffres" class="section stats-section">
@@ -27,8 +28,8 @@ const avg = s.sorties ? (s.km / s.sorties).toFixed(1) : '0';
         <span class="lbl">de dénivelé positif (D+)</span>
       </div>
       <div class="tile paper">
-        <span class="num" id="stat-avg">{avg}<small> km</small></span>
-        <span class="lbl">de moyenne par sortie</span>
+        <span class="num" id="stat-perday">{perDay}<small> km</small></span>
+        <span class="lbl">par jour en moyenne</span>
       </div>
     </div>
   </div>
@@ -100,14 +101,14 @@ const avg = s.sorties ? (s.km / s.sorties).toFixed(1) : '0';
       const km = document.getElementById('stat-km');
       const runs = document.getElementById('stat-runs');
       const elev = document.getElementById('stat-elev');
-      const avg = document.getElementById('stat-avg');
+      const perday = document.getElementById('stat-perday');
       const live = document.getElementById('stats-live');
       if (km) km.textContent = fmt(d.seasonKm);
       if (runs) runs.textContent = fmt(d.seasonRuns);
       if (elev) elev.innerHTML = fmt(d.seasonElevation) + '<small> m</small>';
-      if (avg) {
-        const a = d.seasonRuns ? (d.seasonKm / d.seasonRuns).toFixed(1) : '0';
-        avg.innerHTML = a + '<small> km</small>';
+      if (perday) {
+        const p = d.seasonDays ? (d.seasonKm / d.seasonDays).toFixed(1) : '0';
+        perday.innerHTML = p + '<small> km</small>';
       }
       if (live) live.hidden = false;
     })
