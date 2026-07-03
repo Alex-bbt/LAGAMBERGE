@@ -5,11 +5,27 @@
 // La clé Supabase reste côté serveur : elle n'est JAMAIS envoyée au navigateur.
 
 export default async function handler(req, res) {
-  // GET (ou autre) = petit point de contrôle : indique seulement si Supabase
-  // est bien configuré (booléen), sans jamais exposer la moindre valeur.
+  // GET (ou autre) = point de contrôle. Indique si Supabase est configuré.
+  // Avec ?debug=1, teste réellement l'accès à la table et renvoie le statut
+  // (utile pour diagnostiquer une erreur d'insertion). N'expose aucun secret.
   if (req.method !== 'POST') {
-    const ready = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
-    res.status(req.method === 'GET' ? 200 : 405).json({ ok: false, method: req.method, ready });
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const ready = !!(url && key);
+    let db = null;
+    if (ready && (req.url || '').includes('debug=1')) {
+      try {
+        const r = await fetch(`${url}/rest/v1/subscribers?limit=1`, {
+          headers: { apikey: key, Authorization: `Bearer ${key}` },
+        });
+        db = { status: r.status, ok: r.ok };
+        if (!r.ok) db.error = (await r.text()).slice(0, 300);
+      } catch (e) {
+        db = { status: 0, ok: false, error: String(e).slice(0, 200) };
+      }
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(req.method === 'GET' ? 200 : 405).json({ ok: false, method: req.method, ready, db });
     return;
   }
 
