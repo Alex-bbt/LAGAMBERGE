@@ -88,7 +88,7 @@ export const site = {
     {
       name: "Strava",
       handle: "La Gamberge",
-      url: "https://strava.com",
+      url: "https://strava.app.link/HoBElyFDt4b",
       emoji: "📈",
       blurb: "La preuve que je ne triche pas sur le streak.",
     },
