@@ -18,7 +18,11 @@ export const site = {
     "La Gamberge, c'est mon épopée en petites foulées : deux défis un peu absurdes, beaucoup de kilomètres, et l'envie de faire ça sérieusement sans jamais me prendre au sérieux.",
 
   // -- DÉFI #1 : le streak (au moins 5 km chaque jour de l'année) -----------
-  //    👉 POUR METTRE À JOUR : change simplement "day" chaque jour/semaine.
+  //    👉 EN MODE MANUEL : change simplement "day" chaque jour/semaine.
+  //    👉 EN MODE STRAVA  : ce chiffre devient un simple secours. Une fois
+  //       Strava configuré (voir docs/strava-setup.md), le site recalcule la
+  //       streak tout seul et ignore cette valeur. Utile de la garder à jour
+  //       quand même, au cas où Strava serait momentanément indisponible.
   streak: {
     year: 2026,
     day: 183,        // ⬅️ LE chiffre à mettre à jour (jour actuel du défi)
