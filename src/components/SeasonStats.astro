@@ -94,8 +94,15 @@ const perDay = site.streak.day ? (s.km / site.streak.day).toFixed(1) : '0';
   // Fallback : garde les valeurs manuelles de src/data/site.js.
   const fmt = (n) => Number(n).toLocaleString('fr-FR');
 
-  fetch('/api/streak', { headers: { Accept: 'application/json' } })
-    .then((r) => (r.ok ? r.json() : null))
+  // Réutilise la requête partagée créée par le compteur de streak (ou la crée
+  // si la section chiffres est seule) → un seul appel /api/streak par page.
+  window.__streakData =
+    window.__streakData ||
+    fetch('/api/streak', { headers: { Accept: 'application/json' } })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+
+  window.__streakData
     .then((d) => {
       if (!d || !d.configured || d.seasonKm == null) return;
       const km = document.getElementById('stat-km');

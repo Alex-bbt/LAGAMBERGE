@@ -234,8 +234,15 @@ const isMilestone = day % 100 === 0 || day === totalDays || day === Math.round(t
   // sagement la valeur manuelle rendue côté serveur. Aucun risque pour la page.
   const TOTAL = Number(streakEl?.dataset.total) || 365;
 
-  fetch('/api/streak', { headers: { Accept: 'application/json' } })
-    .then((r) => (r.ok ? r.json() : null))
+  // Requête partagée : le streak ET la section chiffres réutilisent le même
+  // appel /api/streak (un seul aller-retour Strava par chargement de page).
+  window.__streakData =
+    window.__streakData ||
+    fetch('/api/streak', { headers: { Accept: 'application/json' } })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+
+  window.__streakData
     .then((d) => {
       if (!d || !d.configured) return; // fallback : on ne touche à rien
       const day = d.validatedDay;
