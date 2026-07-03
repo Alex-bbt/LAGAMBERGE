@@ -10,9 +10,11 @@ export default async function handler(req, res) {
   try {
     const data = await getStreakFromStrava(process.env);
     if (data && data.configured) {
-      // On ne met en cache QUE les réponses réussies (5 min). Ainsi un échec
-      // temporaire de Strava (rate limit…) n'est jamais figé côté CDN.
-      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+      // On ne met en cache QUE les réponses réussies. `stale-while-revalidate`
+      // long = le CDN sert instantanément la dernière bonne réponse (même un
+      // peu périmée) et rafraîchit en arrière-plan → l'utilisateur n'attend
+      // quasiment jamais Strava et ne voit plus les valeurs de secours.
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
     } else {
       res.setHeader('Cache-Control', 'no-store');
     }

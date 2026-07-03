@@ -36,9 +36,9 @@ export const site = {
   //    👉 EN MODE MANUEL : mets-les à jour à la main de temps en temps.
   season: {
     year: 2026,
-    km: 1050,        // total de km courus dans l'année (secours)
-    sorties: 183,    // nombre de sorties course à pied (secours)
-    denivele: 8500,  // dénivelé positif cumulé en mètres (secours)
+    km: 1975,         // total de km courus dans l'année (secours)
+    sorties: 197,     // nombre de sorties course à pied (secours)
+    denivele: 13156,  // dénivelé positif cumulé en mètres (secours)
   },
 
   // -- DÉFI #2 : les 4 qualifications aux Championnats de France -------------
