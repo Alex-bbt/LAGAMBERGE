@@ -1,0 +1,768 @@
+---
+/* ==========================================================================
+   LA GAMBERGE — CARNET DE BORD (heatmap + timeline)
+   --------------------------------------------------------------------------
+   - Une grille type "contributions GitHub" : un carré par jour de 2026,
+     coloré selon la distance courue ce jour-là (données Strava, en direct).
+   - Les "jours spéciaux" (table journal_entries de Supabase) sont mis en avant
+     avec la couleur de leur catégorie et ouvrent un article au clic.
+   - Sur mobile, la grille reste consultable (scroll horizontal) mais c'est la
+     timeline verticale des jours spéciaux qui prend le relais.
+   - Tout le dynamique (distances + jours spéciaux) est chargé côté client ; la
+     grille "vide" est rendue côté serveur pour éviter tout saut de mise en page
+     et rester lisible même sans JS.
+   ========================================================================== */
+
+const YEAR = 2026;
+
+// Petites dates en UTC : on manipule des jours calendaires, pas des instants.
+const iso = (d) => d.toISOString().slice(0, 10);
+const isoDow = (d) => {
+  const g = d.getUTCDay(); // 0 = dimanche … 6 = samedi
+  return g === 0 ? 7 : g;  // 1 = lundi … 7 = dimanche (convention FR)
+};
+
+const start = new Date(Date.UTC(YEAR, 0, 1));
+const end = new Date(Date.UTC(YEAR, 11, 31));
+
+// Lundi de la première colonne (peut être en décembre de l'année précédente).
+const firstMonday = new Date(start);
+firstMonday.setUTCDate(start.getUTCDate() - (isoDow(start) - 1));
+
+const days = [];
+for (let t = start.getTime(); t <= end.getTime(); t += 86400000) {
+  const d = new Date(t);
+  days.push({
+    ymd: iso(d),
+    dow: isoDow(d),
+    week: Math.round((d.getTime() - firstMonday.getTime()) / 86400000 / 7),
+    month: d.getUTCMonth(),
+  });
+}
+const totalWeeks = days[days.length - 1].week + 1;
+
+// Position (colonne) du 1er jour de chaque mois → pour les étiquettes de mois.
+const MOIS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+const monthLabels = [];
+const seen = new Set();
+for (const d of days) {
+  if (!seen.has(d.month)) {
+    seen.add(d.month);
+    monthLabels.push({ label: MOIS[d.month], col: d.week + 1 });
+  }
+}
+
+// Étiquettes des lignes (on n'en affiche que quelques-unes, comme GitHub).
+const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
+---
+
+<section class="carnet">
+  <!-- Légendes (remplies dynamiquement côté client, secours en dur ici) -->
+  <div class="legends">
+    <div class="legend legend--dist">
+      <span class="legend-title">Plus c'est foncé, plus j'ai galopé</span>
+      <div class="scale" aria-hidden="true">
+        <span class="scale-lbl">moins</span>
+        <span class="sw lv0"></span>
+        <span class="sw lv1"></span>
+        <span class="sw lv2"></span>
+        <span class="sw lv3"></span>
+        <span class="sw lv4"></span>
+        <span class="sw lv5"></span>
+        <span class="scale-lbl">plus</span>
+      </div>
+    </div>
+
+    <div class="legend legend--cat" id="cat-legend" hidden>
+      <span class="legend-title">Les jours à part</span>
+      <div class="cats" id="cat-legend-items"></div>
+    </div>
+  </div>
+
+  <!-- Heatmap : une colonne par semaine, une ligne par jour de semaine -->
+  <div class="cal-scroll">
+    <div class="cal-inner" style={`--weeks:${totalWeeks}`}>
+      <div class="cal-months">
+        {monthLabels.map((m) => (
+          <span class="cal-month" style={`grid-column:${m.col}`}>{m.label}</span>
+        ))}
+      </div>
+      <div class="cal-body">
+        <div class="cal-daylabels">
+          {JOURS.map((j) => <span>{j}</span>)}
+        </div>
+        <div class="cal-grid" id="cal-grid" role="img"
+             aria-label="Calendrier des distances courues jour par jour en 2026">
+          {days.map((d) => (
+            <div
+              class="cell"
+              data-date={d.ymd}
+              style={`grid-column:${d.week + 1};grid-row:${d.dow}`}
+            ></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline verticale des jours spéciaux (vue principale sur mobile) -->
+  <div class="timeline">
+    <h3 class="tl-head">Les jours qui comptent</h3>
+    <div class="tl-list" id="tl-list">
+      <p class="tl-loading" id="tl-loading">On feuillette le carnet…</p>
+    </div>
+  </div>
+</section>
+
+<!-- Modale d'article (jour spécial) -->
+<div class="modal" id="journal-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal-close" type="button" data-close aria-label="Fermer">✕</button>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<style>
+  .carnet { --cell: 15px; --gap: 3px; --lbl: 30px; }
+
+  /* -- Légendes ----------------------------------------------------------- */
+  .legends {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+  }
+  .legend-title {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+  .scale { display: flex; align-items: center; gap: 4px; }
+  .scale-lbl { font-size: 0.75rem; color: var(--ink-soft); }
+  .sw {
+    width: var(--cell);
+    height: var(--cell);
+    border-radius: 4px;
+    border: 1.5px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  }
+  .sw.lv0 { background: var(--cream-deep); }
+  .sw.lv1 { background: #bfe9e2; }
+  .sw.lv2 { background: #7fd6c9; }
+  .sw.lv3 { background: #35c2b0; }
+  .sw.lv4 { background: #17baa8; }
+  .sw.lv5 { background: #0d8577; }
+
+  .cats { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; }
+  /* .cat / .cat-dot sont créés en JS → styles via :global (le parent .cats,
+     rendu côté serveur, porte l'attribut de scope Astro). */
+  .cats :global(.cat) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .cats :global(.cat-dot) {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    flex: 0 0 auto;
+  }
+
+  /* -- Grille heatmap ----------------------------------------------------- */
+  .cal-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cal-inner { display: inline-block; min-width: 100%; }
+
+  .cal-months {
+    display: grid;
+    grid-template-columns: repeat(var(--weeks), var(--cell));
+    gap: var(--gap);
+    margin-left: calc(var(--lbl) + var(--gap));
+    margin-bottom: 4px;
+  }
+  .cal-month {
+    grid-row: 1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .cal-body { display: flex; gap: var(--gap); }
+  .cal-daylabels {
+    display: grid;
+    grid-template-rows: repeat(7, var(--cell));
+    gap: var(--gap);
+    width: var(--lbl);
+    flex: 0 0 auto;
+  }
+  .cal-daylabels span {
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+    line-height: var(--cell);
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--weeks), var(--cell));
+    grid-template-rows: repeat(7, var(--cell));
+    gap: var(--gap);
+  }
+  .cell {
+    width: var(--cell);
+    height: var(--cell);
+    border-radius: 4px;
+    background: var(--cream-deep);
+    position: relative;
+  }
+  /* Jour spécial : anneau à la couleur de la catégorie (par-dessus la
+     distance, qui reste visible à l'intérieur) + pastille en coin. */
+  .cell.special {
+    box-shadow: inset 0 0 0 2.5px var(--cat, var(--ink));
+    cursor: pointer;
+  }
+  .cell.special::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cat, var(--ink));
+    border: 1.5px solid var(--ink);
+  }
+  .cell.special:hover,
+  .cell.special:focus-visible {
+    transform: scale(1.35);
+    z-index: 2;
+    outline: none;
+  }
+  .cell.today { outline: 2px dashed var(--ink); outline-offset: 1px; }
+
+  /* -- Timeline verticale ------------------------------------------------- */
+  .timeline { margin-top: 2rem; }
+  .tl-head {
+    font-size: 1.3rem;
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .tl-head::before {
+    content: '📌';
+    font-size: 1.1rem;
+  }
+  .tl-list {
+    position: relative;
+    display: grid;
+    gap: 0.85rem;
+    /* trait vertical de timeline */
+    padding-left: 1.25rem;
+    border-left: 3px dashed var(--cream-deep);
+    margin-left: 0.4rem;
+  }
+  /* Les cartes de la timeline sont créées en JS → styles via :global (le
+     parent .tl-list, rendu côté serveur, porte l'attribut de scope Astro). */
+  .tl-loading {
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0;
+    padding-left: 0.25rem;
+  }
+  .tl-list :global(.tl-empty) {
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0;
+    padding-left: 0.25rem;
+  }
+  .tl-list :global(.tl-item) {
+    position: relative;
+    text-align: left;
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    /* display:block + wrapper interne : les <button> ne gèrent pas bien
+       grid/flex sur leurs enfants directs (Chromium les met sur une ligne). */
+    display: block;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    width: 100%;
+  }
+  .tl-list :global(.tl-inner) { display: grid; gap: 0.25rem; }
+  .tl-list :global(.tl-item:hover),
+  .tl-list :global(.tl-item:focus-visible) {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--ink);
+    outline: none;
+  }
+  /* pastille sur le trait de timeline, à la couleur de la catégorie */
+  .tl-list :global(.tl-item::before) {
+    content: '';
+    position: absolute;
+    left: calc(-1.25rem - 3px);
+    top: 1.1rem;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--cat, var(--ink));
+    border: 2.5px solid var(--ink);
+    transform: translateX(-50%);
+  }
+  .tl-list :global(.tl-top) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .tl-list :global(.tl-date) {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .tl-list :global(.tl-cat) {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+    background: var(--cat, var(--sun));
+    color: var(--ink);
+  }
+  .tl-list :global(.tl-title) {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+  .tl-list :global(.tl-teaser) { color: var(--ink-soft); font-size: 0.92rem; }
+  .tl-list :global(.tl-media) {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--teal);
+  }
+
+  /* -- Modale ------------------------------------------------------------- */
+  .modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; }
+  .modal[hidden] { display: none; }
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--ink) 55%, transparent);
+    backdrop-filter: blur(2px);
+  }
+  .modal-card {
+    position: relative;
+    width: min(560px, 100%);
+    max-height: min(85vh, 720px);
+    overflow-y: auto;
+    padding: clamp(1.25rem, 4vw, 2rem);
+    background: var(--cream);
+    animation: modal-in 0.18s ease;
+  }
+  @keyframes modal-in {
+    from { transform: translateY(12px) scale(0.98); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  .modal-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2.5px solid var(--ink);
+    background: var(--paper);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+  }
+  .modal-close:hover { transform: translate(-1px, -1px); }
+
+  .modal-body :global(.m-date) {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .modal-body :global(.m-cat) {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+  }
+  .modal-body :global(.m-title) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    line-height: 1.1;
+    margin: 0.75rem 0 0.5rem;
+  }
+  .modal-body :global(.m-text) { margin: 0 0 1rem; }
+  .modal-body :global(.m-text p) { margin: 0 0 0.75rem; }
+  .modal-body :global(.embed) {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 2.5px solid var(--ink);
+    margin-top: 0.5rem;
+    background: #000;
+  }
+  .modal-body :global(.embed--yt) { position: relative; padding-top: 56.25%; }
+  .modal-body :global(.embed--yt iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .modal-body :global(.embed--ig) {
+    background: var(--paper);
+    display: flex;
+    justify-content: center;
+  }
+  .modal-body :global(.embed--ig iframe) {
+    width: 100%;
+    max-width: 400px;
+    min-height: 480px;
+    border: 0;
+  }
+  .modal-body :global(.m-link) {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--tomato);
+    text-decoration: none;
+  }
+  .modal-body :global(.m-link:hover) { text-decoration: underline; }
+
+  /* -- Adaptation mobile : la grille passe au second plan, la timeline mène */
+  @media (max-width: 620px) {
+    .carnet { --cell: 13px; }
+    .cal-scroll {
+      border: 2px dashed var(--cream-deep);
+      border-radius: var(--radius);
+      padding: 0.75rem 0.75rem 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // ── Données & état ──────────────────────────────────────────────────────
+  const grid = document.getElementById('cal-grid');
+  const cells = new Map(); // "YYYY-MM-DD" → élément .cell
+  if (grid) {
+    grid.querySelectorAll('.cell').forEach((c) => {
+      const el = /** @type {HTMLElement} */ (c);
+      cells.set(el.dataset.date, el);
+    });
+  }
+
+  // Marque le jour d'aujourd'hui (fuseau local suffisant ici).
+  const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+  if (cells.has(todayStr)) cells.get(todayStr).classList.add('today');
+
+  // Échelle de couleurs distance (doit refléter les .sw du CSS).
+  const SCALE = ['#ffedd8', '#bfe9e2', '#7fd6c9', '#35c2b0', '#17baa8', '#0d8577'];
+  function level(km) {
+    if (!km || km <= 0) return 0;
+    if (km < 5) return 1;
+    if (km < 8) return 2;
+    if (km < 12) return 3;
+    if (km < 18) return 4;
+    return 5;
+  }
+
+  const fmtDate = (ymd) =>
+    new Date(ymd + 'T00:00:00').toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long',
+    });
+
+  // ── Colorie la heatmap avec les distances Strava ───────────────────────
+  function paintDistances(dailyKm) {
+    if (!dailyKm) return;
+    for (const [ymd, km] of Object.entries(dailyKm)) {
+      const cell = cells.get(ymd);
+      if (!cell) continue;
+      cell.style.background = SCALE[level(km)];
+      const t = km.toLocaleString('fr-FR');
+      cell.setAttribute('title', `${fmtDate(ymd)} — ${t} km`);
+    }
+  }
+
+  // ── Extraction des identifiants média pour un embed natif ───────────────
+  function youtubeId(link) {
+    const m = link.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/|live\/))([\w-]{11})/);
+    return m ? m[1] : null;
+  }
+  function instaEmbed(link) {
+    const m = link.match(/instagram\.com\/(p|reel|tv)\/([\w-]+)/i);
+    return m ? `https://www.instagram.com/${m[1]}/${m[2]}/embed` : null;
+  }
+
+  // Construit le bloc média (DOM) — jamais d'innerHTML avec du texte libre.
+  function buildMedia(entry) {
+    const link = (entry.lien_media || '').trim();
+    if (!link) return null;
+    const type = (entry.type_media || '').toLowerCase();
+
+    if (type.includes('youtube') || /youtu\.?be/.test(link)) {
+      const id = youtubeId(link);
+      if (id) {
+        const box = document.createElement('div');
+        box.className = 'embed embed--yt';
+        const f = document.createElement('iframe');
+        f.src = `https://www.youtube.com/embed/${id}`;
+        f.title = 'Vidéo YouTube';
+        f.loading = 'lazy';
+        f.allow = 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        f.setAttribute('allowfullscreen', '');
+        box.appendChild(f);
+        return box;
+      }
+    }
+    if (type.includes('insta') || /instagram\.com/.test(link)) {
+      const src = instaEmbed(link);
+      if (src) {
+        const box = document.createElement('div');
+        box.className = 'embed embed--ig';
+        const f = document.createElement('iframe');
+        f.src = src;
+        f.title = 'Publication Instagram';
+        f.loading = 'lazy';
+        f.setAttribute('scrolling', 'no');
+        box.appendChild(f);
+        return box;
+      }
+    }
+    // Type inconnu ou lien non reconnu : simple lien de secours.
+    const a = document.createElement('a');
+    a.className = 'm-link';
+    a.href = link;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'Voir le média ↗';
+    return a;
+  }
+
+  // ── Modale ──────────────────────────────────────────────────────────────
+  const modal = document.getElementById('journal-modal');
+  const modalBody = document.getElementById('modal-body');
+  let lastFocus = null;
+
+  function openModal(entry, catName, catColor) {
+    if (!modal || !modalBody) return;
+    lastFocus = document.activeElement;
+    modalBody.textContent = '';
+
+    const date = document.createElement('span');
+    date.className = 'm-date';
+    date.textContent = fmtDate(entry.date);
+    if (catName) {
+      const badge = document.createElement('span');
+      badge.className = 'm-cat';
+      badge.textContent = catName;
+      if (catColor) badge.style.background = catColor;
+      date.appendChild(badge);
+    }
+    modalBody.appendChild(date);
+
+    const title = document.createElement('h2');
+    title.className = 'm-title';
+    title.id = 'modal-title';
+    title.textContent = entry.titre || '(sans titre)';
+    modalBody.appendChild(title);
+
+    if (entry.texte) {
+      const wrap = document.createElement('div');
+      wrap.className = 'm-text';
+      // Paragraphes séparés par des lignes vides ; texte inséré en toute
+      // sécurité via textContent.
+      String(entry.texte).split(/\n\s*\n/).forEach((para) => {
+        const p = document.createElement('p');
+        p.textContent = para.trim();
+        if (p.textContent) wrap.appendChild(p);
+      });
+      modalBody.appendChild(wrap);
+    }
+
+    const media = buildMedia(entry);
+    if (media) modalBody.appendChild(media);
+
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    modal.hidden = true;
+    modalBody.textContent = ''; // stoppe les iframes (vidéos, etc.)
+    document.body.style.overflow = '';
+    if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+  }
+
+  if (modal) {
+    modal.querySelectorAll('[data-close]').forEach((el) =>
+      el.addEventListener('click', closeModal)
+    );
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeModal();
+    });
+  }
+
+  // ── Rendu des jours spéciaux (heatmap + timeline) ───────────────────────
+  function renderJournal(categories, entries) {
+    const catById = new Map((categories || []).map((c) => [c.id, c]));
+
+    // Légende des catégories (dynamique — jamais figée dans le code).
+    const legendBox = document.getElementById('cat-legend');
+    const legendItems = document.getElementById('cat-legend-items');
+    if (legendBox && legendItems && categories && categories.length) {
+      legendItems.textContent = '';
+      categories.forEach((c) => {
+        const item = document.createElement('span');
+        item.className = 'cat';
+        const dot = document.createElement('span');
+        dot.className = 'cat-dot';
+        dot.style.background = c.couleur || 'var(--ink)';
+        const label = document.createElement('span');
+        label.textContent = c.nom || '';
+        item.append(dot, label);
+        legendItems.appendChild(item);
+      });
+      legendBox.hidden = false;
+    }
+
+    // Timeline + marquage des cellules.
+    const list = document.getElementById('tl-list');
+    const loading = document.getElementById('tl-loading');
+    if (loading) loading.remove();
+
+    const list_ = /** @type {HTMLElement} */ (list);
+    if (!entries || !entries.length) {
+      if (list_) {
+        const empty = document.createElement('p');
+        empty.className = 'tl-empty';
+        empty.textContent =
+          "Rien de spécial encore cette année… ou alors je n'ai pas pris le temps de l'écrire. Reviens, ça se remplit au fil des foulées. 🙂";
+        list_.appendChild(empty);
+      }
+      return;
+    }
+
+    entries.forEach((entry) => {
+      const cat = catById.get(entry.categorie_id);
+      const color = (cat && cat.couleur) || 'var(--ink)';
+      const catName = cat && cat.nom;
+
+      // 1) marque la cellule correspondante (si dans la grille 2026).
+      const cell = cells.get(entry.date);
+      if (cell) {
+        cell.classList.add('special');
+        cell.style.setProperty('--cat', color);
+        cell.setAttribute('role', 'button');
+        cell.setAttribute('tabindex', '0');
+        cell.setAttribute('title', `${fmtDate(entry.date)} — ${entry.titre || ''}`);
+        cell.setAttribute('aria-label', `${fmtDate(entry.date)} : ${entry.titre || 'jour spécial'}`);
+        const open = () => openModal(entry, catName, color);
+        cell.addEventListener('click', open);
+        cell.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+      }
+
+      // 2) carte dans la timeline verticale.
+      if (list_) {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'tl-item';
+        item.style.setProperty('--cat', color);
+        const inner = document.createElement('span');
+        inner.className = 'tl-inner';
+
+        const top = document.createElement('div');
+        top.className = 'tl-top';
+        const date = document.createElement('span');
+        date.className = 'tl-date';
+        date.textContent = fmtDate(entry.date);
+        top.appendChild(date);
+        if (catName) {
+          const badge = document.createElement('span');
+          badge.className = 'tl-cat';
+          badge.textContent = catName;
+          badge.style.background = color;
+          top.appendChild(badge);
+        }
+        inner.appendChild(top);
+
+        const title = document.createElement('span');
+        title.className = 'tl-title';
+        title.textContent = entry.titre || '(sans titre)';
+        inner.appendChild(title);
+
+        if (entry.texte) {
+          const teaser = document.createElement('span');
+          teaser.className = 'tl-teaser';
+          const flat = String(entry.texte).replace(/\s+/g, ' ').trim();
+          teaser.textContent = flat.length > 120 ? flat.slice(0, 117) + '…' : flat;
+          inner.appendChild(teaser);
+        }
+        if ((entry.lien_media || '').trim()) {
+          const m = document.createElement('span');
+          m.className = 'tl-media';
+          const t = (entry.type_media || '').toLowerCase();
+          m.textContent = t.includes('youtube') ? '▶ vidéo' : t.includes('insta') ? '📷 post' : '🔗 média';
+          inner.appendChild(m);
+        }
+
+        item.appendChild(inner);
+        item.addEventListener('click', () => openModal(entry, catName, color));
+        list_.appendChild(item);
+      }
+    });
+  }
+
+  // ── Chargement des données (résilient : ne casse jamais la page) ─────────
+  // Distances : on réutilise l'endpoint /api/streak (partagé avec le reste du
+  // site) ; le carnet n'ajoute donc aucun appel Strava supplémentaire.
+  window.__streakData =
+    window.__streakData ||
+    fetch('/api/streak', { headers: { Accept: 'application/json' } })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+
+  window.__streakData
+    .then((d) => { if (d && d.configured) paintDistances(d.dailyKm); })
+    .catch(() => {});
+
+  fetch('/api/journal', { headers: { Accept: 'application/json' } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => renderJournal(d ? d.categories : [], d ? d.entries : []))
+    .catch(() => renderJournal([], []));
+</script>
