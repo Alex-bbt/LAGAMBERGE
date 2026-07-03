@@ -1,0 +1,90 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import Newsletter from '../components/Newsletter.astro';
+import { site } from '../data/site.js';
+
+const enCours = site.projects.filter((p) => p.status === 'en_cours');
+const aVenir = site.projects.filter((p) => p.status === 'a_venir');
+const termine = site.projects.filter((p) => p.status === 'termine');
+---
+
+<Base title="Actus & projets" description="Les projets en cours et à venir de La Gamberge.">
+  <section class="section">
+    <div class="wrap">
+      <header class="page-head">
+        <span class="eyebrow">Actus & projets</span>
+        <h1>Ce qui gamberge dans ma tête</h1>
+        <p class="lede">
+          Tout ce que je fabrique autour de la course : ce qui tourne déjà, ce
+          qui arrive, et ce qui n'existe encore que sous forme d'idée pendant
+          mes footings. Ça bouge souvent — reviens de temps en temps.
+        </p>
+      </header>
+
+      {enCours.length > 0 && (
+        <div class="block">
+          <h2><span class="pin teal"></span>En cours</h2>
+          <div class="grid">
+            {enCours.map((p) => <ProjectCard project={p} />)}
+          </div>
+        </div>
+      )}
+
+      {aVenir.length > 0 && (
+        <div class="block">
+          <h2><span class="pin sun"></span>À venir</h2>
+          <div class="grid">
+            {aVenir.map((p) => <ProjectCard project={p} />)}
+          </div>
+        </div>
+      )}
+
+      {termine.length > 0 && (
+        <div class="block">
+          <h2><span class="pin cream"></span>Déjà bouclé</h2>
+          <div class="grid">
+            {termine.map((p) => <ProjectCard project={p} />)}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head { max-width: 60ch; margin-bottom: 2.5rem; }
+  .page-head h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 1rem 0 0.75rem; }
+  .lede { color: var(--ink-soft); font-size: 1.05rem; }
+
+  .block { margin-bottom: 2.75rem; }
+  .block h2 {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.1rem;
+  }
+  .pin {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2.5px solid var(--ink);
+    display: inline-block;
+  }
+  .pin.teal { background: var(--teal); }
+  .pin.sun { background: var(--sun); }
+  .pin.cream { background: var(--cream-deep); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+</style>

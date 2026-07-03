@@ -1,0 +1,115 @@
+---
+import { site } from '../data/site.js';
+const s = site.season;
+const avg = s.sorties ? (s.km / s.sorties).toFixed(1) : '0';
+---
+
+<section id="chiffres" class="section stats-section">
+  <div class="wrap">
+    <header class="sec-head">
+      <span class="eyebrow">Les chiffres · {s.year}</span>
+      <span class="live-badge" id="stats-live" hidden>⚡ en direct via Strava</span>
+      <h2>La saison en vrai, sans arrondir dans le bon sens</h2>
+      <p>Directement tirés de mes sorties. Aucune triche possible, Strava veille.</p>
+    </header>
+
+    <div class="tiles">
+      <div class="tile tomato">
+        <span class="num" id="stat-km" data-fallback={s.km}>{s.km.toLocaleString('fr-FR')}</span>
+        <span class="lbl">km courus en {s.year}</span>
+      </div>
+      <div class="tile teal">
+        <span class="num" id="stat-runs" data-fallback={s.sorties}>{s.sorties}</span>
+        <span class="lbl">sorties enregistrées</span>
+      </div>
+      <div class="tile sun">
+        <span class="num" id="stat-elev" data-fallback={s.denivele}>{s.denivele.toLocaleString('fr-FR')}<small> m</small></span>
+        <span class="lbl">de dénivelé positif (D+)</span>
+      </div>
+      <div class="tile paper">
+        <span class="num" id="stat-avg">{avg}<small> km</small></span>
+        <span class="lbl">de moyenne par sortie</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sec-head { margin-bottom: 1.75rem; max-width: 60ch; }
+  .sec-head h2 { font-size: clamp(1.8rem, 4.5vw, 2.6rem); }
+  .sec-head p { color: var(--ink-soft); margin: 0.25rem 0 0; }
+  .live-badge {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--teal);
+    color: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    margin-left: 0.5rem;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .tile {
+    border: 2.5px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.4rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .tile:nth-child(1) { transform: rotate(-1deg); }
+  .tile:nth-child(3) { transform: rotate(1deg); }
+  .tile.tomato { background: var(--tomato); color: var(--cream); }
+  .tile.teal { background: var(--teal); color: var(--cream); }
+  .tile.sun { background: var(--sun); color: var(--ink); }
+  .tile.paper { background: var(--paper); color: var(--ink); }
+
+  .num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.2rem, 6vw, 3.2rem);
+    line-height: 0.95;
+    white-space: nowrap;
+  }
+  .num small { font-size: 0.4em; font-weight: 700; }
+  .lbl { font-weight: 600; font-size: 0.95rem; line-height: 1.25; }
+
+  @media (max-width: 780px) {
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<script>
+  // Récupère les chiffres en direct depuis Strava (même endpoint que le streak).
+  // Fallback : garde les valeurs manuelles de src/data/site.js.
+  const fmt = (n) => Number(n).toLocaleString('fr-FR');
+
+  fetch('/api/streak', { headers: { Accept: 'application/json' } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      if (!d || !d.configured || d.seasonKm == null) return;
+      const km = document.getElementById('stat-km');
+      const runs = document.getElementById('stat-runs');
+      const elev = document.getElementById('stat-elev');
+      const avg = document.getElementById('stat-avg');
+      const live = document.getElementById('stats-live');
+      if (km) km.textContent = fmt(d.seasonKm);
+      if (runs) runs.textContent = fmt(d.seasonRuns);
+      if (elev) elev.innerHTML = fmt(d.seasonElevation) + '<small> m</small>';
+      if (avg) {
+        const a = d.seasonRuns ? (d.seasonKm / d.seasonRuns).toFixed(1) : '0';
+        avg.innerHTML = a + '<small> km</small>';
+      }
+      if (live) live.hidden = false;
+    })
+    .catch(() => { /* silence : valeurs manuelles conservées */ });
+</script>

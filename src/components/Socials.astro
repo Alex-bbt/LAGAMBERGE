@@ -1,0 +1,58 @@
+---
+import { site } from '../data/site.js';
+---
+
+<div class="socials">
+  {site.socials.map((s, i) => (
+    <a
+      class={`social card ${i % 2 === 0 ? 'tilt-a' : 'tilt-b'}`}
+      href={s.url}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <span class="emoji" aria-hidden="true">{s.emoji}</span>
+      <span class="meta">
+        <span class="name">{s.name}</span>
+        <span class="handle">{s.handle}</span>
+        <span class="blurb">{s.blurb}</span>
+      </span>
+      <span class="arrow" aria-hidden="true">↗</span>
+    </a>
+  ))}
+</div>
+
+<style>
+  .socials {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .social {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    text-decoration: none;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  .social:hover {
+    transform: translate(-3px, -3px) rotate(0deg);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  .emoji {
+    font-size: 1.7rem;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    background: var(--cream-deep);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+  .meta { display: flex; flex-direction: column; line-height: 1.25; }
+  .name { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; }
+  .handle { font-size: 0.85rem; color: var(--tomato); font-weight: 600; }
+  .blurb { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.15rem; }
+  .arrow { margin-left: auto; font-size: 1.3rem; font-weight: 800; }
+</style>

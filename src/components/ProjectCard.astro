@@ -1,0 +1,38 @@
+---
+const { project } = Astro.props;
+const statusLabels = {
+  en_cours: 'En cours',
+  a_venir: 'À venir',
+  termine: 'Terminé',
+};
+---
+
+<article class={`project card status-${project.status}`}>
+  <div class="top">
+    <span class="emoji" aria-hidden="true">{project.emoji}</span>
+    <span class="tag">{statusLabels[project.status]}</span>
+  </div>
+  <h3>{project.title}</h3>
+  <p>{project.description}</p>
+</article>
+
+<style>
+  .project { padding: 1.4rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .emoji { font-size: 1.9rem; }
+  .tag {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+  }
+  .status-en_cours .tag { background: var(--teal); color: var(--cream); }
+  .status-a_venir .tag { background: var(--sun); color: var(--ink); }
+  .status-termine .tag { background: var(--cream-deep); color: var(--ink); }
+  .project h3 { margin: 0.3rem 0 0; font-size: 1.25rem; }
+  .project p { margin: 0; color: var(--ink-soft); }
+</style>

@@ -1,0 +1,191 @@
+---
+import Base from '../layouts/Base.astro';
+import StreakCounter from '../components/StreakCounter.astro';
+import SeasonStats from '../components/SeasonStats.astro';
+import QualTracker from '../components/QualTracker.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import Socials from '../components/Socials.astro';
+import Newsletter from '../components/Newsletter.astro';
+import { site } from '../data/site.js';
+
+const previewProjects = site.projects.slice(0, 3);
+---
+
+<Base>
+  <!-- ============================ HERO ============================ -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Course à pied · vécu · gamberge</span>
+        <h1>
+          La <span class="hl">Gamberge</span>,<br />
+          c'est mon épopée<br />
+          en petites foulées.
+        </h1>
+        <p class="lede">{site.tagline}</p>
+        <p class="sub">
+          Moi, c'est le personnage principal (spoiler : c'est vraiment moi). Je
+          me suis lancé deux défis un peu absurdes cette année, je les documente
+          ici sans filtre, et j'essaie de faire ça <em>sérieusement</em> sans
+          jamais me prendre au sérieux.
+        </p>
+        <div class="hero-cta">
+          <a href="#defis" class="btn btn--tomato">Voir les défis en cours ↓</a>
+          <a href="#newsletter" class="btn btn--ghost">Me suivre par mail</a>
+        </div>
+      </div>
+
+      <aside class="hero-side" aria-label="En un coup d'œil">
+        <div class="mini card tilt-b">
+          <span class="mini-num" data-streak-number>{site.streak.day}</span>
+          <span class="mini-label">jours de streak, sans en louper un</span>
+        </div>
+        <div class="mini card tilt-a">
+          <span class="mini-num">3<span class="mini-slash">/4</span></span>
+          <span class="mini-label">qualifs France déjà en poche</span>
+        </div>
+        <div class="mini card tilt-b">
+          <span class="mini-num">∞</span>
+          <span class="mini-label">excuses trouvées, zéro utilisée</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================ DÉFIS ============================ -->
+  <section id="defis" class="section">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>Les deux défis du moment</h2>
+        <p>Le cœur du réacteur. Ça avance vraiment, en direct, sous vos yeux.</p>
+      </header>
+      <div class="defis-stack stack">
+        <StreakCounter />
+        <div class="qual-wrap card">
+          <QualTracker />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CHIFFRES ============================ -->
+  <SeasonStats />
+
+  <!-- ============================ ACTUS ============================ -->
+  <section class="section actus-preview">
+    <div class="wrap">
+      <header class="sec-head row">
+        <div>
+          <h2>Ce que je fabrique</h2>
+          <p>Projets en cours, idées en gamberge, trucs à venir.</p>
+        </div>
+        <a href="/actus" class="btn btn--teal">Tout voir →</a>
+      </header>
+      <div class="projects-grid">
+        {previewProjects.map((p) => <ProjectCard project={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ RÉSEAUX ============================ -->
+  <section class="section">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>On se retrouve où ?</h2>
+        <p>Le gros du quotidien se passe sur Insta. Le reste suit.</p>
+      </header>
+      <Socials />
+    </div>
+  </section>
+
+  <!-- ============================ NEWSLETTER ============================ -->
+  <section class="section">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(2rem, 5vw, 3rem); }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 7vw, 4.6rem);
+    margin: 1rem 0;
+  }
+  .hl {
+    background: var(--tomato);
+    color: var(--cream);
+    padding: 0 0.15em;
+    border-radius: 6px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transform: rotate(-1deg);
+    display: inline-block;
+  }
+  .lede {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    color: var(--ink);
+    max-width: 34ch;
+  }
+  .sub { color: var(--ink-soft); max-width: 46ch; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+
+  .hero-side { display: grid; gap: 1rem; }
+  .mini {
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+  }
+  .mini:nth-child(1) { background: var(--sun); }
+  .mini:nth-child(2) { background: var(--teal); color: var(--cream); }
+  .mini-num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2.6rem;
+    line-height: 1;
+  }
+  .mini-slash { font-size: 1.4rem; opacity: 0.75; }
+  .mini-label { font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem; }
+
+  .sec-head { margin-bottom: 1.75rem; max-width: 60ch; }
+  .sec-head h2 { font-size: clamp(1.8rem, 4.5vw, 2.6rem); }
+  .sec-head p { color: var(--ink-soft); margin: 0.25rem 0 0; }
+  .sec-head.row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    max-width: none;
+  }
+
+  .qual-wrap { padding: clamp(1.5rem, 4vw, 2.25rem); }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-side {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .mini-num { font-size: 2rem; }
+    .projects-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .hero-side { grid-template-columns: 1fr; }
+    .sec-head.row { flex-direction: column; align-items: flex-start; }
+  }
+</style>

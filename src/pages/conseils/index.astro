@@ -1,0 +1,89 @@
+---
+import Base from '../../layouts/Base.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { getCollection } from 'astro:content';
+
+const niveauLabels = {
+  debutant: 'Débutant',
+  intermediaire: 'Intermédiaire',
+  tous: 'Pour tous',
+};
+
+const conseils = (await getCollection('conseils')).sort(
+  (a, b) => a.data.ordre - b.data.ordre
+);
+---
+
+<Base
+  title="Conseils course à pied"
+  description="Des conseils course à pied concrets, sans jargon et avec un peu d'humour."
+>
+  <section class="section">
+    <div class="wrap">
+      <header class="page-head">
+        <span class="eyebrow">Conseils</span>
+        <h1>Courir mieux, sans se prendre la tête</h1>
+        <p class="lede">
+          Ce que j'ai appris sur le terrain, distillé sans jargon inutile.
+          Pratique, honnête, et testé sur moi-même (parfois dans la douleur).
+          La section va s'enrichir au fil des kilomètres.
+        </p>
+      </header>
+
+      <div class="grid">
+        {conseils.map((c) => (
+          <a class="conseil card" href={`/conseils/${c.id}`}>
+            <span class="emoji" aria-hidden="true">{c.data.emoji}</span>
+            <span class="niveau">{niveauLabels[c.data.niveau]}</span>
+            <h2>{c.data.title}</h2>
+            <p>{c.data.resume}</p>
+            <span class="more">Lire →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head { max-width: 60ch; margin-bottom: 2.5rem; }
+  .page-head h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 1rem 0 0.75rem; }
+  .lede { color: var(--ink-soft); font-size: 1.05rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .conseil {
+    padding: 1.5rem;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  .conseil:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--ink); }
+  .emoji { font-size: 2rem; }
+  .niveau {
+    align-self: flex-start;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+    background: var(--cream-deep);
+  }
+  .conseil h2 { font-size: 1.25rem; margin: 0.4rem 0 0; }
+  .conseil p { color: var(--ink-soft); margin: 0; flex: 1; }
+  .more { font-family: var(--font-display); font-weight: 700; color: var(--tomato); margin-top: 0.5rem; }
+</style>

@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site.js';
+
+const { title, description } = Astro.props;
+const pageTitle = title ? `${title} — ${site.name}` : `${site.name}`;
+const pageDesc = description ?? site.description;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+
+    <!-- Partages (Instagram, iMessage, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:site_name" content={site.name} />
+    <meta name="theme-color" content="#fff6ec" />
+
+    <!-- Polices -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      ╔══════════════════════════════════════════════════════════════╗
+      ║  Salut toi qui fouilles le code source. 👀                    ║
+      ║  Oui, on gamberge aussi jusqu'ici. Si tu lis ça, envoie-moi   ║
+      ║  "jour 183" en DM sur Insta (@lagambergee), on est copains.   ║
+      ║  Easter egg #2 débloqué. Retourne courir maintenant.          ║
+      ╚══════════════════════════════════════════════════════════════╝
+    -->
+  </head>
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
