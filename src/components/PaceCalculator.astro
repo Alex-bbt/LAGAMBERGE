@@ -1,0 +1,477 @@
+---
+// Calculateur universel Distance / Allure / Temps.
+// Fonctionne dans tous les sens : dès que 2 champs sur 3 sont remplis, le
+// 3e se calcule tout seul, en temps réel (pas de bouton « Calculer »).
+// Les easter eggs d'allure sont lus dynamiquement depuis /api/pace-easter-eggs
+// (table Supabase `pace_easter_eggs`) — rien n'est codé en dur.
+
+// Raccourcis de distance courants (km). Saisie libre possible aussi.
+const presets = [
+  { label: '5 km', km: 5 },
+  { label: '10 km', km: 10 },
+  { label: 'Semi', km: 21.1 },
+  { label: 'Marathon', km: 42.195 },
+];
+---
+
+<div class="calc card">
+  <div class="calc-head">
+    <span class="eyebrow">Outil coureur</span>
+    <h2>Calculateur d'allure</h2>
+    <p class="calc-sub">
+      Remplis deux cases, la troisième se remplit toute seule. Distance, allure,
+      temps : dans le sens que tu veux, en direct. Pas de bouton à cliquer.
+    </p>
+  </div>
+
+  <div class="presets" role="group" aria-label="Distances courantes">
+    {presets.map((p) => (
+      <button type="button" class="chip" data-km={p.km}>{p.label}</button>
+    ))}
+  </div>
+
+  <form class="calc-grid" id="calc" novalidate autocomplete="off">
+    <div class="field">
+      <label for="f-distance">Distance</label>
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="f-distance"
+          inputmode="decimal"
+          placeholder="10"
+          aria-describedby="hint-distance"
+        />
+        <span class="suffix">km</span>
+      </div>
+      <span class="hint" id="hint-distance">ex : 10 — ou 21.1</span>
+    </div>
+
+    <div class="field">
+      <label for="f-pace">Allure</label>
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="f-pace"
+          inputmode="numeric"
+          placeholder="4:30"
+          aria-describedby="hint-pace"
+        />
+        <span class="suffix">min/km</span>
+      </div>
+      <span class="hint" id="hint-pace">format min:sec — ex : 4:30</span>
+    </div>
+
+    <div class="field">
+      <label for="f-time">Temps total</label>
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="f-time"
+          inputmode="numeric"
+          placeholder="45:00"
+          aria-describedby="hint-time"
+        />
+        <span class="suffix">hh:mm:ss</span>
+      </div>
+      <span class="hint" id="hint-time">ex : 45:00 ou 3:15:20</span>
+    </div>
+  </form>
+
+  <div class="calc-foot">
+    <button type="button" class="btn btn--ghost" id="calc-reset">↺ Réinitialiser</button>
+    <p class="calc-err" id="calc-err" role="alert" aria-live="polite" hidden></p>
+  </div>
+
+  <!-- Easter eggs : messages surprise qui apparaissent discrètement -->
+  <div class="eggs" id="calc-eggs" aria-live="polite"></div>
+</div>
+
+<style>
+  .calc {
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+  }
+  .calc-head { max-width: 60ch; }
+  .calc-head h2 { font-size: clamp(1.6rem, 4.5vw, 2.4rem); margin: 0.6rem 0 0.5rem; }
+  .calc-sub { margin: 0; color: var(--ink-soft); }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.5rem 0 1.25rem;
+  }
+  .chip {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 2.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  }
+  .chip:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+  .chip:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+  .chip.is-active { background: var(--sun); }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .input-wrap input {
+    width: 100%;
+    min-width: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    padding: 0.7rem 3.4rem 0.7rem 0.9rem;
+    border-radius: var(--radius);
+    border: 2.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+  }
+  .input-wrap input:focus {
+    outline: 3px solid var(--teal);
+    outline-offset: 1px;
+  }
+  /* Un champ calculé automatiquement se teinte pour bien montrer le sens */
+  .input-wrap input.is-computed {
+    background: color-mix(in srgb, var(--teal) 16%, var(--paper));
+    border-style: dashed;
+  }
+  .suffix {
+    position: absolute;
+    right: 0.85rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    pointer-events: none;
+  }
+  .hint { font-size: 0.78rem; color: var(--ink-soft); }
+  .input-wrap input.is-invalid { outline: 3px solid var(--tomato); outline-offset: 1px; }
+
+  .calc-foot {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .calc-err {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--tomato);
+  }
+
+  .eggs { display: grid; gap: 0.6rem; margin-top: 1.25rem; }
+  .egg {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: 2.5px solid var(--ink);
+    background: var(--sun);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+    animation: egg-in 0.35s ease;
+  }
+  .egg .egg-emoji { font-size: 1.2rem; line-height: 1.4; }
+  @keyframes egg-in {
+    from { opacity: 0; transform: translateY(6px) rotate(-1deg); }
+    to { opacity: 1; transform: translateY(0) rotate(-0.6deg); }
+  }
+
+  @media (max-width: 680px) {
+    .calc-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  // ── Références DOM ────────────────────────────────────────────────────────
+  const distEl = document.getElementById('f-distance');
+  const paceEl = document.getElementById('f-pace');
+  const timeEl = document.getElementById('f-time');
+  const errEl = document.getElementById('calc-err');
+  const eggsEl = document.getElementById('calc-eggs');
+  const resetBtn = document.getElementById('calc-reset');
+  const chips = Array.from(document.querySelectorAll('.chip'));
+
+  const fields = { distance: distEl, pace: paceEl, time: timeEl };
+
+  // Ordre des champs édités par l'utilisateur, du plus récent au plus ancien.
+  // Le champ en position 2 (le moins récemment touché) est celui qu'on calcule.
+  let order = ['time', 'pace', 'distance'];
+  // Pour ne pas réordonner quand C'EST NOUS qui écrivons dans un champ.
+  let programmatic = false;
+
+  // ── Parsing ───────────────────────────────────────────────────────────────
+  function parseDistance(v) {
+    const s = String(v || '').trim().replace(',', '.');
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) && n > 0 ? n : NaN; // km
+  }
+
+  // Allure « m:ss » (ou « m » seul, ou « m:ss » partiel) → secondes/km
+  function parsePace(v) {
+    const s = String(v || '').trim();
+    if (!s) return null;
+    const parts = s.split(':');
+    if (parts.length === 1) {
+      const m = Number(parts[0].replace(',', '.'));
+      return Number.isFinite(m) && m >= 0 ? Math.round(m * 60) : NaN;
+    }
+    if (parts.length === 2) {
+      const m = Number(parts[0]);
+      const sec = Number(parts[1]);
+      if (!Number.isFinite(m) || !Number.isFinite(sec) || sec >= 60 || sec < 0)
+        return NaN;
+      const total = m * 60 + sec;
+      return total > 0 ? total : NaN;
+    }
+    return NaN;
+  }
+
+  // Temps « hh:mm:ss » ou « mm:ss » → secondes
+  function parseTime(v) {
+    const s = String(v || '').trim();
+    if (!s) return null;
+    const parts = s.split(':');
+    if (parts.some((p) => p !== '' && !/^\d+$/.test(p))) return NaN;
+    let h = 0, m = 0, sec = 0;
+    if (parts.length === 3) {
+      [h, m, sec] = parts.map(Number);
+    } else if (parts.length === 2) {
+      [m, sec] = parts.map(Number);
+    } else if (parts.length === 1) {
+      m = Number(parts[0]);
+    } else {
+      return NaN;
+    }
+    if ([h, m, sec].some((n) => !Number.isFinite(n))) return NaN;
+    if (m >= 60 || sec >= 60) return NaN;
+    const total = h * 3600 + m * 60 + sec;
+    return total > 0 ? total : NaN;
+  }
+
+  // ── Formatage ─────────────────────────────────────────────────────────────
+  function formatPace(secPerKm) {
+    const s = Math.round(secPerKm);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${String(r).padStart(2, '0')}`;
+  }
+  function formatTime(totalSec) {
+    const s = Math.round(totalSec);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const r = s % 60;
+    const mm = String(m).padStart(2, '0');
+    const ss = String(r).padStart(2, '0');
+    return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
+  }
+  function formatDistance(km) {
+    // On garde jusqu'à 3 décimales utiles (42.195), virgule à la française.
+    const rounded = Math.round(km * 1000) / 1000;
+    return String(rounded).replace('.', ',');
+  }
+
+  // ── Cœur du calcul ────────────────────────────────────────────────────────
+  function setField(name, text) {
+    programmatic = true;
+    fields[name].value = text;
+    fields[name].classList.add('is-computed');
+    programmatic = false;
+  }
+  function clearComputedFlag(name) {
+    fields[name].classList.remove('is-computed');
+  }
+
+  function currentValues() {
+    return {
+      distance: parseDistance(distEl.value),
+      pace: parsePace(paceEl.value),
+      time: parseTime(timeEl.value),
+    };
+  }
+
+  function markInvalid(vals) {
+    let bad = false;
+    for (const name of Object.keys(fields)) {
+      const isBad = Number.isNaN(vals[name]);
+      fields[name].classList.toggle('is-invalid', isBad);
+      if (isBad) bad = true;
+    }
+    errEl.hidden = !bad;
+    if (bad) errEl.textContent = "Hmm, un format n'a pas l'air bon. (allure 4:30 · temps 45:00)";
+    return bad;
+  }
+
+  function recompute() {
+    const vals = currentValues();
+    markInvalid(vals);
+
+    // La cible = le champ le moins récemment édité par l'utilisateur.
+    const target = order[2];
+    const sources = order.slice(0, 2);
+
+    // Les deux sources doivent être remplies ET valides (pas null, pas NaN).
+    const ready = sources.every((n) => typeof vals[n] === 'number' && !Number.isNaN(vals[n]));
+
+    // Le champ cible n'est plus « à jour » : on nettoie sa teinte si l'utilisateur
+    // y avait déjà tapé quelque chose (il redevient éditable normalement).
+    if (!ready) {
+      clearComputedFlag(target);
+      runEasterEggs(vals);
+      return;
+    }
+
+    let result = null;
+    if (target === 'time') {
+      result = formatTime(vals.distance * vals.pace);
+    } else if (target === 'pace') {
+      result = formatPace(vals.time / vals.distance);
+    } else if (target === 'distance') {
+      result = formatDistance(vals.time / vals.pace);
+    }
+    if (result !== null) setField(target, result);
+
+    // Pour les easter eggs on réévalue avec les valeurs à jour (dont la cible).
+    runEasterEggs(currentValues());
+  }
+
+  // ── Easter eggs (lus dynamiquement depuis Supabase) ───────────────────────
+  // Un seul chargement partagé de la table pace_easter_eggs.
+  const eggsData =
+    fetch('/api/pace-easter-eggs', { headers: { Accept: 'application/json' } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d && Array.isArray(d.eggs) ? d.eggs : []))
+      .catch(() => []);
+
+  function distanceMatches(egg, distanceKm) {
+    if (egg.distance_m === null || egg.distance_m === undefined) return true;
+    if (typeof distanceKm !== 'number' || Number.isNaN(distanceKm)) return false;
+    const distM = distanceKm * 1000;
+    // Tolérance : la plus grande entre 50 m et 1 % (pour 21.1 vs 21.0975 km…).
+    const tol = Math.max(50, egg.distance_m * 0.01);
+    return Math.abs(distM - egg.distance_m) <= tol;
+  }
+
+  function renderEggs(list, distanceKm) {
+    eggsEl.innerHTML = '';
+    const emojis = ['💡', '👀', '😏', '🔥', '🏃'];
+    list.forEach((msg, i) => {
+      const distStr =
+        typeof distanceKm === 'number' && !Number.isNaN(distanceKm)
+          ? formatDistance(distanceKm)
+          : '';
+      const text = String(msg).replace(/\{distance\}/g, distStr);
+      const el = document.createElement('div');
+      el.className = 'egg';
+      const emoji = document.createElement('span');
+      emoji.className = 'egg-emoji';
+      emoji.setAttribute('aria-hidden', 'true');
+      emoji.textContent = emojis[i % emojis.length];
+      const span = document.createElement('span');
+      span.textContent = text;
+      el.appendChild(emoji);
+      el.appendChild(span);
+      eggsEl.appendChild(el);
+    });
+  }
+
+  function runEasterEggs(vals) {
+    const pace = vals.pace;
+    const distanceKm = vals.distance;
+    // On ne déclenche que si l'allure est connue et valide.
+    if (typeof pace !== 'number' || Number.isNaN(pace)) {
+      eggsEl.innerHTML = '';
+      return;
+    }
+    eggsData.then((eggs) => {
+      // (Ré)évalue avec les valeurs les plus récentes au moment de la réponse.
+      const now = currentValues();
+      const p = now.pace;
+      const d = now.distance;
+      if (typeof p !== 'number' || Number.isNaN(p)) {
+        eggsEl.innerHTML = '';
+        return;
+      }
+      const hits = eggs
+        .filter((e) => p >= e.pace_min && p <= e.pace_max && distanceMatches(e, d))
+        .map((e) => e.message);
+      renderEggs(hits, d);
+    });
+  }
+
+  // ── Entrées utilisateur ───────────────────────────────────────────────────
+  function onUserEdit(name) {
+    // L'utilisateur retouche un champ → il redevient une « source » prioritaire.
+    clearComputedFlag(name);
+    order = [name, ...order.filter((n) => n !== name)];
+    // Le nouveau champ cible ne doit plus porter la teinte « calculé » tant
+    // qu'on ne l'a pas recalculé : recompute() s'en charge juste après.
+    recompute();
+  }
+
+  for (const [name, el] of Object.entries(fields)) {
+    el.addEventListener('input', () => {
+      if (programmatic) return;
+      onUserEdit(name);
+    });
+  }
+
+  // Raccourcis de distance
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const km = chip.dataset.km;
+      programmatic = true;
+      distEl.value = String(km).replace('.', ',');
+      programmatic = false;
+      chips.forEach((c) => c.classList.toggle('is-active', c === chip));
+      onUserEdit('distance');
+    });
+  });
+
+  // Si l'utilisateur retape une distance libre, on désactive le chip actif.
+  distEl.addEventListener('input', () => {
+    if (programmatic) return;
+    const val = String(distEl.value).replace(',', '.');
+    chips.forEach((c) => c.classList.toggle('is-active', c.dataset.km === val));
+  });
+
+  // Réinitialiser
+  resetBtn.addEventListener('click', () => {
+    programmatic = true;
+    for (const el of Object.values(fields)) {
+      el.value = '';
+      el.classList.remove('is-computed', 'is-invalid');
+    }
+    programmatic = false;
+    chips.forEach((c) => c.classList.remove('is-active'));
+    order = ['time', 'pace', 'distance'];
+    errEl.hidden = true;
+    eggsEl.innerHTML = '';
+    distEl.focus();
+  });
+</script>
