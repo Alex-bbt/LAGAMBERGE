@@ -35,7 +35,7 @@ for (let t = start.getTime(); t <= end.getTime(); t += 86400000) {
   days.push({
     ymd: iso(d),
     dow: isoDow(d),
-    week: Math.round((d.getTime() - firstMonday.getTime()) / 86400000 / 7),
+    week: Math.floor((d.getTime() - firstMonday.getTime()) / 86400000 / 7),
     month: d.getUTCMonth(),
   });
 }
@@ -97,6 +97,8 @@ const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
             <div
               class="cell"
               data-date={d.ymd}
+              role="button"
+              tabindex="0"
               style={`grid-column:${d.week + 1};grid-row:${d.dow}`}
             ></div>
           ))}
@@ -225,6 +227,15 @@ const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
     border-radius: 4px;
     background: var(--cream-deep);
     position: relative;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .cell:hover { transform: scale(1.35); z-index: 2; }
+  .cell:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    transform: scale(1.35);
+    z-index: 3;
   }
   /* Jour spécial : anneau à la couleur de la catégorie (par-dessus la
      distance, qui reste visible à l'intérieur) + pastille en coin. */
@@ -486,6 +497,10 @@ const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
   const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
   if (cells.has(todayStr)) cells.get(todayStr).classList.add('today');
 
+  // État partagé, renseigné au fil des chargements (distances + jours spéciaux).
+  const kmByDate = {};                 // "YYYY-MM-DD" → km courus ce jour
+  const specialByDate = new Map();     // "YYYY-MM-DD" → { entry, catName, color }
+
   // Échelle de couleurs distance (doit refléter les .sw du CSS).
   const SCALE = ['#ffedd8', '#bfe9e2', '#7fd6c9', '#35c2b0', '#17baa8', '#0d8577'];
   function level(km) {
@@ -502,15 +517,24 @@ const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
       weekday: 'long', day: 'numeric', month: 'long',
     });
 
+  // Libellé (title + aria) par défaut de chaque case : la date + « clique ».
+  // Ainsi une case sans donnée reste explicable et annonçable.
+  cells.forEach((cell, ymd) => {
+    cell.setAttribute('title', fmtDate(ymd));
+    cell.setAttribute('aria-label', `${fmtDate(ymd)} — clique pour le détail`);
+  });
+
   // ── Colorie la heatmap avec les distances Strava ───────────────────────
   function paintDistances(dailyKm) {
     if (!dailyKm) return;
     for (const [ymd, km] of Object.entries(dailyKm)) {
+      kmByDate[ymd] = km;
       const cell = cells.get(ymd);
       if (!cell) continue;
       cell.style.background = SCALE[level(km)];
       const t = km.toLocaleString('fr-FR');
       cell.setAttribute('title', `${fmtDate(ymd)} — ${t} km`);
+      cell.setAttribute('aria-label', `${fmtDate(ymd)} — ${t} km courus`);
     }
   }
 
@@ -613,6 +637,44 @@ const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
     const media = buildMedia(entry);
     if (media) modalBody.appendChild(media);
 
+    presentModal();
+  }
+
+  // Popup « par défaut » d'un jour ordinaire : juste la date + les km courus.
+  // (Un jour spécial ouvre openModal ci-dessus, avec titre/texte/média.)
+  function openSimpleModal(ymd, km) {
+    if (!modal || !modalBody) return;
+    lastFocus = document.activeElement;
+    modalBody.textContent = '';
+
+    const date = document.createElement('span');
+    date.className = 'm-date';
+    date.textContent = fmtDate(ymd);
+    modalBody.appendChild(date);
+
+    const title = document.createElement('h2');
+    title.className = 'm-title';
+    title.id = 'modal-title';
+
+    const sub = document.createElement('p');
+    sub.className = 'm-text';
+
+    if (km && km > 0) {
+      title.textContent = `${km.toLocaleString('fr-FR')} km`;
+      sub.textContent = 'parcourus ce jour-là. 👟';
+    } else if (ymd > todayStr) {
+      title.textContent = 'À venir';
+      sub.textContent = "Ce jour n'est pas encore couru. Un peu de patience. 🙂";
+    } else {
+      title.textContent = '0 km';
+      sub.textContent = 'Aucune course enregistrée ce jour-là. Repos (ou flemme, on ne juge pas). 😌';
+    }
+    modalBody.append(title, sub);
+    presentModal();
+  }
+
+  // Ouvre la modale déjà remplie : révèle, bloque le scroll, met le focus.
+  function presentModal() {
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
     const closeBtn = modal.querySelector('.modal-close');
@@ -636,16 +698,46 @@ const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
     });
   }
 
+  // ── Ouvre le bon popup pour une case donnée ─────────────────────────────
+  // Jour spécial → article (titre, texte, média) ; sinon → popup par défaut
+  // (date + km). Un seul écouteur délégué sur la grille couvre les 365 cases.
+  function openDay(ymd) {
+    const sp = specialByDate.get(ymd);
+    if (sp) openModal(sp.entry, sp.catName, sp.color);
+    else openSimpleModal(ymd, kmByDate[ymd]);
+  }
+  if (grid) {
+    grid.addEventListener('click', (e) => {
+      const cell = e.target.closest && e.target.closest('.cell');
+      if (cell && grid.contains(cell)) openDay(cell.dataset.date);
+    });
+    grid.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const cell = e.target.closest && e.target.closest('.cell');
+      if (cell && grid.contains(cell)) { e.preventDefault(); openDay(cell.dataset.date); }
+    });
+  }
+
   // ── Rendu des jours spéciaux (heatmap + timeline) ───────────────────────
   function renderJournal(categories, entries) {
     const catById = new Map((categories || []).map((c) => [c.id, c]));
 
     // Légende des catégories (dynamique — jamais figée dans le code).
+    // Dédupliquée par nom : si la table Supabase contient des doublons, chaque
+    // catégorie n'apparaît qu'une fois dans la légende.
     const legendBox = document.getElementById('cat-legend');
     const legendItems = document.getElementById('cat-legend-items');
-    if (legendBox && legendItems && categories && categories.length) {
+    const seenNames = new Set();
+    const uniqueCats = [];
+    (categories || []).forEach((c) => {
+      const key = (c.nom || '').trim().toLowerCase();
+      if (!key || seenNames.has(key)) return;
+      seenNames.add(key);
+      uniqueCats.push(c);
+    });
+    if (legendBox && legendItems && uniqueCats.length) {
       legendItems.textContent = '';
-      categories.forEach((c) => {
+      uniqueCats.forEach((c) => {
         const item = document.createElement('span');
         item.className = 'cat';
         const dot = document.createElement('span');
@@ -682,19 +774,15 @@ const JOURS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
       const catName = cat && cat.nom;
 
       // 1) marque la cellule correspondante (si dans la grille 2026).
+      //    Le clic/clavier est géré par le handler délégué de la grille, qui
+      //    consultera specialByDate pour ouvrir l'article plutôt que le popup km.
+      specialByDate.set(entry.date, { entry, catName, color });
       const cell = cells.get(entry.date);
       if (cell) {
         cell.classList.add('special');
         cell.style.setProperty('--cat', color);
-        cell.setAttribute('role', 'button');
-        cell.setAttribute('tabindex', '0');
         cell.setAttribute('title', `${fmtDate(entry.date)} — ${entry.titre || ''}`);
         cell.setAttribute('aria-label', `${fmtDate(entry.date)} : ${entry.titre || 'jour spécial'}`);
-        const open = () => openModal(entry, catName, color);
-        cell.addEventListener('click', open);
-        cell.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
-        });
       }
 
       // 2) carte dans la timeline verticale.

@@ -108,11 +108,18 @@ superposées, chacune résiliente (jamais bloquante).
   sur le site. Réutilise `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (mêmes
   variables que la newsletter). Voir `docs/carnet-setup.md`.
 - **`Carnet.astro`** rend la grille (année 2026) côté serveur, puis colore les
-  distances et marque les jours spéciaux côté client. Un jour spécial = anneau
-  à la couleur de sa catégorie (par-dessus la distance, qui reste visible) +
-  clic → **modale** (titre, texte, embed natif Instagram/YouTube via iframe
-  officiel). Sur mobile, la grille reste consultable (scroll) mais c'est la
-  **timeline verticale** des jours spéciaux qui prime.
+  distances et marque les jours spéciaux côté client. **Chaque case est
+  cliquable** (un seul écouteur délégué sur la grille) : un jour ordinaire ouvre
+  un **popup par défaut** (date + km courus / « à venir » / « repos »), un jour
+  spécial ouvre la **modale riche** (titre, texte, embed natif Instagram/YouTube
+  via iframe officiel) et porte un anneau à la couleur de sa catégorie
+  (par-dessus la distance, qui reste visible). La légende des catégories est
+  **dédupliquée par nom** (robuste aux doublons dans la table Supabase). Sur
+  mobile, la grille reste consultable (scroll) mais c'est la **timeline
+  verticale** des jours spéciaux qui prime.
+- ⚠️ **Grille type GitHub** : la colonne d'un jour = `Math.floor` du nombre de
+  semaines depuis le lundi de la 1re colonne (⚠️ pas `round`, sinon ven/sam/dim
+  glissent d'une colonne et la grille part en biais).
 - ⚠️ **Piège Astro** : les éléments créés en JS (`createElement`) n'ont pas
   l'attribut de scope (`data-astro-cid-*`) ; leurs styles doivent passer par
   `:global(...)` (via un ancêtre rendu côté serveur), sinon ils sont ignorés.
