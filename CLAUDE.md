@@ -12,8 +12,8 @@ Production : **https://www.lagamberge.com** (déployée sur Vercel, branche `mai
   pré-généré → chargement très rapide, zéro JS par défaut, idéal pour le
   trafic mobile venant d'Instagram.
 - **Fonctions serverless Vercel** dans `/api` (zéro-config, runtime Node) pour
-  les deux briques dynamiques : `api/streak.js` et `api/subscribe.js`. Elles
-  cohabitent avec le build Astro sans adaptateur.
+  les briques dynamiques (`streak`, `subscribe`, `journal`, `workouts`,
+  `pace-easter-eggs`). Elles cohabitent avec le build Astro sans adaptateur.
 - **Google Fonts** : Bricolage Grotesque (titres) + Inter (texte).
 - Pas de framework CSS : un design system maison dans `src/styles/global.css`
   (variables, `.card`, `.btn`, etc.).
@@ -26,17 +26,22 @@ api/
   streak.js          Endpoint GET /api/streak (streak + stats Strava en direct)
   subscribe.js       Endpoint POST /api/subscribe (inscription newsletter → Supabase)
   journal.js         Endpoint GET /api/journal (jours spéciaux du carnet ← Supabase)
+  workouts.js        Endpoint GET /api/workouts (bibliothèque de séances ← Supabase)
 lib/
   strava.mjs         Logique Strava PURE + testable (importée par api/streak.js)
 src/
   data/site.js       ⭐ SOURCE DE VÉRITÉ ÉDITABLE (voir plus bas)
+  data/workouts.js   Séances de SECOURS + doc du format `structure` (fallback)
+  lib/fit.js         Encodeur .FIT (navigateur, zéro dépendance) — export séances
   styles/global.css  Design system (couleurs, typo, composants)
   layouts/Base.astro Squelette HTML (head, métas, header/footer)
   components/*.astro  Header, Footer, StreakCounter, SeasonStats, QualTracker,
-                      ProjectCard, Socials, Newsletter, Carnet
+                      ProjectCard, Socials, Newsletter, Carnet, PaceCalculator,
+                      WorkoutLibrary
   pages/
     index.astro      Accueil (hero, défis, chiffres, actus, réseaux, newsletter)
     carnet.astro     Carnet de bord (heatmap 2026 + timeline des jours spéciaux)
+    coureur.astro    Espace Coureur (calculateur d'allure + bibliothèque séances)
     actus.astro      Projets par statut
     conseils/        Liste + page article ([...slug].astro)
   content/conseils/  Articles en Markdown (collection de contenu Astro)
@@ -45,6 +50,7 @@ docs/
   strava-setup.md      Guide de configuration Strava (pour le propriétaire)
   newsletter-setup.md  Guide de configuration Supabase (pour le propriétaire)
   carnet-setup.md      Guide des tables du carnet de bord (Supabase)
+  seances-setup.md     Guide d'ajout de séances dans Supabase (format JSON)
 ```
 
 ## Défi #1 — Streak Strava EN DIRECT, sans base de données
@@ -125,6 +131,48 @@ superposées, chacune résiliente (jamais bloquante).
   `:global(...)` (via un ancêtre rendu côté serveur), sinon ils sont ignorés.
 - Résilience : Strava ou Supabase absent/en échec → la page s'affiche quand
   même (heatmap seule, ou grille neutre + message de carnet vide au bon ton).
+
+## Espace Coureur — `/coureur` (calculateur d'allure + bibliothèque de séances)
+
+Page `src/pages/coureur.astro` : la boîte à outils du coureur. Deux sections
+empilées, chacune autonome.
+
+1. **Calculateur d'allure** (`components/PaceCalculator.astro`) — 100 % côté
+   client : convertit distance / allure / temps dans tous les sens (+ easter
+   eggs éventuels via `api/pace-easter-eggs.js`).
+2. **Bibliothèque de séances** (`components/WorkoutLibrary.astro`, ancre
+   `/coureur#seances`) — filtrable (catégorie / distance), détail
+   personnalisable, export `.FIT`.
+
+**Données des séances — Supabase, lecture seule** (mêmes variables que la
+newsletter / le carnet) :
+- Tables `workout_categories`, `workouts`, `workout_pace_guidance`, avec **RLS +
+  policy de lecture publique uniquement** (le contenu se gère à la main dans
+  Supabase, comme le carnet). Schéma + guide : `docs/seances-setup.md`.
+- `api/workouts.js` : lit les 3 tables (3 requêtes simples, assemblées côté
+  serveur — pas d'embedding PostgREST pour rester robuste), **ne met en cache
+  QUE les réponses réussies**. Si Supabase n'est pas configuré/échoue, ou si
+  aucune séance n'est encore saisie → le front bascule sur les **séances de
+  secours** de `src/data/workouts.js` (la perso + l'export marchent quand même).
+  Robustesse d'abord : la page ne plante jamais.
+- Le champ **`structure` (jsonb)** décrit les étapes d'une séance :
+  `echauffement` / `effort` / `recuperation` / `retour_calme` /
+  `repetition_bloc` (avec `nb_repetitions` + sous-liste `etapes`). Chaque étape
+  est en temps (`duree_sec`) OU distance (`distance_m`), + `allure_cible_sec_par_km`
+  optionnelle. **Format documenté en détail dans `docs/seances-setup.md`**, et
+  `src/data/workouts.js` en donne des exemples vivants (à copier/adapter).
+
+**Personnalisation + export `.FIT`** — tout côté navigateur, rien n'est stocké :
+- Le composant clone la `structure` choisie et l'édite en direct (steppers +/-
+  sur échauffement, récup, retour au calme, allures, nombre de répétitions).
+  Les objectifs de `workout_pace_guidance` sont des boutons : cliquer applique
+  l'allure à tous les efforts.
+- `src/lib/fit.js` : encodeur **`.FIT` pur (zéro dépendance)** — messages
+  `file_id` / `workout` / `workout_step`, CRC FIT, allures exportées en zones de
+  vitesse cible, blocs en vraies répétitions. Fichier universel importable dans
+  **Garmin Connect** et **Coros**. Logique testable (round-trip header/CRC/étapes).
+  ⚠️ Les noms d'étapes dans le `.FIT` restent sans accents (lisibilité montre) ;
+  l'UI du site, elle, garde les accents.
 
 ## `src/data/site.js` — la source de vérité éditable
 
