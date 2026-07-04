@@ -1,0 +1,56 @@
+---
+import Base from '../layouts/Base.astro';
+import PaceCalculator from '../components/PaceCalculator.astro';
+import Newsletter from '../components/Newsletter.astro';
+---
+
+<Base
+  title="Espace coureur"
+  description="La boîte à outils du coureur La Gamberge. Premier outil : le calculateur d'allure (distance, allure, temps) — dans tous les sens, en direct."
+>
+  <section class="section">
+    <div class="wrap">
+      <header class="page-head">
+        <span class="eyebrow">Espace coureur</span>
+        <h1>La boîte à outils du coureur</h1>
+        <p class="lede">
+          Un coin qui va se remplir petit à petit d'outils bien pratiques pour
+          courir sans se prendre la tête. On commence par le plus basique et le
+          plus utile : convertir distance, allure et temps dans tous les sens.
+          Les séances d'entraînement, c'est pour bientôt. 👀
+        </p>
+      </header>
+
+      <PaceCalculator />
+
+      <p class="teaser">
+        <strong>À venir dans cet espace :</strong> des séances d'entraînement à
+        piocher, et d'autres calculateurs. Si tu as une idée d'outil qui te
+        manque, dis-le-moi — j'ai le carnet ouvert.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head { max-width: 62ch; margin-bottom: 2rem; }
+  .page-head h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 1rem 0 0.75rem; }
+  .lede { color: var(--ink-soft); font-size: 1.05rem; }
+
+  .teaser {
+    margin: 1.75rem 0 0;
+    padding: 1rem 1.25rem;
+    border: 2.5px dashed var(--ink);
+    border-radius: var(--radius);
+    background: var(--cream-deep);
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .teaser strong { color: var(--ink); }
+</style>
