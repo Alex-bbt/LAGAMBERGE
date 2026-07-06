@@ -233,8 +233,8 @@ img { max-width: 100%; display: block; }
 .c-tf-seg { display: inline-flex; align-items: center; gap: 0.4rem; }
 .c-tf-box { position: relative; }
 .c-tf-input {
-  width: 5.2rem; text-align: center; font-family: var(--font-display); font-weight: 800;
-  font-size: clamp(1.3rem, 3.5vw, 1.65rem); padding: 0.6rem 2rem 0.6rem 0.85rem;
+  width: 5.9rem; text-align: center; font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(1.35rem, 3.5vw, 1.7rem); padding: 0.65rem 2.15rem 0.65rem 1rem;
   border-radius: var(--radius); border: 2.5px solid var(--ink);
   background: var(--paper); color: var(--ink); box-shadow: var(--shadow-sm);
   -moz-appearance: textfield;

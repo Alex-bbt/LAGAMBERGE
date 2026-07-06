@@ -22,8 +22,9 @@ const presets = [
     <span class="eyebrow">Outil coureur</span>
     <h2>Calculateur d'allure</h2>
     <p class="calc-sub">
-      Remplis deux cases, la troisième se remplit toute seule. Distance, allure,
-      temps : dans le sens que tu veux, en direct. Pas de bouton à cliquer.
+      Remplis deux cases, la troisième se remplit toute seule — distance, allure,
+      temps, dans le sens que tu veux. Puis <strong>Calculer</strong> pour le récap
+      complet (vitesse km/h, temps de passage par km…).
     </p>
   </div>
 
@@ -34,7 +35,7 @@ const presets = [
   </div>
 
   <form class="calc-grid" id="calc" novalidate autocomplete="off">
-    <div class="field">
+    <div class="field field--distance">
       <label for="f-distance">Distance</label>
       <div class="input-wrap">
         <input
@@ -49,14 +50,18 @@ const presets = [
       <span class="hint" id="hint-distance">ex : 10 — ou 21.1</span>
     </div>
 
-    <div class="field">
+    <div class="field field--time">
+      <label>Temps total</label>
+      <TimeField id="f-time" mode="time" />
+    </div>
+
+    <div class="field field--pace">
       <label>Allure <span class="unit-hint">min/km</span></label>
       <TimeField id="f-pace" mode="pace" />
     </div>
 
-    <div class="field">
-      <label>Temps total</label>
-      <TimeField id="f-time" mode="time" />
+    <div class="field field--action">
+      <button type="button" class="btn btn--tomato" id="calc-go">Calculer ↓</button>
     </div>
   </form>
 
@@ -67,6 +72,31 @@ const presets = [
 
   <!-- Easter eggs : messages surprise qui apparaissent discrètement -->
   <div class="eggs" id="calc-eggs" aria-live="polite"></div>
+
+  <!-- Résumé (apparaît après « Calculer ») -->
+  <div class="calc-summary" id="calc-summary" hidden>
+    <div class="calc-table-wrap">
+      <table class="calc-recap">
+        <thead>
+          <tr><th>Distance</th><th>Allure</th><th>Vitesse</th><th>Temps total</th></tr>
+        </thead>
+        <tbody><tr id="recap-row"></tr></tbody>
+      </table>
+    </div>
+
+    <details class="calc-splits">
+      <summary>
+        <span>Temps de passage par km</span>
+        <span class="calc-chev" aria-hidden="true">▾</span>
+      </summary>
+      <div class="calc-table-wrap calc-splits-scroll">
+        <table class="calc-splits-table">
+          <thead><tr><th>Point</th><th class="num">Passage</th></tr></thead>
+          <tbody id="splits-rows"></tbody>
+        </table>
+      </div>
+    </details>
+  </div>
 </div>
 
 <style>
@@ -101,12 +131,21 @@ const presets = [
   .chip:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
   .chip.is-active { background: var(--sun); }
 
+  /* Distance + Allure empilés à gauche ; Temps total puis Calculer à droite. */
   .calc-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-    gap: 1.25rem 1rem;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "distance time"
+      "pace     action";
+    gap: 1.5rem 2rem;
     align-items: start;
   }
+  .field--distance { grid-area: distance; }
+  .field--pace { grid-area: pace; }
+  .field--time { grid-area: time; }
+  .field--action { grid-area: action; align-self: end; }
+  .field--action .btn { width: fit-content; }
   .field { display: flex; flex-direction: column; gap: 0.5rem; }
   .field label {
     font-family: var(--font-display);
@@ -186,13 +225,62 @@ const presets = [
     to { opacity: 1; transform: translateY(0) rotate(-0.6deg); }
   }
 
+  /* ── Résumé (après « Calculer ») ─────────────────────────────────────── */
+  .calc-summary { margin-top: 1.5rem; }
+  .calc-table-wrap { overflow-x: auto; }
+  .calc-recap {
+    width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+    border: 2.5px solid var(--ink); border-radius: var(--radius); overflow: hidden;
+    background: var(--paper); box-shadow: var(--shadow-sm);
+  }
+  .calc-recap th, .calc-recap td { padding: 0.7rem 0.9rem; text-align: left; white-space: nowrap; }
+  .calc-recap thead th {
+    font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--cream); background: var(--ink);
+  }
+  /* Cellules injectées en JS (innerHTML) → styles en :global (pas de scope Astro). */
+  :global(.calc-recap tbody td) {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1.1rem, 3vw, 1.4rem); border-top: 2.5px solid var(--ink);
+    padding: 0.7rem 0.9rem; white-space: nowrap;
+  }
+
+  .calc-splits { margin-top: 1rem; border: 2.5px solid var(--ink); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .calc-splits > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding: 0.8rem 1rem; font-family: var(--font-display); font-weight: 700;
+  }
+  .calc-splits > summary::-webkit-details-marker { display: none; }
+  .calc-splits > summary:focus-visible { outline: 3px solid var(--teal); outline-offset: -3px; }
+  .calc-chev { color: var(--ink-soft); transition: transform 0.18s ease; }
+  .calc-splits[open] .calc-chev { transform: rotate(180deg); }
+  .calc-splits-scroll { max-height: 320px; overflow-y: auto; border-top: 2.5px solid var(--ink); }
+  .calc-splits-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .calc-splits-table th { padding: 0.45rem 1rem; text-align: left; font-family: var(--font-display); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); position: sticky; top: 0; background: var(--paper); }
+  .calc-splits-table th.num { text-align: right; }
+  /* Lignes injectées en JS → :global obligatoire (attribut de scope absent). */
+  :global(.calc-splits-table td) { padding: 0.45rem 1rem; text-align: left; border-top: 1.5px solid var(--cream-deep); }
+  :global(.calc-splits-table td.num) { text-align: right; font-family: var(--font-display); }
+  :global(.calc-splits-table tr.is-key td) {
+    font-weight: 800; font-size: 1.02rem;
+    background: color-mix(in srgb, var(--sun) 38%, transparent);
+  }
+  :global(.calc-splits-table tr.is-key td:first-child) { box-shadow: inset 4px 0 0 var(--tomato); }
+
   @media (max-width: 680px) {
-    .calc-grid { grid-template-columns: 1fr; }
+    .calc-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas: "distance" "pace" "time" "action";
+      gap: 1.25rem;
+    }
   }
 </style>
 
 <script>
   import { initTimeField } from '../../lib/running/timefield.mjs';
+  import { formatTime, formatPace } from '../../lib/running/format.mjs';
+  import { kmhFromSecPerKm } from '../../lib/running/units.mjs';
+  import { buildSplits } from '../../lib/running/splits.mjs';
 
   // ── Références DOM ────────────────────────────────────────────────────────
   const distEl = document.getElementById('f-distance');
@@ -201,6 +289,10 @@ const presets = [
   const errEl = document.getElementById('calc-err');
   const eggsEl = document.getElementById('calc-eggs');
   const resetBtn = document.getElementById('calc-reset');
+  const goBtn = document.getElementById('calc-go');
+  const summaryEl = document.getElementById('calc-summary');
+  const recapRow = document.getElementById('recap-row');
+  const splitsRows = document.getElementById('splits-rows');
   const chips = Array.from(document.querySelectorAll('.chip'));
 
   const els = { distance: distEl, pace: paceEl, time: timeEl };
@@ -273,6 +365,55 @@ const presets = [
 
     // Pour les easter eggs on réévalue avec les valeurs à jour (dont la cible).
     runEasterEggs(currentValues());
+    // Si le résumé est affiché, on le garde à jour en direct.
+    if (summaryEl && !summaryEl.hidden) buildSummary();
+  }
+
+  // ── Résumé + temps de passage (bouton « Calculer ») ───────────────────────
+  // Points de passage mis en avant : tous les 5 km, l'arrivée, et les bornes
+  // de course classiques (semi, marathon) si elles tombent sur la distance.
+  function isKeyKm(km, isFinish) {
+    if (isFinish) return true;
+    return Number.isInteger(km) && km % 5 === 0;
+  }
+
+  function buildSummary() {
+    const v = currentValues();
+    let d = v.distance;       // km
+    let pace = v.pace;        // sec/km
+    let time = v.time;        // sec
+    // Il faut la distance + (allure OU temps). On complète l'autre au besoin.
+    if (!(d > 0)) { showSummary(false); return; }
+    if (!(pace > 0) && time > 0) pace = time / d;
+    if (!(time > 0) && pace > 0) time = d * pace;
+    if (!(pace > 0) || !(time > 0)) { showSummary(false); return; }
+
+    // Tableau récap
+    const kmh = kmhFromSecPerKm(pace).toFixed(1).replace('.', ',');
+    recapRow.innerHTML =
+      `<td>${formatDistance(d)} km</td>` +
+      `<td>${formatPace(pace)} /km</td>` +
+      `<td>${kmh} km/h</td>` +
+      `<td>${formatTime(time)}</td>`;
+
+    // Temps de passage par km (allure constante)
+    const splits = buildSplits(d * 1000, time, 0, 1000);
+    let html = '';
+    splits.forEach((s, i) => {
+      const isFinish = i === splits.length - 1;
+      const km = s.toM / 1000;
+      const key = isKeyKm(km, isFinish);
+      const label = isFinish ? `Arrivée — ${formatDistance(d)} km` : `${km} km`;
+      html += `<tr class="${key ? 'is-key' : ''}"><td>${label}</td><td class="num">${formatTime(s.cumSec)}</td></tr>`;
+    });
+    splitsRows.innerHTML = html;
+
+    showSummary(true);
+  }
+
+  function showSummary(on) {
+    if (!summaryEl) return;
+    summaryEl.hidden = !on;
   }
 
   // ── Easter eggs (lus dynamiquement depuis Supabase) ───────────────────────
@@ -368,6 +509,20 @@ const presets = [
     });
   });
 
+  // Bouton « Calculer » : affiche (ou met à jour) le résumé + les splits.
+  goBtn.addEventListener('click', () => {
+    const v = currentValues();
+    const enough = v.distance > 0 && (v.pace > 0 || v.time > 0);
+    if (!enough) {
+      errEl.hidden = false;
+      errEl.textContent = 'Remplis au moins la distance et une autre case (allure ou temps).';
+      return;
+    }
+    errEl.hidden = true;
+    buildSummary();
+    summaryEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
   // Réinitialiser
   resetBtn.addEventListener('click', () => {
     distEl.value = '';
@@ -380,6 +535,7 @@ const presets = [
     order = ['time', 'pace', 'distance'];
     errEl.hidden = true;
     eggsEl.innerHTML = '';
+    showSummary(false);
     distEl.focus();
   });
 </script>
