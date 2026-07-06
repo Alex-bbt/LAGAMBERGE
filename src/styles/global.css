@@ -225,3 +225,32 @@ img { max-width: 100%; display: block; }
 .c-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
 .c-subcard { border: 2.5px solid var(--ink); border-radius: var(--radius); padding: 1rem 1.1rem; background: var(--paper); box-shadow: var(--shadow-sm); }
 .c-subcard h3 { font-size: 1rem; margin: 0 0 0.5rem; }
+
+/* -- Champ de temps / allure segmenté (h / min / sec avec steppers) -------- */
+/* Remplace la saisie « hh:mm:ss » : chaque unité a sa case + deux flèches.
+   Clavier NUMÉRIQUE seul sur mobile (aucun « : » à taper). */
+.c-timefield { display: flex; align-items: flex-start; gap: 0.6rem; flex-wrap: wrap; }
+.c-tf-seg { display: inline-flex; align-items: center; gap: 0.4rem; }
+.c-tf-box { position: relative; }
+.c-tf-input {
+  width: 4rem; text-align: center; font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(1.3rem, 3.5vw, 1.7rem); padding: 0.6rem 1.5rem 0.6rem 0.55rem;
+  border-radius: var(--radius); border: 2.5px solid var(--ink);
+  background: var(--paper); color: var(--ink); box-shadow: var(--shadow-sm);
+  -moz-appearance: textfield;
+}
+.c-tf-input::-webkit-outer-spin-button, .c-tf-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.c-tf-input:focus { outline: 3px solid var(--teal); outline-offset: 1px; }
+.c-tf-steppers { position: absolute; right: 0.3rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 2px; }
+.c-tf-step {
+  width: 1.25rem; height: 0.95rem; display: grid; place-items: center;
+  font-size: 0.55rem; line-height: 1; padding: 0; cursor: pointer;
+  border: 1.5px solid var(--ink); background: var(--cream); color: var(--ink); border-radius: 5px;
+}
+.c-tf-step:hover { background: var(--sun); }
+.c-tf-step:active { transform: translateY(1px); }
+.c-tf-unit { font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; color: var(--ink-soft); }
+/* état « calculé automatiquement » (calculateur d'allure) */
+.c-timefield.is-computed .c-tf-input {
+  background: color-mix(in srgb, var(--teal) 16%, var(--paper)); border-style: dashed;
+}

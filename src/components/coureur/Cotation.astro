@@ -1,5 +1,6 @@
 ---
 import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
 import { WA_EVENTS } from '../../../lib/running/scoring.mjs';
 import { WMA_EVENT_LIST, WMA_EDITION } from '../../../lib/running/agegrading.mjs';
 // Module 3 — Cotation World Athletics + age-grading WMA. Données factuelles.
@@ -35,10 +36,8 @@ import { WMA_EVENT_LIST, WMA_EDITION } from '../../../lib/running/agegrading.mjs
           </div>
         </div>
         <div class="c-field">
-          <label for="wa-time">Temps</label>
-          <div class="c-input-wrap">
-            <input type="text" id="wa-time" class="c-input" inputmode="numeric" placeholder="40:00" />
-          </div>
+          <label>Temps</label>
+          <TimeField id="wa-time" mode="time" />
         </div>
       </div>
       <p class="c-lead" id="wa-result" style="margin-top:1rem" hidden></p>
@@ -71,10 +70,8 @@ import { WMA_EVENT_LIST, WMA_EDITION } from '../../../lib/running/agegrading.mjs
           </div>
         </div>
         <div class="c-field">
-          <label for="ag-time">Temps</label>
-          <div class="c-input-wrap">
-            <input type="text" id="ag-time" class="c-input" inputmode="numeric" placeholder="42:30" />
-          </div>
+          <label>Temps</label>
+          <TimeField id="ag-time" mode="time" />
         </div>
       </div>
       <p class="c-lead" id="ag-result" style="margin-top:1rem" hidden></p>
@@ -93,9 +90,10 @@ import { WMA_EVENT_LIST, WMA_EDITION } from '../../../lib/running/agegrading.mjs
 </div>
 
 <script>
-  import { parseTime, formatTime } from '../../../lib/running/format.mjs';
+  import { formatTime } from '../../../lib/running/format.mjs';
   import { waPoints } from '../../../lib/running/scoring.mjs';
   import { ageGrade } from '../../../lib/running/agegrading.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
 
   // Petit utilitaire : gère un sélecteur segmenté de sexe et renvoie l'état.
   function segController(name, onChange) {
@@ -113,13 +111,12 @@ import { WMA_EVENT_LIST, WMA_EDITION } from '../../../lib/running/agegrading.mjs
 
   // -- (a) World Athletics ----------------------------------------------------
   const waEvent = document.getElementById('wa-event');
-  const waTime = document.getElementById('wa-time');
+  const waTime = initTimeField(document.getElementById('wa-time'));
   const waResult = document.getElementById('wa-result');
   const getWaSex = segController('wa', () => recomputeWa());
 
   function recomputeWa() {
-    const secs = parseTime(waTime.value);
-    waTime.classList.toggle('is-invalid', Number.isNaN(secs));
+    const secs = waTime._getSeconds();
     if (typeof secs !== 'number' || Number.isNaN(secs)) { waResult.hidden = true; return; }
     const res = waPoints(waEvent.value, getWaSex(), secs);
     if (!res) { waResult.hidden = true; return; }
@@ -136,15 +133,14 @@ import { WMA_EVENT_LIST, WMA_EDITION } from '../../../lib/running/agegrading.mjs
   // -- (b) Age-grading --------------------------------------------------------
   const agEvent = document.getElementById('ag-event');
   const agAge = document.getElementById('ag-age');
-  const agTime = document.getElementById('ag-time');
+  const agTime = initTimeField(document.getElementById('ag-time'));
   const agResult = document.getElementById('ag-result');
   const agDetail = document.getElementById('ag-detail');
   const getAgSex = segController('ag', () => recomputeAg());
 
   function recomputeAg() {
     const age = Number(String(agAge.value).trim());
-    const secs = parseTime(agTime.value);
-    agTime.classList.toggle('is-invalid', Number.isNaN(secs));
+    const secs = agTime._getSeconds();
     agAge.classList.toggle('is-invalid', agAge.value !== '' && !(age > 0));
     if (!(age > 0) || typeof secs !== 'number' || Number.isNaN(secs)) { agResult.hidden = true; agDetail.hidden = true; return; }
     const res = ageGrade(agEvent.value, getAgSex(), age, secs);

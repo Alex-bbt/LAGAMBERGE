@@ -1,5 +1,6 @@
 ---
 import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
 import { DISTANCES } from '../../../lib/running/format.mjs';
 // Module 2 — Allures d'entraînement Daniels (+ zones cardiaques Karvonen).
 ---
@@ -26,11 +27,9 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
       </div>
     </div>
     <div class="c-field">
-      <label for="tp-time">Temps réalisé</label>
-      <div class="c-input-wrap">
-        <input type="text" id="tp-time" class="c-input" inputmode="numeric" placeholder="42:30" />
-      </div>
-      <span class="c-hint">format hh:mm:ss ou mm:ss</span>
+      <label>Temps réalisé</label>
+      <TimeField id="tp-time" mode="time" />
+      <span class="c-hint">le chrono sur cette distance</span>
     </div>
   </div>
 
@@ -94,13 +93,14 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
 </div>
 
 <script>
-  import { DISTANCES, distanceByKey, parseTime, formatPace } from '../../../lib/running/format.mjs';
+  import { DISTANCES, distanceByKey, formatPace } from '../../../lib/running/format.mjs';
   import { vdotFromRace, trainingPaces, repTime } from '../../../lib/running/vdot.mjs';
   import { secPerMileFromSecPerKm } from '../../../lib/running/units.mjs';
   import { karvonenZones } from '../../../lib/running/karvonen.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
 
   const distEl = document.getElementById('tp-dist');
-  const timeEl = document.getElementById('tp-time');
+  const timeEl = initTimeField(document.getElementById('tp-time'));
   const out = document.getElementById('tp-out');
   const lead = document.getElementById('tp-lead');
   const zonesEl = document.getElementById('tp-zones');
@@ -111,8 +111,7 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
 
   function recompute() {
     const ref = distanceByKey(distEl.value);
-    const secs = parseTime(timeEl.value);
-    timeEl.classList.toggle('is-invalid', Number.isNaN(secs));
+    const secs = timeEl._getSeconds();
     if (!ref || typeof secs !== 'number' || Number.isNaN(secs)) { out.hidden = true; return; }
     const vdot = vdotFromRace(ref.meters, secs);
     const tp = trainingPaces(vdot);

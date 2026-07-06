@@ -1,5 +1,6 @@
 ---
 import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
 import { DISTANCES } from '../../../lib/running/format.mjs';
 // Module 4 — Plan de splits (allure constante / négatif / positif).
 ---
@@ -27,11 +28,9 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
       </div>
     </div>
     <div class="c-field">
-      <label for="sp-time">Temps cible</label>
-      <div class="c-input-wrap">
-        <input type="text" id="sp-time" class="c-input" inputmode="numeric" placeholder="3:30:00" />
-      </div>
-      <span class="c-hint">format hh:mm:ss ou mm:ss</span>
+      <label>Temps cible</label>
+      <TimeField id="sp-time" mode="time" />
+      <span class="c-hint">le chrono que tu vises</span>
     </div>
     <div class="c-field">
       <label for="sp-delta">Écart des splits</label>
@@ -76,11 +75,12 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
 </div>
 
 <script>
-  import { DISTANCES, distanceByKey, parseTime, formatTime, formatKm } from '../../../lib/running/format.mjs';
+  import { DISTANCES, distanceByKey, formatTime, formatKm } from '../../../lib/running/format.mjs';
   import { threeStrategies } from '../../../lib/running/splits.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
 
   const distEl = document.getElementById('sp-dist');
-  const timeEl = document.getElementById('sp-time');
+  const timeEl = initTimeField(document.getElementById('sp-time'));
   const deltaEl = document.getElementById('sp-delta');
   const out = document.getElementById('sp-out');
   const rowsEl = document.getElementById('sp-rows');
@@ -100,8 +100,7 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
 
   function recompute() {
     const ref = distanceByKey(distEl.value);
-    const secs = parseTime(timeEl.value);
-    timeEl.classList.toggle('is-invalid', Number.isNaN(secs));
+    const secs = timeEl._getSeconds();
     const delta = Number(deltaEl.value);
     if (!ref || typeof secs !== 'number' || Number.isNaN(secs)) { out.hidden = true; return; }
     out.hidden = false;

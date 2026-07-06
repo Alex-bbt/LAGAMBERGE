@@ -1,5 +1,6 @@
 ---
 import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
 import { DISTANCES } from '../../../lib/running/format.mjs';
 // Module 1 — Équivalences de performance (VDOT Daniels-Gilbert + Riegel).
 ---
@@ -28,11 +29,9 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
       <span class="c-hint">la distance sur laquelle tu as ton temps</span>
     </div>
     <div class="c-field">
-      <label for="eq-time">Temps réalisé</label>
-      <div class="c-input-wrap">
-        <input type="text" id="eq-time" class="c-input" inputmode="numeric" placeholder="42:30" aria-describedby="eq-time-h" />
-      </div>
-      <span class="c-hint" id="eq-time-h">format hh:mm:ss ou mm:ss — ex : 42:30</span>
+      <label>Temps réalisé</label>
+      <TimeField id="eq-time" mode="time" />
+      <span class="c-hint">le chrono sur cette distance</span>
     </div>
   </div>
 
@@ -65,12 +64,13 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
 </div>
 
 <script>
-  import { DISTANCES, AEROBIC_MIN_METERS, distanceByKey, parseTime, formatTime, formatKm } from '../../../lib/running/format.mjs';
+  import { DISTANCES, AEROBIC_MIN_METERS, distanceByKey, formatTime, formatKm } from '../../../lib/running/format.mjs';
   import { equivalentPerformances } from '../../../lib/running/vdot.mjs';
   import { riegelTime } from '../../../lib/running/riegel.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
 
   const distEl = document.getElementById('eq-dist');
-  const timeEl = document.getElementById('eq-time');
+  const timeEl = initTimeField(document.getElementById('eq-time'));
   const out = document.getElementById('eq-out');
   const lead = document.getElementById('eq-lead');
   const guard = document.getElementById('eq-guard');
@@ -80,8 +80,7 @@ import { DISTANCES } from '../../../lib/running/format.mjs';
 
   function recompute() {
     const ref = distanceByKey(distEl.value);
-    const secs = parseTime(timeEl.value);
-    timeEl.classList.toggle('is-invalid', Number.isNaN(secs));
+    const secs = timeEl._getSeconds();
 
     if (!ref || typeof secs !== 'number' || Number.isNaN(secs)) {
       out.hidden = true;

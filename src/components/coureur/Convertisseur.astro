@@ -1,5 +1,6 @@
 ---
 import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
 import { WMA_EVENT_LIST } from '../../../lib/running/agegrading.mjs';
 // Module 5 — Convertisseur d'unités + repère « % du niveau record ».
 ---
@@ -17,18 +18,12 @@ import { WMA_EVENT_LIST } from '../../../lib/running/agegrading.mjs';
 
   <div class="c-fields" style="margin-top:1.25rem">
     <div class="c-field">
-      <label for="cv-km">Allure / km</label>
-      <div class="c-input-wrap">
-        <input type="text" id="cv-km" class="c-input has-suffix" inputmode="numeric" placeholder="5:00" />
-        <span class="c-suffix">min/km</span>
-      </div>
+      <label>Allure / km</label>
+      <TimeField id="cv-km" mode="pace" />
     </div>
     <div class="c-field">
-      <label for="cv-mile">Allure / mile</label>
-      <div class="c-input-wrap">
-        <input type="text" id="cv-mile" class="c-input has-suffix" inputmode="numeric" placeholder="8:03" />
-        <span class="c-suffix">min/mi</span>
-      </div>
+      <label>Allure / mile</label>
+      <TimeField id="cv-mile" mode="pace" />
     </div>
     <div class="c-field">
       <label for="cv-kmh">Vitesse</label>
@@ -73,7 +68,6 @@ import { WMA_EVENT_LIST } from '../../../lib/running/agegrading.mjs';
 </div>
 
 <script>
-  import { parsePace, formatPace, parseDistanceKm } from '../../../lib/running/format.mjs';
   import {
     kmhFromSecPerKm, secPerKmFromKmh,
     secPerMileFromSecPerKm, secPerKmFromSecPerMile,
@@ -81,9 +75,10 @@ import { WMA_EVENT_LIST } from '../../../lib/running/agegrading.mjs';
   } from '../../../lib/running/units.mjs';
   import { WMA_EVENTS, percentOfWorldClass } from '../../../lib/running/agegrading.mjs';
   import { formatTime } from '../../../lib/running/format.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
 
-  const kmEl = document.getElementById('cv-km');
-  const mileEl = document.getElementById('cv-mile');
+  const kmEl = initTimeField(document.getElementById('cv-km'));   // allure /km (pace)
+  const mileEl = initTimeField(document.getElementById('cv-mile')); // allure /mile (pace)
   const kmhEl = document.getElementById('cv-kmh');
   const vmaEl = document.getElementById('cv-vma');
   const vmaOut = document.getElementById('cv-vma-out');
@@ -91,16 +86,14 @@ import { WMA_EVENT_LIST } from '../../../lib/running/agegrading.mjs';
   const repEl = document.getElementById('cv-rep');
 
   let secPerKm = null; // état central (secondes par km)
-  let programmatic = false;
 
   function render() {
-    programmatic = true;
+    // Reflète l'état central dans les trois champs (sans réémettre d'événement).
     if (secPerKm && secPerKm > 0) {
-      kmEl.value = formatPace(secPerKm);
-      mileEl.value = formatPace(secPerMileFromSecPerKm(secPerKm));
+      kmEl._setSeconds(secPerKm, { silent: true });
+      mileEl._setSeconds(secPerMileFromSecPerKm(secPerKm), { silent: true });
       kmhEl.value = kmhFromSecPerKm(secPerKm).toFixed(2).replace('.', ',');
     }
-    programmatic = false;
 
     // % VMA
     const vma = Number(String(vmaEl.value).replace(',', '.').trim());
@@ -139,9 +132,10 @@ import { WMA_EVENT_LIST } from '../../../lib/running/agegrading.mjs';
   const getSex = () => sex;
 
   // Saisies : chaque champ pilote l'état central puis on re-render les autres.
-  kmEl.addEventListener('input', () => { if (programmatic) return; const v = parsePace(kmEl.value); if (typeof v === 'number' && !Number.isNaN(v)) { secPerKm = v; render(); } });
-  mileEl.addEventListener('input', () => { if (programmatic) return; const v = parsePace(mileEl.value); if (typeof v === 'number' && !Number.isNaN(v)) { secPerKm = secPerKmFromSecPerMile(v); render(); } });
-  kmhEl.addEventListener('input', () => { if (programmatic) return; const v = Number(String(kmhEl.value).replace(',', '.').trim()); if (v > 0) { secPerKm = secPerKmFromKmh(v); render(); } });
-  vmaEl.addEventListener('input', () => { if (programmatic) return; render(); });
+  // Les _setSeconds de render() sont « silent » → pas de boucle d'événements.
+  kmEl.addEventListener('input', () => { const v = kmEl._getSeconds(); if (typeof v === 'number' && v > 0) { secPerKm = v; render(); } });
+  mileEl.addEventListener('input', () => { const v = mileEl._getSeconds(); if (typeof v === 'number' && v > 0) { secPerKm = secPerKmFromSecPerMile(v); render(); } });
+  kmhEl.addEventListener('input', () => { const v = Number(String(kmhEl.value).replace(',', '.').trim()); if (v > 0) { secPerKm = secPerKmFromKmh(v); render(); } });
+  vmaEl.addEventListener('input', render);
   eventEl.addEventListener('change', renderRep);
 </script>
