@@ -1,12 +1,13 @@
 ---
-// Bibliothèque de séances : parcours, détail, personnalisation, export .FIT.
-// Le contenu vient de Supabase (via /api/workouts) ; en secours, on affiche
-// les séances de src/data/workouts.js. La personnalisation et l'export
-// fonctionnent dans les deux cas (tout se passe côté navigateur).
+// Bibliothèque de séances : parcours + filtres. Chaque carte est un LIEN vers
+// la page détail (/coureur/seance/?id=...) où l'on personnalise et exporte.
+// Le contenu vient de Supabase (via /api/workouts) ; en secours, on affiche les
+// séances de src/data/workouts.js.
 import { workoutsFallback, workoutCategoriesFallback } from '../data/workouts.js';
 
-// Rendu serveur minimal : quelques cartes pour avoir du contenu avant le JS.
+// Rendu serveur : cartes de secours (fonctionnent même sans JS).
 const catById = Object.fromEntries(workoutCategoriesFallback.map((c) => [c.id, c]));
+const fmtDist = (m) => (m >= 1000 ? `${(m / 1000).toString().replace('.', ',')} km` : `${m} m`);
 ---
 
 <section class="section" id="seances">
@@ -15,9 +16,10 @@ const catById = Object.fromEntries(workoutCategoriesFallback.map((c) => [c.id, c
       <span class="eyebrow">Séances</span>
       <h2>La bibliothèque de séances</h2>
       <p class="lede">
-        Choisis une séance, règle-la à ta main (récup, allures, répétitions…),
-        et télécharge-la pour ta montre. Garmin, Coros ou autre : c'est un
-        fichier <strong>.FIT</strong> universel, à importer sur ton appli.
+        Clique une séance pour tout savoir : l'intérêt, quand la placer, le détail
+        des temps (échauffement, récup, retour au calme)… puis règle-la à ta main
+        et télécharge-la pour ta montre (fichier <strong>.FIT</strong> universel,
+        Garmin / Coros / autre).
       </p>
     </header>
 
@@ -33,28 +35,27 @@ const catById = Object.fromEntries(workoutCategoriesFallback.map((c) => [c.id, c
       </label>
     </div>
 
-    <!-- Liste (remplacée par le JS ; secours SSR ci-dessous) -->
+    <!-- Liste (ré-rendue par le JS ; secours SSR ci-dessous) -->
     <div class="wk-grid" id="wk-list">
       {workoutsFallback.map((w) => (
-        <article class="wk-card card">
-          {w.categorie_id && catById[w.categorie_id] && (
-            <span class="wk-tag">{catById[w.categorie_id].nom}</span>
-          )}
+        <a class="wk-card card" href={`/coureur/seance/?id=${encodeURIComponent(w.id)}`}>
+          <span class="wk-badges">
+            {w.categorie_id && catById[w.categorie_id] && (
+              <span class="wk-tag">{catById[w.categorie_id].nom}</span>
+            )}
+            {w.distance_cible_m && <span class="wk-target">{fmtDist(w.distance_cible_m)}</span>}
+          </span>
           <h3>{w.titre}</h3>
           <p>{w.description}</p>
-        </article>
+          <span class="wk-more">Voir la séance →</span>
+        </a>
       ))}
     </div>
-
-    <!-- Détail d'une séance (piloté par le JS) -->
-    <div class="wk-detail card" id="wk-detail" hidden></div>
-
-    <p class="wk-hint" id="wk-hint">
-      Active JavaScript pour personnaliser et télécharger les séances 🏃
-    </p>
   </div>
 </section>
 
+<!-- Styles GLOBAUX (:global) : la liste est ré-injectée en JS, les nœuds créés
+     par createElement/innerHTML n'ont pas l'attribut de scope Astro. -->
 <style>
   .page-head { max-width: 62ch; margin-bottom: 2rem; }
   .page-head h2 { font-size: clamp(1.9rem, 5vw, 2.8rem); margin: 1rem 0 0.6rem; }
@@ -69,142 +70,44 @@ const catById = Object.fromEntries(workoutCategoriesFallback.map((c) => [c.id, c
   }
   .wk-filters select:focus { outline: 3px solid var(--sun); outline-offset: 1px; }
 
-  .wk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
-  .wk-card {
-    padding: 1.35rem; display: flex; flex-direction: column; gap: 0.45rem;
-    text-align: left; cursor: pointer; width: 100%; font: inherit; color: inherit;
-    transition: transform 0.14s ease, box-shadow 0.14s ease;
-  }
-  .wk-card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--ink); }
-  .wk-card:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
-  .wk-card h3 { font-size: 1.25rem; margin: 0.2rem 0 0; }
-  .wk-card p { color: var(--ink-soft); margin: 0; flex: 1; font-size: 0.95rem; }
-  .wk-tag, .wk-target {
-    align-self: flex-start; font-family: var(--font-display); font-weight: 700;
-    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em;
-    padding: 0.15rem 0.55rem; border-radius: 999px; border: 2px solid var(--ink);
-  }
-  .wk-tag { background: var(--cream-deep); }
-  .wk-target { background: var(--sun); margin-left: 0.35rem; }
-  .wk-empty { grid-column: 1 / -1; color: var(--ink-soft); padding: 1rem 0; }
-
-  /* -- Détail -- */
-  .wk-detail { padding: clamp(1.4rem, 4vw, 2.2rem); margin-top: 1.5rem; }
-  .wk-detail[hidden] { display: none; }
-  .wk-back {
-    background: none; border: none; cursor: pointer; font-family: var(--font-display);
-    font-weight: 700; color: var(--tomato); padding: 0; margin-bottom: 0.8rem; font-size: 0.95rem;
-  }
-  .wk-detail h3 { font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0.2rem 0 0.4rem; }
-  .wk-detail .wk-desc { color: var(--ink-soft); margin: 0 0 0.4rem; }
-  .wk-totals { font-family: var(--font-display); font-weight: 700; color: var(--teal); margin: 0 0 1.2rem; }
-
-  .wk-block-title { font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin: 1.4rem 0 0.5rem; }
-  .wk-goals { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
-  .wk-goal {
-    font-family: var(--font-display); font-weight: 700; font-size: 0.85rem; cursor: pointer;
-    padding: 0.4rem 0.85rem; border-radius: 999px; border: 2.5px solid var(--ink);
-    background: var(--paper); box-shadow: var(--shadow-sm); transition: transform 0.1s ease;
-  }
-  .wk-goal:hover { transform: translate(-1px, -1px); }
-  .wk-goal.is-active { background: var(--teal); color: var(--cream); }
-
-  /* -- Aperçu éditable -- */
-  .wk-steps { list-style: none; padding: 0; margin: 0.5rem 0 1.4rem; display: flex; flex-direction: column; gap: 0.55rem; }
-  .wk-step {
-    display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.75rem;
-    padding: 0.7rem 0.9rem; border: 2.5px solid var(--ink); border-radius: 14px; background: var(--cream);
-  }
-  .wk-step .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); flex: 0 0 auto; }
-  .wk-step .lbl { font-family: var(--font-display); font-weight: 700; }
-  .wk-step .metric { font-variant-numeric: tabular-nums; }
-  .wk-step .grow { flex: 1; }
-  .dot--warm { background: var(--sun); }
-  .dot--effort { background: var(--tomato); }
-  .dot--rest { background: var(--teal); }
-  .dot--cool { background: var(--soon); }
-
-  .wk-rep { border: 2.5px dashed var(--ink); border-radius: 16px; padding: 0.75rem; background: color-mix(in srgb, var(--cream-deep) 60%, var(--paper)); }
-  .wk-rep-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.6rem; font-family: var(--font-display); font-weight: 800; }
-  .wk-rep .wk-steps { margin: 0; }
-
-  .stepper { display: inline-flex; align-items: center; gap: 0.35rem; }
-  .stepper .val { min-width: 3.6em; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
-  .step-btn {
-    width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid var(--ink);
-    background: var(--paper); font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
-    line-height: 1; cursor: pointer; display: inline-grid; place-items: center; padding: 0;
-  }
-  .step-btn:hover { background: var(--sun); }
-  .step-btn:active { transform: translateY(1px); }
-  .ctrl-label { font-size: 0.78rem; color: var(--ink-soft); font-weight: 600; }
-
-  .wk-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 0.5rem; }
-  .wk-reset { background: none; border: none; text-decoration: underline; cursor: pointer; color: var(--ink-soft); font-weight: 600; }
-
   @media (max-width: 520px) {
     .wk-filters select { min-width: 0; width: 100%; }
     .wk-filters label { flex: 1 1 100%; }
   }
 </style>
 
+<style is:global>
+  #seances .wk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+  #seances .wk-card {
+    padding: 1.35rem; display: flex; flex-direction: column; gap: 0.45rem;
+    text-align: left; text-decoration: none; color: inherit;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  #seances .wk-card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--ink); }
+  #seances .wk-card:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+  #seances .wk-card h3 { font-size: 1.25rem; margin: 0.2rem 0 0; }
+  #seances .wk-card p { color: var(--ink-soft); margin: 0; flex: 1; font-size: 0.95rem; }
+  #seances .wk-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+  #seances .wk-tag, #seances .wk-target {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 0.15rem 0.55rem; border-radius: 999px; border: 2px solid var(--ink);
+  }
+  #seances .wk-tag { background: var(--cream-deep); }
+  #seances .wk-target { background: var(--sun); }
+  #seances .wk-more { font-family: var(--font-display); font-weight: 700; color: var(--tomato); font-size: 0.9rem; margin-top: 0.3rem; }
+  #seances .wk-empty { grid-column: 1 / -1; color: var(--ink-soft); padding: 1rem 0; }
+</style>
+
 <script>
-  import { downloadWorkoutFit } from '../lib/fit.js';
-  import { workoutsFallback, workoutCategoriesFallback } from '../data/workouts.js';
+  import { loadWorkouts, esc, fmtDist } from '../lib/workouts-client.js';
 
-  // ---- Helpers de formatage ----
-  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const pad = (n) => String(n).padStart(2, '0');
-  function fmtPace(sec) { sec = Math.round(sec); return `${Math.floor(sec / 60)}:${pad(sec % 60)}/km`; }
-  function fmtTime(sec) {
-    sec = Math.round(sec);
-    if (sec >= 3600) return `${Math.floor(sec / 3600)} h ${pad(Math.floor((sec % 3600) / 60))}`;
-    if (sec % 60 === 0 && sec >= 60) return `${sec / 60} min`;
-    return `${Math.floor(sec / 60)}:${pad(sec % 60)}`;
-  }
-  function fmtDist(m) { return m >= 1000 ? `${(m / 1000).toString().replace('.', ',')} km` : `${m} m`; }
-
-  // ---- Normalisation des données (live ou secours, même forme) ----
-  function normalize(data) {
-    const categories = data.categories || [];
-    const byId = Object.fromEntries(categories.map((c) => [c.id, c]));
-    const workouts = (data.workouts || []).map((w) => ({
-      ...w,
-      categorie: w.categorie || byId[w.categorie_id] || null,
-      guidance: w.guidance || [],
-    }));
-    return { categories, workouts };
-  }
-  const FALLBACK = { categories: workoutCategoriesFallback, workouts: workoutsFallback };
-
-  // ---- État ----
-  let store = normalize(FALLBACK);
-  let current = null;   // séance sélectionnée
-  let custom = null;    // clone éditable de sa structure
-  let activeGoal = -1;
-
+  let store = null;
   const $ = (id) => document.getElementById(id);
   const listEl = $('wk-list');
-  const detailEl = $('wk-detail');
   const catSel = $('wk-cat');
   const distSel = $('wk-dist');
-  const hintEl = $('wk-hint');
 
-  if (hintEl) hintEl.style.display = 'none';
-
-  // ---- Chargement : Supabase en direct, sinon secours ----
-  fetch('/api/workouts', { headers: { Accept: 'application/json' } })
-    .then((r) => (r.ok ? r.json() : null))
-    .then((d) => {
-      if (d && d.configured && Array.isArray(d.workouts) && d.workouts.length) {
-        store = normalize(d);
-        buildFilters();
-        renderList();
-      }
-    })
-    .catch(() => { /* on garde les séances de secours */ });
-
-  // ---- Filtres ----
   function buildFilters() {
     if (catSel) {
       catSel.innerHTML = '<option value="">Toutes</option>' +
@@ -225,221 +128,27 @@ const catById = Object.fromEntries(workoutCategoriesFallback.map((c) => [c.id, c
       (!d || String(w.distance_cible_m) === d));
   }
 
-  // ---- Liste ----
   function renderList() {
-    if (!listEl) return;
+    if (!listEl || !store) return;
     const items = filtered();
     if (!items.length) {
       listEl.innerHTML = '<p class="wk-empty">Aucune séance ne correspond à ce filtre. Essaie une autre combinaison 🤷</p>';
       return;
     }
-    listEl.innerHTML = items.map((w, i) => `
-      <button class="wk-card card" type="button" data-i="${store.workouts.indexOf(w)}">
-        <span>
+    listEl.innerHTML = items.map((w) => `
+      <a class="wk-card card" href="/coureur/seance/?id=${encodeURIComponent(w.id)}">
+        <span class="wk-badges">
           ${w.categorie ? `<span class="wk-tag">${esc(w.categorie.nom)}</span>` : ''}
           ${w.distance_cible_m ? `<span class="wk-target">${esc(fmtDist(w.distance_cible_m))}</span>` : ''}
         </span>
         <h3>${esc(w.titre)}</h3>
         <p>${esc(w.description || '')}</p>
-      </button>`).join('');
+        <span class="wk-more">Voir la séance →</span>
+      </a>`).join('');
   }
 
   catSel?.addEventListener('change', renderList);
   distSel?.addEventListener('change', renderList);
 
-  listEl?.addEventListener('click', (e) => {
-    const card = e.target.closest('.wk-card');
-    if (!card || card.dataset.i == null) return;
-    openDetail(store.workouts[Number(card.dataset.i)]);
-  });
-
-  // ---- Détail + personnalisation ----
-  function openDetail(w) {
-    current = w;
-    custom = JSON.parse(JSON.stringify(w.structure || []));
-    activeGoal = -1;
-    renderDetail();
-    detailEl.hidden = false;
-    detailEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // Applique une allure à toutes les étapes d'effort (récursif).
-  function applyPaceToEfforts(steps, pace) {
-    for (const s of steps) {
-      if (s.type === 'repetition_bloc') applyPaceToEfforts(s.etapes || [], pace);
-      else if (s.type === 'effort') s.allure_cible_sec_par_km = pace;
-    }
-  }
-
-  // Estimations (temps / distance) en dépliant les blocs de répétition.
-  function computeTotals(steps) {
-    let t = 0, dist = 0;
-    const add = (s) => {
-      const pace = s.allure_cible_sec_par_km;
-      if (s.duree_sec != null) { t += s.duree_sec; if (pace) dist += (s.duree_sec / pace) * 1000; }
-      else if (s.distance_m != null) { dist += s.distance_m; if (pace) t += (s.distance_m / 1000) * pace; }
-    };
-    for (const s of steps) {
-      if (s.type === 'repetition_bloc') {
-        const n = Math.max(1, s.nb_repetitions || 1);
-        for (let k = 0; k < n; k++) (s.etapes || []).forEach(add);
-      } else add(s);
-    }
-    // distance arrondie à 100 m près pour un affichage propre (~9,3 km)
-    return { t: Math.round(t), dist: Math.round(dist / 100) * 100 };
-  }
-
-  const TYPE_META = {
-    echauffement: { lbl: 'Échauffement', dot: 'warm' },
-    effort: { lbl: 'Effort', dot: 'effort' },
-    recuperation: { lbl: 'Récupération', dot: 'rest' },
-    retour_calme: { lbl: 'Retour au calme', dot: 'cool' },
-  };
-
-  // Rendu d'une étape simple (avec ses contrôles inline), path = adresse.
-  function stepHtml(s, path) {
-    const meta = TYPE_META[s.type] || { lbl: s.type, dot: 'rest' };
-    // Contrôle de durée ou distance
-    let metric = '';
-    if (s.duree_sec != null) {
-      metric = stepperHtml(path, 'dur', fmtTime(s.duree_sec));
-    } else if (s.distance_m != null) {
-      metric = stepperHtml(path, 'dur', fmtDist(s.distance_m));
-    }
-    // Contrôle d'allure (efforts)
-    let paceCtrl = '';
-    if (s.type === 'effort') {
-      const p = s.allure_cible_sec_par_km
-        ? `<span class="stepper"><span class="ctrl-label">allure</span>${stepperInner(path, 'pace', fmtPace(s.allure_cible_sec_par_km))}</span>`
-        : `<button class="step-btn" data-act="pace-add" data-path="${path}" title="Ajouter une allure cible">🎯</button>`;
-      paceCtrl = p;
-    }
-    return `<li class="wk-step">
-      <span class="dot dot--${meta.dot}"></span>
-      <span class="lbl">${esc(meta.lbl)}</span>
-      <span class="grow"></span>
-      ${metric}
-      ${paceCtrl}
-    </li>`;
-  }
-
-  function stepperInner(path, kind, valueText) {
-    return `<button class="step-btn" data-act="${kind}-minus" data-path="${path}">−</button>
-      <span class="val">${esc(valueText)}</span>
-      <button class="step-btn" data-act="${kind}-plus" data-path="${path}">+</button>`;
-  }
-  function stepperHtml(path, kind, valueText) {
-    return `<span class="stepper">${stepperInner(path, kind, valueText)}</span>`;
-  }
-
-  function renderDetail() {
-    const w = current;
-    const totals = computeTotals(custom);
-    const goals = (w.guidance || []).map((g, i) =>
-      `<button class="wk-goal ${i === activeGoal ? 'is-active' : ''}" data-goal="${i}">
-        ${esc(g.objectif_label)} · ${esc(fmtPace(g.allure_recommandee_sec_par_km))}
-      </button>`).join('');
-
-    const stepsHtml = custom.map((s, i) => {
-      if (s.type === 'repetition_bloc') {
-        const subs = (s.etapes || []).map((sub, j) => stepHtml(sub, `${i}.${j}`)).join('');
-        return `<div class="wk-rep">
-          <div class="wk-rep-head">
-            <span>Bloc répété</span>
-            <span class="stepper">${stepperInner(String(i), 'rep', '× ' + (s.nb_repetitions || 1))}</span>
-          </div>
-          <ul class="wk-steps">${subs}</ul>
-        </div>`;
-      }
-      return `<ul class="wk-steps">${stepHtml(s, String(i))}</ul>`;
-    }).join('');
-
-    detailEl.innerHTML = `
-      <button class="wk-back" type="button" data-act="back">← Retour à la bibliothèque</button>
-      <div>
-        ${w.categorie ? `<span class="wk-tag">${esc(w.categorie.nom)}</span>` : ''}
-        ${w.distance_cible_m ? `<span class="wk-target">${esc(fmtDist(w.distance_cible_m))}</span>` : ''}
-      </div>
-      <h3>${esc(w.titre)}</h3>
-      <p class="wk-desc">${esc(w.description || '')}</p>
-      <p class="wk-totals">≈ ${esc(fmtTime(totals.t))}${totals.dist ? ` · ~${esc(fmtDist(totals.dist))}` : ''}</p>
-
-      ${goals ? `<p class="wk-block-title">Je vise…</p><div class="wk-goals">${goals}</div>
-        <p class="ctrl-label">Clique un objectif : son allure s'applique à tous les efforts. Tu peux ensuite ajuster.</p>` : ''}
-
-      <p class="wk-block-title">Ta séance (règle-la à ta main)</p>
-      ${stepsHtml}
-
-      <div class="wk-actions">
-        <button class="btn btn--tomato" type="button" data-act="download">⌚ Télécharger pour ma montre (.FIT)</button>
-        <button class="wk-reset" type="button" data-act="reset">Réinitialiser</button>
-      </div>
-      <p class="ctrl-label" style="margin-top:0.6rem">Fichier .FIT universel — importe-le dans Garmin Connect, Coros ou l'appli de ta montre.</p>
-    `;
-  }
-
-  // Adresse "i" ou "i.j" → l'objet étape dans `custom`.
-  function itemAt(path) {
-    const parts = String(path).split('.').map(Number);
-    let node = custom[parts[0]];
-    if (parts.length > 1) node = node.etapes[parts[1]];
-    return node;
-  }
-
-  detailEl?.addEventListener('click', (e) => {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    const act = btn.dataset.act;
-
-    if (act === 'back') { detailEl.hidden = true; current = null; return; }
-    if (act === 'reset') { custom = JSON.parse(JSON.stringify(current.structure || [])); activeGoal = -1; renderDetail(); return; }
-    if (act === 'download') {
-      downloadWorkoutFit({ name: current.titre, structure: custom }, slug(current.titre));
-      return;
-    }
-    if (btn.dataset.goal != null) {
-      const g = current.guidance[Number(btn.dataset.goal)];
-      if (g) { applyPaceToEfforts(custom, g.allure_recommandee_sec_par_km); activeGoal = Number(btn.dataset.goal); renderDetail(); }
-      return;
-    }
-
-    if (!act || btn.dataset.path == null) return;
-    const s = itemAt(btn.dataset.path);
-    if (!s) return;
-
-    switch (act) {
-      case 'dur-plus':
-      case 'dur-minus': {
-        const sign = act === 'dur-plus' ? 1 : -1;
-        if (s.duree_sec != null) s.duree_sec = Math.max(15, s.duree_sec + sign * 15);
-        else if (s.distance_m != null) s.distance_m = Math.max(100, s.distance_m + sign * 100);
-        break;
-      }
-      case 'pace-plus':   // + = plus lent (chiffre plus grand)
-      case 'pace-minus': {
-        const sign = act === 'pace-plus' ? 1 : -1;
-        s.allure_cible_sec_par_km = Math.min(600, Math.max(120, (s.allure_cible_sec_par_km || 300) + sign * 5));
-        activeGoal = -1;
-        break;
-      }
-      case 'pace-add': { s.allure_cible_sec_par_km = 300; break; }
-      case 'rep-plus':
-      case 'rep-minus': {
-        const sign = act === 'rep-plus' ? 1 : -1;
-        s.nb_repetitions = Math.max(1, (s.nb_repetitions || 1) + sign);
-        break;
-      }
-      default: return;
-    }
-    renderDetail();
-  });
-
-  function slug(s) {
-    return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'seance';
-  }
-
-  // Init
-  buildFilters();
-  renderList();
+  loadWorkouts().then((s) => { store = s; buildFilters(); renderList(); });
 </script>

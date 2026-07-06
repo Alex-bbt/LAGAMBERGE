@@ -33,6 +33,7 @@ src/
   data/site.js       ⭐ SOURCE DE VÉRITÉ ÉDITABLE (voir plus bas)
   data/workouts.js   Séances de SECOURS + doc du format `structure` (fallback)
   lib/fit.js         Encodeur .FIT (navigateur, zéro dépendance) — export séances
+  lib/workouts-client.js  Helpers séances partagés (chargement + formatage)
   styles/global.css  Design system (couleurs, typo, composants)
   layouts/Base.astro Squelette HTML (head, métas, header/footer)
   components/*.astro  Header, Footer, StreakCounter, SeasonStats, QualTracker,
@@ -41,7 +42,8 @@ src/
   pages/
     index.astro      Accueil (hero, défis, chiffres, actus, réseaux, newsletter)
     carnet.astro     Carnet de bord (heatmap 2026 + timeline des jours spéciaux)
-    coureur.astro    Espace Coureur (calculateur d'allure + bibliothèque séances)
+    coureur.astro    Espace Coureur (suite d'outils + bibliothèque séances)
+    coureur/seance.astro  Page détail d'une séance (?id=) : éditorial + perso + .FIT
     actus.astro      Projets par statut
     conseils/        Liste + page article ([...slug].astro)
   content/conseils/  Articles en Markdown (collection de contenu Astro)
@@ -170,7 +172,24 @@ séances** autonome (ancre `/coureur#seances`).
   dans `global.css`.
 
 ### Bibliothèque de séances (`components/WorkoutLibrary.astro`, ancre `#seances`)
-Filtrable (catégorie / distance), détail personnalisable, export `.FIT`.
+Deux niveaux : la **bibliothèque** (liste filtrable) et une **page détail par
+séance**.
+- `WorkoutLibrary.astro` : filtres (catégorie / distance) + grille de cartes.
+  Chaque carte est un **lien** vers `/coureur/seance/?id=<id>` (vraie navigation,
+  bouton retour du navigateur). Plus de détail « inline ».
+- **`src/pages/coureur/seance.astro`** : la page d'une séance. Lit l'`id` dans
+  l'URL, charge la séance (live ou secours) et affiche : badges (catégorie /
+  distance), **résumé « en clair »** de la structure (échauffement, blocs,
+  récups, retour au calme, allures), estimation temps/distance, **blocs
+  éditoriaux** (`interet` / `periode` / `pour_qui` / `conseils`, chacun masqué
+  s'il est vide), puis la **personnalisation + export `.FIT`**.
+- **`src/lib/workouts-client.js`** : helpers navigateur PARTAGÉS par la
+  bibliothèque et la page détail (`loadWorkouts` avec repli sur les séances de
+  secours, formateurs `fmtPace`/`fmtTime`/`fmtDist`, `normalize`, `slug`).
+- ⚠️ **Piège Astro** : cartes et détail sont (ré)injectés en JS (`innerHTML`) →
+  leurs nœuds n'ont pas l'attribut de scope. Leurs styles sont donc en
+  **`:global` / `is:global`** (préfixés `#seances`/`#seance-app`), sinon ils
+  s'affichent sans style dès que le JS tourne.
 
 **Données des séances — Supabase, lecture seule** (mêmes variables que la
 newsletter / le carnet) :
@@ -179,21 +198,25 @@ newsletter / le carnet) :
   Supabase, comme le carnet). Schéma + guide : `docs/seances-setup.md`.
 - `api/workouts.js` : lit les 3 tables (3 requêtes simples, assemblées côté
   serveur — pas d'embedding PostgREST pour rester robuste), **ne met en cache
-  QUE les réponses réussies**. Si Supabase n'est pas configuré/échoue, ou si
-  aucune séance n'est encore saisie → le front bascule sur les **séances de
-  secours** de `src/data/workouts.js` (la perso + l'export marchent quand même).
-  Robustesse d'abord : la page ne plante jamais.
+  QUE les réponses réussies**. Les séances sont lues en **`select=*`** →
+  robuste aux colonnes éditoriales optionnelles ajoutées plus tard. Si Supabase
+  n'est pas configuré/échoue, ou si aucune séance n'est encore saisie → le front
+  bascule sur les **séances de secours** de `src/data/workouts.js` (la perso +
+  l'export marchent quand même). Robustesse d'abord : la page ne plante jamais.
 - Le champ **`structure` (jsonb)** décrit les étapes d'une séance :
   `echauffement` / `effort` / `recuperation` / `retour_calme` /
   `repetition_bloc` (avec `nb_repetitions` + sous-liste `etapes`). Chaque étape
   est en temps (`duree_sec`) OU distance (`distance_m`), + `allure_cible_sec_par_km`
-  optionnelle. **Format documenté en détail dans `docs/seances-setup.md`**, et
-  `src/data/workouts.js` en donne des exemples vivants (à copier/adapter).
+  optionnelle. Colonnes éditoriales optionnelles : `interet`, `periode`,
+  `pour_qui`, `conseils`. **Format documenté en détail dans
+  `docs/seances-setup.md`**, et `src/data/workouts.js` en donne des exemples
+  vivants (à copier/adapter).
 
-**Personnalisation + export `.FIT`** — tout côté navigateur, rien n'est stocké :
-- Le composant clone la `structure` choisie et l'édite en direct (steppers +/-
-  sur échauffement, récup, retour au calme, allures, nombre de répétitions).
-  Les objectifs de `workout_pace_guidance` sont des boutons : cliquer applique
+**Personnalisation + export `.FIT`** (sur la page détail) — tout côté
+navigateur, rien n'est stocké :
+- La page clone la `structure` choisie et l'édite en direct (steppers +/- sur
+  échauffement, récup, retour au calme, allures, nombre de répétitions). Les
+  objectifs de `workout_pace_guidance` sont des boutons : cliquer applique
   l'allure à tous les efforts.
 - `src/lib/fit.js` : encodeur **`.FIT` pur (zéro dépendance)** — messages
   `file_id` / `workout` / `workout_step`, CRC FIT, allures exportées en zones de
