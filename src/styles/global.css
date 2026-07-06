@@ -132,3 +132,96 @@ img { max-width: 100%; display: block; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ==========================================================================
+   OUTILS COUREUR — briques partagées par tous les modules de /coureur
+   Préfixe `c-` pour éviter tout conflit avec le reste du site.
+   ========================================================================== */
+.c-tool {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+}
+.c-head { max-width: 62ch; }
+.c-head h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0.6rem 0 0.5rem; }
+.c-sub { margin: 0; color: var(--ink-soft); }
+
+.c-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.25rem 0 1rem; }
+.c-chip {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+  padding: 0.4rem 0.9rem; border-radius: 999px; border: 2.5px solid var(--ink);
+  background: var(--paper); color: var(--ink); box-shadow: var(--shadow-sm);
+  cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.c-chip:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+.c-chip:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+.c-chip.is-active { background: var(--sun); }
+
+.c-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+.c-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.c-field > label { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; }
+.c-input-wrap { position: relative; display: flex; align-items: center; }
+.c-input, .c-select {
+  width: 100%; min-width: 0; font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(1.15rem, 3vw, 1.5rem); padding: 0.65rem 0.9rem;
+  border-radius: var(--radius); border: 2.5px solid var(--ink);
+  background: var(--paper); color: var(--ink); box-shadow: var(--shadow-sm);
+}
+.c-input.has-suffix { padding-right: 3.4rem; }
+.c-input:focus, .c-select:focus { outline: 3px solid var(--teal); outline-offset: 1px; }
+.c-suffix {
+  position: absolute; right: 0.85rem; font-family: var(--font-display);
+  font-weight: 700; font-size: 0.8rem; color: var(--ink-soft); pointer-events: none;
+}
+.c-hint { font-size: 0.78rem; color: var(--ink-soft); }
+.c-input.is-invalid { outline: 3px solid var(--tomato); outline-offset: 1px; }
+
+/* Petit sélecteur segmenté (sexe, unité…) */
+.c-seg { display: inline-flex; border: 2.5px solid var(--ink); border-radius: 999px; overflow: hidden; box-shadow: var(--shadow-sm); }
+.c-seg button {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+  padding: 0.45rem 1rem; border: none; background: var(--paper); color: var(--ink); cursor: pointer;
+}
+.c-seg button + button { border-left: 2.5px solid var(--ink); }
+.c-seg button.is-on { background: var(--teal); color: var(--cream); }
+
+.c-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; }
+
+/* Sortie */
+.c-out { margin-top: 1.5rem; }
+.c-lead {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(1.1rem, 3vw, 1.4rem);
+  margin: 0 0 0.5rem;
+}
+.c-big { font-family: var(--font-display); font-weight: 800; color: var(--tomato); -webkit-text-stroke: 1.5px var(--ink); }
+
+/* Tableaux de résultats */
+.c-table-wrap { overflow-x: auto; margin-top: 1rem; }
+.c-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.c-table th, .c-table td { padding: 0.55rem 0.7rem; text-align: left; border-bottom: 2px solid var(--cream-deep); white-space: nowrap; }
+.c-table th { font-family: var(--font-display); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+.c-table td { font-weight: 600; }
+.c-table td.num, .c-table th.num { text-align: right; font-family: var(--font-display); }
+.c-table tr.is-ref { background: color-mix(in srgb, var(--sun) 26%, transparent); }
+.c-table tr.is-off td { color: var(--ink-soft); opacity: 0.55; }
+
+/* Encart d'avertissement (garde-fous éditoriaux) */
+.c-warn {
+  margin-top: 1rem; padding: 0.7rem 0.95rem; border-radius: 12px;
+  border: 2.5px solid var(--ink); background: var(--sun); color: var(--ink);
+  font-size: 0.9rem; font-weight: 600;
+}
+.c-warn.soft { background: var(--cream-deep); }
+
+/* Note de source / méthode (sourcing visible) */
+.c-method {
+  margin-top: 1.1rem; font-size: 0.82rem; color: var(--ink-soft);
+  border-top: 1.5px dashed color-mix(in srgb, var(--ink) 30%, transparent); padding-top: 0.7rem;
+}
+.c-method strong { color: var(--ink); }
+.c-method a { color: var(--ink); text-decoration: underline wavy var(--teal); }
+.c-note { font-size: 0.82rem; color: var(--ink-soft); margin: 0.6rem 0 0; }
+
+/* Cartes internes (sous-modules côte à côte) */
+.c-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.c-subcard { border: 2.5px solid var(--ink); border-radius: var(--radius); padding: 1rem 1.1rem; background: var(--paper); box-shadow: var(--shadow-sm); }
+.c-subcard h3 { font-size: 1rem; margin: 0 0 0.5rem; }

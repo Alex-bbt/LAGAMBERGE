@@ -1,0 +1,175 @@
+---
+import SourceNote from './SourceNote.astro';
+import { DISTANCES } from '../../../lib/running/format.mjs';
+// Module 2 — Allures d'entraînement Daniels (+ zones cardiaques Karvonen).
+---
+
+<div class="c-tool card">
+  <div class="c-head">
+    <span class="eyebrow">Outil coureur</span>
+    <h2>Allures d'entraînement</h2>
+    <p class="c-sub">
+      À partir d'une performance de référence, les <strong>zones d'allure
+      théoriques</strong> du modèle Daniels (E / M / T / I / R) associées à ton
+      niveau VDOT. Ce sont des zones de référence, <strong>pas un plan
+      d'entraînement</strong>.
+    </p>
+  </div>
+
+  <div class="c-fields" style="margin-top:1.25rem">
+    <div class="c-field">
+      <label for="tp-dist">Distance de référence</label>
+      <div class="c-input-wrap">
+        <select id="tp-dist" class="c-select">
+          {DISTANCES.map((d) => (<option value={d.key} selected={d.key === '10k'}>{d.label}</option>))}
+        </select>
+      </div>
+    </div>
+    <div class="c-field">
+      <label for="tp-time">Temps réalisé</label>
+      <div class="c-input-wrap">
+        <input type="text" id="tp-time" class="c-input" inputmode="numeric" placeholder="42:30" />
+      </div>
+      <span class="c-hint">format hh:mm:ss ou mm:ss</span>
+    </div>
+  </div>
+
+  <div class="c-out" id="tp-out" hidden>
+    <p class="c-lead" id="tp-lead"></p>
+    <div class="c-table-wrap">
+      <table class="c-table">
+        <thead><tr><th>Zone</th><th class="num">min/km</th><th class="num">min/mile</th></tr></thead>
+        <tbody id="tp-zones"></tbody>
+      </table>
+    </div>
+    <p class="c-note">Splits théoriques par répétition (zones I et R) :</p>
+    <div class="c-table-wrap">
+      <table class="c-table">
+        <thead><tr><th>Répétition</th><th class="num">Interval (I)</th><th class="num">Repetition (R)</th></tr></thead>
+        <tbody id="tp-reps"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <SourceNote model="Allures Daniels (VDOT)" href="https://en.wikipedia.org/wiki/Jack_Daniels_(coach)#VDOT">
+    zones reconstruites depuis les équations VDOT (choix de modélisation des
+    ancres %VO₂max documenté dans le code). E = facile, M = marathon,
+    T = seuil, I = intervalle (~VO₂max), R = répétition (rapide).
+  </SourceNote>
+
+  <!-- Sous-module optionnel : zones cardiaques (Karvonen) -->
+  <details class="c-subcard" style="margin-top:1.25rem">
+    <summary style="cursor:pointer;font-family:var(--font-display);font-weight:700">
+      Ajouter les zones cardiaques (Karvonen) — optionnel
+    </summary>
+    <div class="c-fields" style="margin-top:1rem">
+      <div class="c-field">
+        <label for="kv-rest">FC de repos</label>
+        <div class="c-input-wrap">
+          <input type="text" id="kv-rest" class="c-input has-suffix" inputmode="numeric" placeholder="50" />
+          <span class="c-suffix">bpm</span>
+        </div>
+      </div>
+      <div class="c-field">
+        <label for="kv-max">FC max</label>
+        <div class="c-input-wrap">
+          <input type="text" id="kv-max" class="c-input has-suffix" inputmode="numeric" placeholder="190" />
+          <span class="c-suffix">bpm</span>
+        </div>
+        <span class="c-hint" id="kv-hint">tu peux estimer 220 − âge, mais c'est très imprécis</span>
+      </div>
+    </div>
+    <div class="c-table-wrap" id="kv-wrap" hidden>
+      <table class="c-table">
+        <thead><tr><th>Zone</th><th class="num">FC cible (bpm)</th></tr></thead>
+        <tbody id="kv-rows"></tbody>
+      </table>
+    </div>
+    <p class="c-warn soft" style="margin-top:0.9rem">
+      Méthode de la fréquence cardiaque de réserve (Karvonen). La FC max
+      « théorique » (220 − âge) est un repère de population <strong>peu fiable
+      individuellement</strong> : à prendre avec des pincettes.
+    </p>
+  </details>
+</div>
+
+<script>
+  import { DISTANCES, distanceByKey, parseTime, formatPace } from '../../../lib/running/format.mjs';
+  import { vdotFromRace, trainingPaces, repTime } from '../../../lib/running/vdot.mjs';
+  import { secPerMileFromSecPerKm } from '../../../lib/running/units.mjs';
+  import { karvonenZones } from '../../../lib/running/karvonen.mjs';
+
+  const distEl = document.getElementById('tp-dist');
+  const timeEl = document.getElementById('tp-time');
+  const out = document.getElementById('tp-out');
+  const lead = document.getElementById('tp-lead');
+  const zonesEl = document.getElementById('tp-zones');
+  const repsEl = document.getElementById('tp-reps');
+
+  const pk = (sec) => formatPace(sec);
+  const pm = (sec) => formatPace(secPerMileFromSecPerKm(sec));
+
+  function recompute() {
+    const ref = distanceByKey(distEl.value);
+    const secs = parseTime(timeEl.value);
+    timeEl.classList.toggle('is-invalid', Number.isNaN(secs));
+    if (!ref || typeof secs !== 'number' || Number.isNaN(secs)) { out.hidden = true; return; }
+    const vdot = vdotFromRace(ref.meters, secs);
+    const tp = trainingPaces(vdot);
+    if (!tp) { out.hidden = true; return; }
+    out.hidden = false;
+    lead.innerHTML = `Niveau estimé : <span class="c-big">VDOT ${vdot.toFixed(1)}</span>`;
+
+    const zones = [
+      { label: 'Easy (E)', km: `${pk(tp.easy.slow)}–${pk(tp.easy.fast)}`, mi: `${pm(tp.easy.slow)}–${pm(tp.easy.fast)}` },
+      { label: 'Marathon (M)', km: pk(tp.marathon), mi: pm(tp.marathon) },
+      { label: 'Threshold (T)', km: pk(tp.threshold), mi: pm(tp.threshold) },
+      { label: 'Interval (I)', km: pk(tp.interval), mi: pm(tp.interval) },
+      { label: 'Repetition (R)', km: pk(tp.repetition), mi: pm(tp.repetition) },
+    ];
+    zonesEl.innerHTML = zones.map((z) =>
+      `<tr><td>${z.label}</td><td class="num">${z.km}</td><td class="num">${z.mi}</td></tr>`).join('');
+
+    // Splits par répétition : I sur 400→mile, R sur 200→800.
+    const reps = [
+      { m: 200, label: '200 m', i: false, r: true },
+      { m: 300, label: '300 m', i: false, r: true },
+      { m: 400, label: '400 m', i: true, r: true },
+      { m: 600, label: '600 m', i: true, r: true },
+      { m: 800, label: '800 m', i: true, r: true },
+      { m: 1000, label: '1000 m', i: true, r: false },
+      { m: 1200, label: '1200 m', i: true, r: false },
+      { m: 1609.344, label: 'Mile', i: true, r: false },
+    ];
+    const fmt = (sec) => formatPace(sec); // m:ss suffit pour ces durées
+    repsEl.innerHTML = reps.map((rp) => {
+      const iCell = rp.i ? fmt(repTime(tp.interval, rp.m)) : '—';
+      const rCell = rp.r ? fmt(repTime(tp.repetition, rp.m)) : '—';
+      return `<tr><td>${rp.label}</td><td class="num">${iCell}</td><td class="num">${rCell}</td></tr>`;
+    }).join('');
+  }
+
+  distEl.addEventListener('change', recompute);
+  timeEl.addEventListener('input', recompute);
+
+  // -- Karvonen ---------------------------------------------------------------
+  const restEl = document.getElementById('kv-rest');
+  const maxEl = document.getElementById('kv-max');
+  const kvWrap = document.getElementById('kv-wrap');
+  const kvRows = document.getElementById('kv-rows');
+
+  function recomputeHr() {
+    const rest = Number(String(restEl.value).trim());
+    const max = Number(String(maxEl.value).trim());
+    const ok = Number.isFinite(rest) && Number.isFinite(max) && max > rest && rest > 0;
+    restEl.classList.toggle('is-invalid', restEl.value !== '' && !ok);
+    maxEl.classList.toggle('is-invalid', maxEl.value !== '' && !ok);
+    if (!ok) { kvWrap.hidden = true; return; }
+    const zones = karvonenZones(rest, max);
+    kvWrap.hidden = false;
+    kvRows.innerHTML = zones.map((z) =>
+      `<tr><td>${z.label}</td><td class="num">${z.bpmLo}–${z.bpmHi}</td></tr>`).join('');
+  }
+  restEl.addEventListener('input', recomputeHr);
+  maxEl.addEventListener('input', recomputeHr);
+</script>

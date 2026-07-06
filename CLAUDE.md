@@ -132,17 +132,45 @@ superposées, chacune résiliente (jamais bloquante).
 - Résilience : Strava ou Supabase absent/en échec → la page s'affiche quand
   même (heatmap seule, ou grille neutre + message de carnet vide au bon ton).
 
-## Espace Coureur — `/coureur` (calculateur d'allure + bibliothèque de séances)
+## Espace coureur — `/coureur` (suite d'outils en onglets + bibliothèque de séances)
 
-Page `src/pages/coureur.astro` : la boîte à outils du coureur. Deux sections
-empilées, chacune autonome.
+Page `src/pages/coureur.astro` : la boîte à outils du coureur. Une **suite
+d'outils en onglets** (calcul 100 % côté client) puis une **bibliothèque de
+séances** autonome (ancre `/coureur#seances`).
 
-1. **Calculateur d'allure** (`components/PaceCalculator.astro`) — 100 % côté
-   client : convertit distance / allure / temps dans tous les sens (+ easter
-   eggs éventuels via `api/pace-easter-eggs.js`).
-2. **Bibliothèque de séances** (`components/WorkoutLibrary.astro`, ancre
-   `/coureur#seances`) — filtrable (catégorie / distance), détail
-   personnalisable, export `.FIT`.
+### Suite d'outils (onglets) — calcul côté client, rien de stocké
+- Onglets : calculateur d'allure, équivalences, allures d'entraînement,
+  cotation, splits, convertisseur. Enhancement progressif : sans JS, tous les
+  panneaux restent empilés (accessibles).
+- **Calculateur d'allure** (`components/PaceCalculator.astro`) : distance /
+  allure / temps dans tous les sens (+ easter eggs via `api/pace-easter-eggs.js`).
+- **Logique pure dans `lib/running/`** (ESM, testable Node ET importable dans les
+  `<script>` Astro via Vite) : `format.mjs`, `vdot.mjs` (**Daniels-Gilbert
+  recalculé** depuis les équations, pas les tables imprimées : coût O₂,
+  %VO₂max/durée, VDOT, équivalences par bissection, allures E/M/T/I/R),
+  `riegel.mjs`, `karvonen.mjs`, `units.mjs`, `splits.mjs`, `scoring.mjs`
+  (World Athletics) + `agegrading.mjs` (WMA). `test.mjs` = cohérence
+  (`node lib/running/test.mjs`, à lancer avant tout commit touchant aux modèles).
+- **Données sourcées, jamais inventées, dans `lib/running/data/`** :
+  `wa-scoring.mjs` (coefficients World Athletics 2025, `pts = a·t²+b·t+c`) et
+  `wma-agegrading.mjs` (facteurs WMA/Alan Jones éd. 2020, **générés** depuis la
+  source publique). En-tête source + date ; valeurs vérifiées contre des repères
+  (records ≈ 1300 pts, standard open = 100 %).
+- **Principe éditorial NON négociable** : aucun conseil perso, aucune prédiction
+  (« tu peux courir X »), aucune injonction. Que des **équivalences théoriques**
+  et des **données factuelles**, chacune avec sa **source affichée**
+  (`components/coureur/SourceNote.astro` + section « Méthodes & sources »).
+- ⚠️ **Garde-fou < 1500 m** : sous 1500 m la filière est anaérobie → les
+  équivalences aérobies (VDOT/Riegel) sont **désactivées** avec un message
+  explicite. Ne jamais afficher un temps équivalent pour 400 m/800 m.
+- **Volontairement exclus** (non sourçables de façon fiable → on n'approxime
+  pas) : niveaux **FFA**, et records du monde « du jour » (le repère utilise le
+  standard open WMA, clairement étiqueté).
+- Composants dans `src/components/coureur/` ; styles partagés préfixés `.c-*`
+  dans `global.css`.
+
+### Bibliothèque de séances (`components/WorkoutLibrary.astro`, ancre `#seances`)
+Filtrable (catégorie / distance), détail personnalisable, export `.FIT`.
 
 **Données des séances — Supabase, lecture seule** (mêmes variables que la
 newsletter / le carnet) :

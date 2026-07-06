@@ -1,0 +1,138 @@
+---
+import SourceNote from './SourceNote.astro';
+import { DISTANCES } from '../../../lib/running/format.mjs';
+// Module 1 — Équivalences de performance (VDOT Daniels-Gilbert + Riegel).
+---
+
+<div class="c-tool card">
+  <div class="c-head">
+    <span class="eyebrow">Outil coureur</span>
+    <h2>Équivalences de performance</h2>
+    <p class="c-sub">
+      Un temps sur une distance → les temps de <strong>niveau équivalent</strong>
+      sur les autres, selon deux modèles reconnus, côte à côte. Ce sont des
+      équivalences théoriques, pas des prédictions.
+    </p>
+  </div>
+
+  <div class="c-fields" style="margin-top:1.25rem">
+    <div class="c-field">
+      <label for="eq-dist">Distance de référence</label>
+      <div class="c-input-wrap">
+        <select id="eq-dist" class="c-select">
+          {DISTANCES.map((d) => (
+            <option value={d.key} selected={d.key === '10k'}>{d.label}</option>
+          ))}
+        </select>
+      </div>
+      <span class="c-hint">la distance sur laquelle tu as ton temps</span>
+    </div>
+    <div class="c-field">
+      <label for="eq-time">Temps réalisé</label>
+      <div class="c-input-wrap">
+        <input type="text" id="eq-time" class="c-input" inputmode="numeric" placeholder="42:30" aria-describedby="eq-time-h" />
+      </div>
+      <span class="c-hint" id="eq-time-h">format hh:mm:ss ou mm:ss — ex : 42:30</span>
+    </div>
+  </div>
+
+  <div class="c-out" id="eq-out" hidden>
+    <p class="c-lead" id="eq-lead"></p>
+    <div class="c-warn" id="eq-guard" hidden></div>
+    <div class="c-table-wrap" id="eq-table-wrap" hidden>
+      <table class="c-table">
+        <thead>
+          <tr>
+            <th>Distance</th>
+            <th class="num">VDOT (Daniels)</th>
+            <th class="num">Riegel</th>
+          </tr>
+        </thead>
+        <tbody id="eq-rows"></tbody>
+      </table>
+    </div>
+    <p class="c-note" id="eq-foot"></p>
+  </div>
+
+  <SourceNote model="Modèle VDOT — Daniels & Gilbert" href="https://en.wikipedia.org/wiki/Jack_Daniels_(coach)#VDOT">
+    reconstruit à partir des équations de coût en O₂ et de la courbe %VO₂max/durée
+    (pas des tables imprimées). Le VDOT raisonne en <strong>%VO₂max</strong>.
+  </SourceNote>
+  <SourceNote model="Formule de Riegel — T₂ = T₁·(D₂/D₁)^1,06" href="https://en.wikipedia.org/wiki/Peter_Riegel">
+    loi de puissance <strong>empirique</strong>. Les deux modèles ne mesurent donc
+    pas la même chose : c'est normal qu'ils diffèrent un peu.
+  </SourceNote>
+</div>
+
+<script>
+  import { DISTANCES, AEROBIC_MIN_METERS, distanceByKey, parseTime, formatTime, formatKm } from '../../../lib/running/format.mjs';
+  import { equivalentPerformances } from '../../../lib/running/vdot.mjs';
+  import { riegelTime } from '../../../lib/running/riegel.mjs';
+
+  const distEl = document.getElementById('eq-dist');
+  const timeEl = document.getElementById('eq-time');
+  const out = document.getElementById('eq-out');
+  const lead = document.getElementById('eq-lead');
+  const guard = document.getElementById('eq-guard');
+  const tableWrap = document.getElementById('eq-table-wrap');
+  const rowsEl = document.getElementById('eq-rows');
+  const foot = document.getElementById('eq-foot');
+
+  function recompute() {
+    const ref = distanceByKey(distEl.value);
+    const secs = parseTime(timeEl.value);
+    timeEl.classList.toggle('is-invalid', Number.isNaN(secs));
+
+    if (!ref || typeof secs !== 'number' || Number.isNaN(secs)) {
+      out.hidden = true;
+      return;
+    }
+    out.hidden = false;
+
+    // Garde-fou : en dessous de 1500 m, filière anaérobie -> pas d'équivalence.
+    if (ref.meters < AEROBIC_MIN_METERS) {
+      lead.textContent = `${formatTime(secs)} sur ${ref.label}`;
+      guard.hidden = false;
+      guard.textContent =
+        "En dessous de 1500 m, la filière énergétique change (anaérobie) : " +
+        "l'équivalence fondée sur un modèle aérobie n'est plus pertinente. " +
+        "Aucun temps équivalent n'est affiché pour cette distance de départ.";
+      tableWrap.hidden = true;
+      foot.textContent = '';
+      return;
+    }
+    guard.hidden = true;
+    tableWrap.hidden = false;
+
+    lead.textContent = `Avec ${formatTime(secs)} sur ${ref.label}, cette performance se situe au même niveau que :`;
+
+    const { rows } = equivalentPerformances(ref.meters, secs, DISTANCES);
+    rowsEl.innerHTML = '';
+    let hasAnaerobic = false;
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      if (r.isRef) tr.className = 'is-ref';
+      const belowAerobic = r.meters < AEROBIC_MIN_METERS;
+      const rieg = riegelTime(secs, ref.meters, r.meters);
+      let vdotCell, riegCell;
+      if (belowAerobic) {
+        hasAnaerobic = true;
+        tr.classList.add('is-off');
+        vdotCell = '—'; riegCell = '—';
+      } else {
+        vdotCell = formatTime(r.seconds);
+        riegCell = formatTime(rieg);
+      }
+      const label = r.isRef ? `${r.label} (référence)` : r.label;
+      tr.innerHTML = `<td>${label}${belowAerobic ? ' *' : ''}</td>` +
+        `<td class="num">${vdotCell}</td><td class="num">${riegCell}</td>`;
+      rowsEl.appendChild(tr);
+    }
+    foot.textContent = hasAnaerobic
+      ? '* 400 m et 800 m grisés : filière anaérobie, l\'équivalence aérobie n\'y est pas pertinente.'
+      : '';
+  }
+
+  distEl.addEventListener('change', recompute);
+  timeEl.addEventListener('input', recompute);
+</script>
