@@ -34,6 +34,11 @@ create table if not exists workouts (
   categorie_id uuid references workout_categories(id) on delete set null,
   distance_cible_m integer,          -- distance visée en mètres (10000 = 10 km), NULL si généraliste
   structure jsonb not null,          -- étapes de la séance (voir format plus bas)
+  -- Contenu éditorial (tous OPTIONNELS) affiché sur la page détail de la séance
+  interet text,                      -- « L'intérêt de la séance » (ce qu'elle développe)
+  periode text,                      -- « Quand la placer » (phase de prépa, fréquence)
+  pour_qui text,                     -- « Pour qui » (niveau, objectif)
+  conseils text,                     -- « Conseils d'exécution » (comment bien la courir)
   created_at timestamptz default now()
 );
 
@@ -59,6 +64,17 @@ create policy "lecture publique" on workout_pace_guidance for select using (true
 > jamais exposée). Les policies de lecture publique permettent en plus une
 > lecture avec la clé `anon` si un jour tu en as besoin. Aucune policy
 > d'écriture n'est créée : personne ne peut modifier le contenu depuis le web.
+
+> **Tu avais déjà créé la table `workouts` (sans les colonnes éditoriales) ?**
+> Ajoute-les en une fois — c'est sans risque, l'API lit `select=*` :
+>
+> ```sql
+> alter table workouts
+>   add column if not exists interet  text,
+>   add column if not exists periode  text,
+>   add column if not exists pour_qui text,
+>   add column if not exists conseils text;
+> ```
 
 ---
 
@@ -138,6 +154,11 @@ Dans **Table Editor** → `workouts` → **Insert row** :
 4. `distance_cible_m` : la distance visée en mètres (`10000` pour un 10 km), ou
    laisse vide si la séance est généraliste.
 5. `structure` : colle le JSON (voir format ci-dessus).
+6. **Contenu éditorial (optionnel mais recommandé)** — `interet`, `periode`,
+   `pour_qui`, `conseils` : quelques phrases chacun, dans le ton du site. Ils
+   s'affichent sur la **page détail** de la séance (un clic sur une carte de la
+   bibliothèque ouvre `/coureur/seance/?id=...`). Laissés vides, les blocs
+   correspondants ne s'affichent simplement pas.
 
 Puis, pour proposer des allures selon l'objectif du coureur, ajoute une ou
 plusieurs lignes dans `workout_pace_guidance` (chacune avec le `workout_id` de

@@ -30,7 +30,9 @@ export default async function handler(req, res) {
   try {
     const [cRes, wRes, gRes] = await Promise.all([
       get('workout_categories?select=id,nom,description&order=nom.asc'),
-      get('workouts?select=id,titre,description,categorie_id,distance_cible_m,structure,created_at&order=created_at.desc'),
+      // select=* : robuste aux colonnes éditoriales optionnelles (interet,
+      // periode, pour_qui, conseils…) ajoutées plus tard sans casser l'API.
+      get('workouts?select=*&order=created_at.desc'),
       get('workout_pace_guidance?select=id,workout_id,objectif_label,allure_recommandee_sec_par_km'),
     ]);
 
