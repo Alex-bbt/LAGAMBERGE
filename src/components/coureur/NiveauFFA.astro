@@ -1,0 +1,422 @@
+---
+import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
+import { FFA_EPREUVES } from '../../../lib/running/ffa.mjs';
+// Module — Niveau FFA. Classe un chrono dans la pyramide officielle de la
+// Fédération Française d'Athlétisme (D7 → IA), regroupée en 5 étages.
+// Données factuelles lues depuis Supabase (table `ffa_baremes`, api/ffa.js).
+---
+
+<div class="c-tool card">
+  <div class="c-head">
+    <span class="eyebrow">Outil coureur</span>
+    <h2>Niveau FFA</h2>
+    <p class="c-sub">
+      Où te situe ton chrono dans la <strong>pyramide officielle de la
+      Fédération Française d'Athlétisme</strong> ? De <strong>D7</strong> (base
+      départementale) à <strong>IA</strong> (sommet international). Saisis une
+      épreuve, ton sexe et ton temps : on te place, et on te donne les deux
+      prochains paliers à viser.
+    </p>
+  </div>
+
+  <div class="c-seg" role="group" aria-label="Sexe" data-seg="ffa" style="margin-top:0.25rem">
+    <button type="button" data-sex="H" class="is-on">Hommes</button>
+    <button type="button" data-sex="F">Femmes</button>
+  </div>
+
+  <div class="c-fields" style="margin-top:0.85rem">
+    <div class="c-field">
+      <label for="ffa-epreuve">Épreuve</label>
+      <div class="c-input-wrap">
+        <select id="ffa-epreuve" class="c-select">
+          {FFA_EPREUVES.map((e) => (
+            <option value={e.key} selected={e.key === '10km'}>{e.label}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+    <div class="c-field">
+      <label>Ton temps</label>
+      <TimeField id="ffa-time" mode="time" />
+    </div>
+  </div>
+
+  <!-- Bandeau « ton niveau » (rempli côté client) -->
+  <p class="c-lead ffa-verdict" id="ffa-verdict" style="margin-top:1.4rem" hidden></p>
+
+  <!-- La pyramide (construite côté client à partir du barème chargé) -->
+  <div class="ffa-pyramid" id="ffa-pyramid" aria-live="polite">
+    <p class="ffa-state" id="ffa-state">Chargement du barème…</p>
+  </div>
+
+  <!-- Objectifs de progression -->
+  <div class="ffa-goals" id="ffa-goals" hidden></div>
+
+  <SourceNote model="Barème de niveau FFA" href="https://www.athle.fr/">
+    grille officielle de la Fédération Française d'Athlétisme (route). Les seuils
+    sont des maximums à ne pas dépasser pour décrocher chaque niveau.
+  </SourceNote>
+</div>
+
+<style>
+  /* -- Pyramide ---------------------------------------------------------- */
+  .ffa-pyramid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+  .ffa-state {
+    color: var(--ink-soft);
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+
+  .ffa-band {
+    width: var(--w, 100%);
+    max-width: 100%;
+    border: 2.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 0.5rem 0.6rem 0.6rem;
+    background: var(--band, var(--paper));
+    transition: box-shadow 0.15s ease;
+  }
+  /* Teintes par étage (du sommet vers la base) */
+  .ffa-band[data-etage="International"] { --band: color-mix(in srgb, var(--sun) 34%, var(--paper)); }
+  .ffa-band[data-etage="National"]      { --band: color-mix(in srgb, var(--tomato) 20%, var(--paper)); }
+  .ffa-band[data-etage="Interregional"] { --band: color-mix(in srgb, var(--teal) 22%, var(--paper)); }
+  .ffa-band[data-etage="Regional"]      { --band: color-mix(in srgb, var(--soon) 22%, var(--paper)); }
+  .ffa-band[data-etage="Departemental"] { --band: var(--cream-deep); }
+
+  .ffa-band.is-yours { box-shadow: 5px 5px 0 var(--ink); }
+
+  .ffa-band-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4rem;
+  }
+  .ffa-band-label span {
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    opacity: 0.85;
+  }
+
+  .ffa-cells {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .ffa-cell {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.05rem;
+    padding: 0.4rem 0.15rem;
+    border: 2px solid var(--ink);
+    border-radius: 9px;
+    background: var(--paper);
+    text-align: center;
+    position: relative;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+  .ffa-cell .n {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(0.72rem, 2.4vw, 0.95rem);
+    line-height: 1;
+  }
+  .ffa-cell .t {
+    font-size: clamp(0.56rem, 1.9vw, 0.68rem);
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* La case du coureur : mise en évidence forte + halo + petit pouls. */
+  .ffa-cell.is-you {
+    background: var(--tomato);
+    color: var(--cream);
+    border-color: var(--ink);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 0 3px var(--cream), 0 0 0 5.5px var(--tomato);
+    z-index: 2;
+    animation: ffa-pulse 1.8s ease-in-out infinite;
+  }
+  .ffa-cell.is-you .t { color: color-mix(in srgb, var(--cream) 82%, var(--tomato)); }
+  .ffa-cell.is-you::after {
+    content: "Toi";
+    position: absolute;
+    top: -0.7rem;
+    right: -0.4rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0.08rem 0.4rem;
+    border-radius: 999px;
+    transform: rotate(-6deg);
+  }
+  @keyframes ffa-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px var(--cream), 0 0 0 5.5px var(--tomato); }
+    50%      { box-shadow: 0 0 0 3px var(--cream), 0 0 0 8px color-mix(in srgb, var(--tomato) 55%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ffa-cell.is-you { animation: none; }
+  }
+
+  /* -- Bandeau « ton niveau » ------------------------------------------- */
+  .ffa-verdict { margin-bottom: 0; }
+  .ffa-verdict .lvl { color: var(--tomato); -webkit-text-stroke: 1.5px var(--ink); }
+
+  /* -- Objectifs de progression ----------------------------------------- */
+  .ffa-goals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+  }
+  .ffa-goal {
+    border: 2.5px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 0.9rem 1.05rem;
+    background: var(--paper);
+  }
+  .ffa-goal.is-solo { grid-column: 1 / -1; }
+  .ffa-goal .k {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-bottom: 0.35rem;
+  }
+  .ffa-goal .v { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; line-height: 1.25; }
+  .ffa-goal .v b {
+    color: var(--tomato);
+    -webkit-text-stroke: 1px var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .ffa-goal.top { background: color-mix(in srgb, var(--sun) 30%, var(--paper)); }
+  .ffa-goal .sub { display: block; font-family: var(--font-body); font-weight: 500; font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.3rem; }
+
+  @media (max-width: 560px) {
+    .ffa-band { --w: 100% !important; }
+    .ffa-band-label span { display: none; }
+  }
+</style>
+
+<script>
+  import { formatTime } from '../../../lib/running/format.mjs';
+  import { classifyFFA, groupByEtage, etageLabelOf, FFA_ETAGES } from '../../../lib/running/ffa.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
+
+  const epreuveSel = document.getElementById('ffa-epreuve');
+  const timeField = initTimeField(document.getElementById('ffa-time'));
+  const pyramidEl = document.getElementById('ffa-pyramid');
+  const stateEl = document.getElementById('ffa-state');
+  const verdictEl = document.getElementById('ffa-verdict');
+  const goalsEl = document.getElementById('ffa-goals');
+
+  let ALL_ROWS = null;   // toutes les lignes du barème (chargées une fois)
+  let loadError = false;
+  let sexe = 'H';
+
+  // -- Sélecteur segmenté de sexe --------------------------------------------
+  const seg = document.querySelector('[data-seg="ffa"]');
+  seg.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-sex]');
+    if (!btn) return;
+    sexe = btn.dataset.sex;
+    seg.querySelectorAll('button').forEach((b) => b.classList.toggle('is-on', b === btn));
+    render();
+  });
+  epreuveSel.addEventListener('change', render);
+  timeField.addEventListener('input', render);
+
+  // Sous-ensemble de lignes pour le sexe + l'épreuve courants.
+  function currentRows() {
+    if (!ALL_ROWS) return [];
+    return ALL_ROWS.filter((r) => r.sexe === sexe && r.epreuve === epreuveSel.value);
+  }
+
+  // -- Construction de la pyramide -------------------------------------------
+  // Largeurs croissantes du sommet vers la base → silhouette pyramidale.
+  const BAND_WIDTH = {
+    International: '42%',
+    National: '56%',
+    Interregional: '70%',
+    Regional: '85%',
+    Departemental: '100%',
+  };
+
+  function buildPyramid(groups, currentNiveau) {
+    pyramidEl.innerHTML = '';
+    for (const g of groups) {
+      const band = document.createElement('div');
+      band.className = 'ffa-band';
+      band.dataset.etage = g.key;
+      band.style.setProperty('--w', BAND_WIDTH[g.key] || '100%');
+      const yours = g.niveaux.some((n) => n.niveau === currentNiveau);
+      if (yours) band.classList.add('is-yours');
+
+      const first = g.niveaux[0]?.niveau;
+      const last = g.niveaux[g.niveaux.length - 1]?.niveau;
+      const range = g.niveaux.length > 1 ? `${first}–${last}` : first;
+
+      const label = document.createElement('div');
+      label.className = 'ffa-band-label';
+      label.innerHTML = `${g.label} <span>${range}</span>`;
+      band.appendChild(label);
+
+      const cells = document.createElement('div');
+      cells.className = 'ffa-cells';
+      for (const n of g.niveaux) {
+        const cell = document.createElement('div');
+        cell.className = 'ffa-cell';
+        if (n.niveau === currentNiveau) cell.classList.add('is-you');
+        cell.title = `${n.niveau} — sous ${formatTime(n.temps_sec)}`;
+        cell.innerHTML = `<span class="n">${n.niveau}</span><span class="t">${formatTime(n.temps_sec)}</span>`;
+        cells.appendChild(cell);
+      }
+      band.appendChild(cells);
+      pyramidEl.appendChild(band);
+    }
+  }
+
+  // -- Encart des objectifs de progression -----------------------------------
+  function renderGoals(res) {
+    goalsEl.innerHTML = '';
+    goalsEl.hidden = false;
+
+    if (res.status === 'top') {
+      goalsEl.innerHTML =
+        `<div class="ffa-goal top is-solo">
+           <span class="k">Sommet atteint</span>
+           <div class="v">Tu es tout en haut : <b>IA</b>, le meilleur niveau du barème.
+           <span class="sub">Il n'y a rien au-dessus. On s'incline. 🎩</span></div>
+         </div>`;
+      return;
+    }
+
+    if (res.status === 'below') {
+      const d = res.nextNiveau;
+      goalsEl.innerHTML =
+        `<div class="ffa-goal is-solo">
+           <span class="k">Entrer au classement</span>
+           <div class="v">Passe sous <b>${formatTime(d.temps_sec)}</b> pour décrocher <b>${d.niveau}</b> et entrer dans l'étage départemental.
+           <span class="sub">Tu n'y es pas encore sur cette épreuve, mais c'est à portée de foulées.</span></div>
+         </div>`;
+      return;
+    }
+
+    // status 'ok' : niveau supérieur + éventuellement étage supérieur.
+    const parts = [];
+    const nv = res.nextNiveau;
+    const et = res.nextEtage;
+    const merged = et && nv && et.niveau === nv.niveau; // même palier
+
+    if (merged) {
+      parts.push(
+        `<div class="ffa-goal is-solo">
+           <span class="k">Niveau &amp; étage supérieurs</span>
+           <div class="v">Passe sous <b>${formatTime(nv.temps_sec)}</b> pour atteindre <b>${nv.niveau}</b> et rejoindre l'étage <b>${etageLabelOf(nv.etage)}</b>.</div>
+         </div>`
+      );
+    } else {
+      if (nv) {
+        parts.push(
+          `<div class="ffa-goal">
+             <span class="k">Niveau supérieur</span>
+             <div class="v">Passe sous <b>${formatTime(nv.temps_sec)}</b> pour atteindre <b>${nv.niveau}</b>.</div>
+           </div>`
+        );
+      }
+      if (et) {
+        parts.push(
+          `<div class="ffa-goal">
+             <span class="k">Étage supérieur</span>
+             <div class="v">Passe sous <b>${formatTime(et.temps_sec)}</b> pour rejoindre l'étage <b>${etageLabelOf(et.etage)}</b> (niveau <b>${et.niveau}</b>).</div>
+           </div>`
+        );
+      }
+    }
+    goalsEl.innerHTML = parts.join('');
+  }
+
+  // -- Rendu principal --------------------------------------------------------
+  function render() {
+    if (loadError) {
+      pyramidEl.innerHTML = '<p class="ffa-state">Barème indisponible pour le moment. Reviens un peu plus tard !</p>';
+      verdictEl.hidden = true;
+      goalsEl.hidden = true;
+      return;
+    }
+    const rows = currentRows();
+    if (!rows.length) {
+      pyramidEl.innerHTML = '<p class="ffa-state">Chargement du barème…</p>';
+      verdictEl.hidden = true;
+      goalsEl.hidden = true;
+      return;
+    }
+
+    const secs = timeField._getSeconds();
+    const res = classifyFFA(rows, secs);
+    const groups = groupByEtage(rows);
+    const currentNiveau = res.current ? res.current.niveau : null;
+
+    buildPyramid(groups, currentNiveau);
+
+    // Bandeau « ton niveau »
+    if (res.status === 'invalid' || res.status === 'empty') {
+      verdictEl.hidden = false;
+      verdictEl.innerHTML = 'Saisis ton chrono pour te situer dans la pyramide 👇';
+      goalsEl.hidden = true;
+    } else if (res.status === 'below') {
+      verdictEl.hidden = false;
+      verdictEl.innerHTML = `Pas encore classé sur cette épreuve — mais on va y remédier.`;
+      renderGoals(res);
+    } else {
+      verdictEl.hidden = false;
+      verdictEl.innerHTML =
+        `Ton niveau : <span class="lvl">${res.current.niveau}</span> · étage ${etageLabelOf(res.current.etage)}` +
+        (res.current.points ? ` <span style="font-weight:600;color:var(--ink-soft)">(${res.current.points} pts)</span>` : '');
+      renderGoals(res);
+    }
+  }
+
+  // -- Chargement du barème (une seule fois) ---------------------------------
+  fetch('/api/ffa')
+    .then((r) => r.json())
+    .then((data) => {
+      if (!data || !data.configured || !Array.isArray(data.rows) || !data.rows.length) {
+        loadError = true;
+      } else {
+        ALL_ROWS = data.rows;
+      }
+      render();
+    })
+    .catch(() => { loadError = true; render(); });
+
+  // Premier rendu (état « chargement »)
+  render();
+</script>
