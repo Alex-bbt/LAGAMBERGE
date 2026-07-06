@@ -4,6 +4,7 @@ import PaceCalculator from '../components/PaceCalculator.astro';
 import Equivalences from '../components/coureur/Equivalences.astro';
 import TrainingPaces from '../components/coureur/TrainingPaces.astro';
 import Cotation from '../components/coureur/Cotation.astro';
+import NiveauFFA from '../components/coureur/NiveauFFA.astro';
 import Splits from '../components/coureur/Splits.astro';
 import Convertisseur from '../components/coureur/Convertisseur.astro';
 import WorkoutLibrary from '../components/WorkoutLibrary.astro';
@@ -15,6 +16,7 @@ const tabs = [
   { id: 't-equiv', label: 'Équivalences' },
   { id: 't-train', label: 'Entraînement' },
   { id: 't-cotation', label: 'Cotation' },
+  { id: 't-niveau', label: 'Niveau FFA' },
   { id: 't-splits', label: 'Splits' },
   { id: 't-convert', label: 'Convertisseur' },
 ];
@@ -22,7 +24,7 @@ const tabs = [
 
 <Base
   title="Espace coureur"
-  description="La boîte à outils du coureur La Gamberge : calculateur d'allure, équivalences VDOT/Riegel, allures Daniels, cotation World Athletics, age-grading, splits et convertisseur — plus une bibliothèque de séances à exporter vers ta montre (.FIT). Fondé sur des modèles reconnus, sans conseil personnalisé."
+  description="La boîte à outils du coureur La Gamberge : calculateur d'allure, équivalences VDOT/Riegel, allures Daniels, cotation World Athletics, age-grading, niveau FFA (pyramide départemental → international), splits et convertisseur — plus une bibliothèque de séances à exporter vers ta montre (.FIT). Fondé sur des modèles reconnus, sans conseil personnalisé."
 >
   <section class="section">
     <div class="wrap">
@@ -59,6 +61,7 @@ const tabs = [
           <section id="t-equiv" class="c-panel" role="tabpanel" aria-labelledby="tab-t-equiv"><Equivalences /></section>
           <section id="t-train" class="c-panel" role="tabpanel" aria-labelledby="tab-t-train"><TrainingPaces /></section>
           <section id="t-cotation" class="c-panel" role="tabpanel" aria-labelledby="tab-t-cotation"><Cotation /></section>
+          <section id="t-niveau" class="c-panel" role="tabpanel" aria-labelledby="tab-t-niveau"><NiveauFFA /></section>
           <section id="t-splits" class="c-panel" role="tabpanel" aria-labelledby="tab-t-splits"><Splits /></section>
           <section id="t-convert" class="c-panel" role="tabpanel" aria-labelledby="tab-t-convert"><Convertisseur /></section>
         </div>
@@ -102,11 +105,16 @@ const tabs = [
             <strong>Karvonen (FC de réserve).</strong> Zones cardiaques
             indicatives, avec la réserve d'usage sur la FC max théorique.
           </li>
+          <li>
+            <strong>Barème de niveau FFA.</strong> Grille officielle de la
+            Fédération Française d'Athlétisme (route), des niveaux départementaux
+            aux niveaux internationaux. Seuils = temps maximums par niveau.
+            <a href="https://www.athle.fr/" target="_blank" rel="noopener noreferrer">source</a>
+          </li>
         </ul>
         <p class="sources-note">
-          Non inclus volontairement : les niveaux FFA (départemental →
-          international) et les records du monde « du jour » — faute de table
-          officielle sourçable de façon fiable, on préfère ne rien afficher
+          Non inclus volontairement : les records du monde « du jour » — faute de
+          table officielle sourçable de façon fiable, on préfère ne rien afficher
           plutôt qu'un chiffre approximatif.
         </p>
         </div>
