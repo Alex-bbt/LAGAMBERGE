@@ -33,12 +33,23 @@ export function slug(s) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'seance';
 }
 
+// La `structure` d'une séance peut être écrite de deux façons dans Supabase :
+//   - une LISTE d'étapes directement : [ {...}, {...} ]   (format recommandé)
+//   - un OBJET qui enveloppe la liste : { "etapes": [ {...} ] }
+// On tolère les deux → toujours renvoyer une liste d'étapes exploitable.
+export function toSteps(structure) {
+  if (Array.isArray(structure)) return structure;
+  if (structure && Array.isArray(structure.etapes)) return structure.etapes;
+  return [];
+}
+
 // -- Normalisation (live ou secours → même forme) ---------------------------
 export function normalize(data) {
   const categories = data.categories || [];
   const byId = Object.fromEntries(categories.map((c) => [c.id, c]));
   const workouts = (data.workouts || []).map((w) => ({
     ...w,
+    structure: toSteps(w.structure),
     categorie: w.categorie || byId[w.categorie_id] || null,
     guidance: w.guidance || [],
   }));
