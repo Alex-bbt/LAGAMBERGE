@@ -94,8 +94,34 @@ const perDay = site.streak.day ? (s.km / site.streak.day).toFixed(1) : '0';
   // Fallback : garde les valeurs manuelles de src/data/site.js.
   const fmt = (n) => Number(n).toLocaleString('fr-FR');
 
-  // Réutilise la requête partagée créée par le compteur de streak (ou la crée
-  // si la section chiffres est seule) → un seul appel /api/streak par page.
+  // Applique un jeu de chiffres (Strava live OU dernier connu) au DOM.
+  function applyStats(d) {
+    if (!d || !d.configured || d.seasonKm == null) return;
+    const km = document.getElementById('stat-km');
+    const runs = document.getElementById('stat-runs');
+    const elev = document.getElementById('stat-elev');
+    const perday = document.getElementById('stat-perday');
+    const live = document.getElementById('stats-live');
+    if (km) km.textContent = fmt(d.seasonKm);
+    if (runs) runs.textContent = fmt(d.seasonRuns);
+    if (elev) elev.innerHTML = fmt(d.seasonElevation) + '<small> m</small>';
+    if (perday) {
+      const p = d.seasonDays ? (d.seasonKm / d.seasonDays).toFixed(1) : '0';
+      perday.innerHTML = p + '<small> km</small>';
+    }
+    if (live) live.hidden = false;
+  }
+
+  // 1) Peinture INSTANTANÉE de la dernière valeur que CE navigateur a vue
+  //    (localStorage) → plus de flash d'un chiffre de secours périmé pour un
+  //    visiteur qui revient. La sync Strava confirme/actualise juste après.
+  try {
+    const cached = JSON.parse(localStorage.getItem('lg_streak') || 'null');
+    applyStats(cached);
+  } catch {}
+
+  // 2) Requête partagée créée par le compteur de streak (ou créée ici si la
+  //    section chiffres est seule) → un seul appel /api/streak par page.
   window.__streakData =
     window.__streakData ||
     fetch('/api/streak', { headers: { Accept: 'application/json' } })
@@ -105,19 +131,9 @@ const perDay = site.streak.day ? (s.km / site.streak.day).toFixed(1) : '0';
   window.__streakData
     .then((d) => {
       if (!d || !d.configured || d.seasonKm == null) return;
-      const km = document.getElementById('stat-km');
-      const runs = document.getElementById('stat-runs');
-      const elev = document.getElementById('stat-elev');
-      const perday = document.getElementById('stat-perday');
-      const live = document.getElementById('stats-live');
-      if (km) km.textContent = fmt(d.seasonKm);
-      if (runs) runs.textContent = fmt(d.seasonRuns);
-      if (elev) elev.innerHTML = fmt(d.seasonElevation) + '<small> m</small>';
-      if (perday) {
-        const p = d.seasonDays ? (d.seasonKm / d.seasonDays).toFixed(1) : '0';
-        perday.innerHTML = p + '<small> km</small>';
-      }
-      if (live) live.hidden = false;
+      applyStats(d);
+      // Mémorise la dernière valeur connue pour le prochain chargement.
+      try { localStorage.setItem('lg_streak', JSON.stringify(d)); } catch {}
     })
     .catch(() => { /* silence : valeurs manuelles conservées */ });
 </script>
