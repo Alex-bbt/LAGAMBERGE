@@ -234,8 +234,66 @@ const isMilestone = day % 100 === 0 || day === totalDays || day === Math.round(t
   // sagement la valeur manuelle rendue côté serveur. Aucun risque pour la page.
   const TOTAL = Number(streakEl?.dataset.total) || 365;
 
-  // Requête partagée : le streak ET la section chiffres réutilisent le même
-  // appel /api/streak (un seul aller-retour Strava par chargement de page).
+  // Applique un état de streak (Strava live OU dernier connu) au DOM.
+  function applyStreak(d) {
+    if (!d || !d.configured) return; // fallback : on ne touche à rien
+    const day = d.validatedDay;
+    const minKm = d.minKm || 5;
+    const pct = Math.min(100, Math.round((day / TOTAL) * 100));
+
+    // Le grand chiffre + le mini-compteur du hero
+    document.querySelectorAll('[data-streak-number]').forEach((el) => {
+      el.textContent = String(day);
+    });
+
+    const fill = document.getElementById('streak-fill');
+    const runner = document.getElementById('streak-runner');
+    const pctEl = document.getElementById('streak-pct');
+    const kmEl = document.getElementById('streak-km');
+    const wink = document.getElementById('streak-wink');
+    const live = document.getElementById('streak-live');
+    const state = document.getElementById('streak-state');
+    if (fill) fill.style.width = pct + '%';
+    if (runner) runner.style.left = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (kmEl) kmEl.textContent = day * minKm + ' km';
+    if (live) live.hidden = false;
+
+    // Ligne d'état selon la situation du jour
+    if (state) {
+      state.hidden = false;
+      state.classList.remove('is-validated', 'is-pending', 'is-failed');
+      if (d.state === 'failed') {
+        const dt = d.failedDate
+          ? new Date(d.failedDate + 'T00:00:00').toLocaleDateString('fr-FR', {
+              day: 'numeric', month: 'long',
+            })
+          : '';
+        state.classList.add('is-failed');
+        state.textContent = `💔 Défi perdu le ${dt}. La streak s'arrête là… mais on repart. Toujours.`;
+        if (wink) wink.textContent = 'la belle série a une fin 🥲';
+      } else if (d.state === 'pending') {
+        state.classList.add('is-pending');
+        state.textContent = `👟 Jour ${day + 1} en cours — pas encore couru aujourd'hui. Va falloir y aller.`;
+        if (wink) wink.textContent = `reste ${Math.max(0, TOTAL - day)} jours à tenir 😅`;
+      } else {
+        state.classList.add('is-validated');
+        state.textContent = `✅ Jour ${day} validé aujourd'hui. Coché. Peinard.`;
+        if (wink) wink.textContent = `reste ${Math.max(0, TOTAL - day)} jours à tenir 😅`;
+      }
+    }
+  }
+
+  // 1) Peinture INSTANTANÉE de la dernière valeur que CE navigateur a vue
+  //    (localStorage) → plus de flash d'un chiffre de secours périmé pour un
+  //    visiteur qui revient. La sync Strava confirme/actualise juste après.
+  try {
+    const cached = JSON.parse(localStorage.getItem('lg_streak') || 'null');
+    applyStreak(cached);
+  } catch {}
+
+  // 2) Requête partagée : le streak ET la section chiffres réutilisent le même
+  //    appel /api/streak (un seul aller-retour Strava par chargement de page).
   window.__streakData =
     window.__streakData ||
     fetch('/api/streak', { headers: { Accept: 'application/json' } })
@@ -244,52 +302,10 @@ const isMilestone = day % 100 === 0 || day === totalDays || day === Math.round(t
 
   window.__streakData
     .then((d) => {
-      if (!d || !d.configured) return; // fallback : on ne touche à rien
-      const day = d.validatedDay;
-      const minKm = d.minKm || 5;
-      const pct = Math.min(100, Math.round((day / TOTAL) * 100));
-
-      // Le grand chiffre + le mini-compteur du hero
-      document.querySelectorAll('[data-streak-number]').forEach((el) => {
-        el.textContent = String(day);
-      });
-
-      const fill = document.getElementById('streak-fill');
-      const runner = document.getElementById('streak-runner');
-      const pctEl = document.getElementById('streak-pct');
-      const kmEl = document.getElementById('streak-km');
-      const wink = document.getElementById('streak-wink');
-      const live = document.getElementById('streak-live');
-      const state = document.getElementById('streak-state');
-      if (fill) fill.style.width = pct + '%';
-      if (runner) runner.style.left = pct + '%';
-      if (pctEl) pctEl.textContent = pct + '%';
-      if (kmEl) kmEl.textContent = day * minKm + ' km';
-      if (live) live.hidden = false;
-
-      // Ligne d'état selon la situation du jour
-      if (state) {
-        state.hidden = false;
-        state.classList.remove('is-validated', 'is-pending', 'is-failed');
-        if (d.state === 'failed') {
-          const dt = d.failedDate
-            ? new Date(d.failedDate + 'T00:00:00').toLocaleDateString('fr-FR', {
-                day: 'numeric', month: 'long',
-              })
-            : '';
-          state.classList.add('is-failed');
-          state.textContent = `💔 Défi perdu le ${dt}. La streak s'arrête là… mais on repart. Toujours.`;
-          if (wink) wink.textContent = 'la belle série a une fin 🥲';
-        } else if (d.state === 'pending') {
-          state.classList.add('is-pending');
-          state.textContent = `👟 Jour ${day + 1} en cours — pas encore couru aujourd'hui. Va falloir y aller.`;
-          if (wink) wink.textContent = `reste ${Math.max(0, TOTAL - day)} jours à tenir 😅`;
-        } else {
-          state.classList.add('is-validated');
-          state.textContent = `✅ Jour ${day} validé aujourd'hui. Coché. Peinard.`;
-          if (wink) wink.textContent = `reste ${Math.max(0, TOTAL - day)} jours à tenir 😅`;
-        }
-      }
+      if (!d || !d.configured) return;
+      applyStreak(d);
+      // Mémorise la dernière valeur connue pour le prochain chargement.
+      try { localStorage.setItem('lg_streak', JSON.stringify(d)); } catch {}
     })
     .catch(() => { /* silence : on garde la valeur manuelle */ });
 </script>

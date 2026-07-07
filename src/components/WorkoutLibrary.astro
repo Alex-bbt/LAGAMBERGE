@@ -1,0 +1,154 @@
+---
+// Bibliothèque de séances : parcours + filtres. Chaque carte est un LIEN vers
+// la page détail (/coureur/seance/?id=...) où l'on personnalise et exporte.
+// Le contenu vient de Supabase (via /api/workouts) ; en secours, on affiche les
+// séances de src/data/workouts.js.
+import { workoutsFallback, workoutCategoriesFallback } from '../data/workouts.js';
+
+// Rendu serveur : cartes de secours (fonctionnent même sans JS).
+const catById = Object.fromEntries(workoutCategoriesFallback.map((c) => [c.id, c]));
+const fmtDist = (m) => (m >= 1000 ? `${(m / 1000).toString().replace('.', ',')} km` : `${m} m`);
+---
+
+<section class="section" id="seances">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="eyebrow">Séances</span>
+      <h2>La bibliothèque de séances</h2>
+      <p class="lede">
+        Clique une séance pour tout savoir : l'intérêt, quand la placer, le détail
+        des temps (échauffement, récup, retour au calme)… puis règle-la à ta main
+        et télécharge-la pour ta montre (fichier <strong>.FIT</strong> universel,
+        Garmin / Coros / autre).
+      </p>
+    </header>
+
+    <!-- Filtres -->
+    <div class="wk-filters" id="wk-filters">
+      <label>
+        <span>Catégorie</span>
+        <select id="wk-cat"><option value="">Toutes</option></select>
+      </label>
+      <label>
+        <span>Distance visée</span>
+        <select id="wk-dist"><option value="">Toutes</option></select>
+      </label>
+    </div>
+
+    <!-- Liste (ré-rendue par le JS ; secours SSR ci-dessous) -->
+    <div class="wk-grid" id="wk-list">
+      {workoutsFallback.map((w) => (
+        <a class="wk-card card" href={`/coureur/seance/?id=${encodeURIComponent(w.id)}`}>
+          <span class="wk-badges">
+            {w.categorie_id && catById[w.categorie_id] && (
+              <span class="wk-tag">{catById[w.categorie_id].nom}</span>
+            )}
+            {w.distance_cible_m && <span class="wk-target">{fmtDist(w.distance_cible_m)}</span>}
+          </span>
+          <h3>{w.titre}</h3>
+          <p>{w.description}</p>
+          <span class="wk-more">Voir la séance →</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- Styles GLOBAUX (:global) : la liste est ré-injectée en JS, les nœuds créés
+     par createElement/innerHTML n'ont pas l'attribut de scope Astro. -->
+<style>
+  .page-head { max-width: 62ch; margin-bottom: 2rem; }
+  .page-head h2 { font-size: clamp(1.9rem, 5vw, 2.8rem); margin: 1rem 0 0.6rem; }
+  .lede { color: var(--ink-soft); font-size: 1.05rem; }
+
+  .wk-filters { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .wk-filters label { display: flex; flex-direction: column; gap: 0.3rem; font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .wk-filters select {
+    font-family: var(--font-body); font-size: 1rem; font-weight: 500;
+    padding: 0.55rem 0.8rem; border-radius: 999px; border: 2.5px solid var(--ink);
+    background: var(--paper); color: var(--ink); cursor: pointer; min-width: 190px;
+  }
+  .wk-filters select:focus { outline: 3px solid var(--sun); outline-offset: 1px; }
+
+  @media (max-width: 520px) {
+    .wk-filters select { min-width: 0; width: 100%; }
+    .wk-filters label { flex: 1 1 100%; }
+  }
+</style>
+
+<style is:global>
+  #seances .wk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+  #seances .wk-card {
+    padding: 1.35rem; display: flex; flex-direction: column; gap: 0.45rem;
+    text-align: left; text-decoration: none; color: inherit;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  #seances .wk-card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--ink); }
+  #seances .wk-card:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+  #seances .wk-card h3 { font-size: 1.25rem; margin: 0.2rem 0 0; }
+  #seances .wk-card p { color: var(--ink-soft); margin: 0; flex: 1; font-size: 0.95rem; }
+  #seances .wk-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+  #seances .wk-tag, #seances .wk-target {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 0.15rem 0.55rem; border-radius: 999px; border: 2px solid var(--ink);
+  }
+  #seances .wk-tag { background: var(--cream-deep); }
+  #seances .wk-target { background: var(--sun); }
+  #seances .wk-more { font-family: var(--font-display); font-weight: 700; color: var(--tomato); font-size: 0.9rem; margin-top: 0.3rem; }
+  #seances .wk-empty { grid-column: 1 / -1; color: var(--ink-soft); padding: 1rem 0; }
+</style>
+
+<script>
+  import { loadWorkouts, esc, fmtDist } from '../lib/workouts-client.js';
+
+  let store = null;
+  const $ = (id) => document.getElementById(id);
+  const listEl = $('wk-list');
+  const catSel = $('wk-cat');
+  const distSel = $('wk-dist');
+
+  function buildFilters() {
+    if (catSel) {
+      catSel.innerHTML = '<option value="">Toutes</option>' +
+        store.categories.map((c) => `<option value="${esc(c.id)}">${esc(c.nom)}</option>`).join('');
+    }
+    if (distSel) {
+      const dists = [...new Set(store.workouts.map((w) => w.distance_cible_m).filter(Boolean))].sort((a, b) => a - b);
+      distSel.innerHTML = '<option value="">Toutes</option>' +
+        dists.map((d) => `<option value="${d}">${esc(fmtDist(d))}</option>`).join('');
+    }
+  }
+
+  function filtered() {
+    const c = catSel?.value || '';
+    const d = distSel?.value || '';
+    return store.workouts.filter((w) =>
+      (!c || w.categorie_id === c || w.categorie?.id === c) &&
+      (!d || String(w.distance_cible_m) === d));
+  }
+
+  function renderList() {
+    if (!listEl || !store) return;
+    const items = filtered();
+    if (!items.length) {
+      listEl.innerHTML = '<p class="wk-empty">Aucune séance ne correspond à ce filtre. Essaie une autre combinaison 🤷</p>';
+      return;
+    }
+    listEl.innerHTML = items.map((w) => `
+      <a class="wk-card card" href="/coureur/seance/?id=${encodeURIComponent(w.id)}">
+        <span class="wk-badges">
+          ${w.categorie ? `<span class="wk-tag">${esc(w.categorie.nom)}</span>` : ''}
+          ${w.distance_cible_m ? `<span class="wk-target">${esc(fmtDist(w.distance_cible_m))}</span>` : ''}
+        </span>
+        <h3>${esc(w.titre)}</h3>
+        <p>${esc(w.description || '')}</p>
+        <span class="wk-more">Voir la séance →</span>
+      </a>`).join('');
+  }
+
+  catSel?.addEventListener('change', renderList);
+  distSel?.addEventListener('change', renderList);
+
+  loadWorkouts().then((s) => { store = s; buildFilters(); renderList(); });
+</script>
