@@ -29,6 +29,7 @@ api/
   workouts.js        Endpoint GET /api/workouts (bibliothèque de séances ← Supabase)
 lib/
   strava.mjs         Logique Strava PURE + testable (importée par api/streak.js)
+  snapshot.mjs       Cache "dernière valeur connue" du streak (table Supabase)
 src/
   data/site.js       ⭐ SOURCE DE VÉRITÉ ÉDITABLE (voir plus bas)
   data/workouts.js   Séances de SECOURS + doc du format `structure` (fallback)
@@ -58,8 +59,9 @@ docs/
 ## Défi #1 — Streak Strava EN DIRECT, sans base de données
 
 Le compteur « au moins 5 km chaque jour » est **recalculé à la volée** depuis
-l'historique Strava. **Strava est la seule source de vérité — rien n'est
-stocké.**
+l'historique Strava. **Strava est la seule source de vérité** ; un léger cache
+« dernière valeur connue » (Supabase) évite juste d'afficher un chiffre périmé
+le temps de la sync.
 
 - `lib/strava.mjs` : fonctions pures (`computeStreak`, `computeSeasonStats`,
   `dayOfYear`, helpers de date) + `getStreakFromStrava(env)` qui rafraîchit le
@@ -67,6 +69,13 @@ stocké.**
 - `api/streak.js` : appelle `getStreakFromStrava` et renvoie le JSON. **Ne met
   en cache QUE les réponses réussies** (`s-maxage` + `stale-while-revalidate`) ;
   les échecs sont en `no-store` pour ne jamais figer un fallback.
+- `lib/snapshot.mjs` : **cache « dernière valeur connue »** dans la table
+  Supabase `streak_snapshot` (une seule ligne). `api/streak.js` sert d'abord ce
+  snapshot s'il est récent (< 10 min) → réponse instantanée, jamais un chiffre
+  vieux de plusieurs jours ; sinon il recalcule depuis Strava **et persiste** le
+  résultat. En cas d'échec Strava, il renvoie le dernier snapshot plutôt que
+  rien. Réécrit à chaque sync réussie : ne fige jamais rien. Sans Supabase
+  configuré, no-op silencieux → comportement d'avant (sync live directe).
 - Côté client, `StreakCounter.astro` et `SeasonStats.astro` **partagent un seul
   appel** `/api/streak` (`window.__streakData`) et mettent à jour le DOM.
   Si Strava n'est pas configuré / échoue, on garde les valeurs de secours
