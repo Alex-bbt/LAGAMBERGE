@@ -25,7 +25,8 @@ export const site = {
   //       quand même, au cas où Strava serait momentanément indisponible.
   streak: {
     year: 2026,
-    day: 183,        // ⬅️ LE chiffre à mettre à jour (jour actuel du défi)
+    day: 187,        // ⬅️ Secours seulement : /api/streak sert la dernière
+                     //    valeur validée (cache Supabase) puis la sync Strava.
     totalDays: 365,  // 366 en année bissextile — 2026 n'en est pas une
     minKm: 5,        // distance minimale parcourue chaque jour
   },
@@ -36,7 +37,7 @@ export const site = {
   //    👉 EN MODE MANUEL : mets-les à jour à la main de temps en temps.
   season: {
     year: 2026,
-    km: 1975,         // total de km courus dans l'année (secours)
+    km: 2017,         // total de km courus dans l'année (secours)
     sorties: 197,     // nombre de sorties course à pied (secours)
     denivele: 13156,  // dénivelé positif cumulé en mètres (secours)
   },
