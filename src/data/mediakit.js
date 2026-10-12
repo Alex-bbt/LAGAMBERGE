@@ -25,11 +25,11 @@ export const identite = {
   positionnement: 'La performance, sans se prendre au sérieux.',
   description: 'Coureur en quête de progression, créateur de contenu et organisateur de défis sportifs.',
   promesse:
-    'Je transforme mes objectifs sportifs en aventures à suivre, avec de l’ambition, de l’autodérision et l’envie de faire courir les autres.',
+    'Je raconte ma progression avec de l’ambition, de l’autodérision et l’envie de faire courir les autres.',
   personne: {
     nom: 'Alex Bourbigot',
     age: 23,
-    contexte: ['23 ans', 'Master 2 à l’IÉSEG', 'Étudiant-entrepreneur'],
+    contexte: ['23 ans', 'IÉSEG', 'Étudiant-entrepreneur'],
   },
   // Photo principale (originaux dans src/assets/photos/, jamais modifiés).
   // position / positionMobile : zone gardée au recadrage (x% y%), visage inclus.
@@ -61,18 +61,21 @@ export const comptes = [
 // -- Performances -------------------------------------------------------------
 // Références chiffrées affichées dans le bandeau « Le coureur ».
 export const performances = [
-  { epreuve: 'Marathon de Paris 2026', resultat: '2 h 38 min 21 s', forte: true },
-  { epreuve: '10 km', resultat: '33 min 01 s' },
-  { epreuve: '5 km', resultat: '15 min 59 s' },
+  // `court` : libellé de la rangée route ; `type` : 'route' | 'trail'.
+  { epreuve: 'Marathon de Paris 2026', court: 'Marathon', contexte: 'Paris 2026', resultat: '2 h 38 min 21 s', type: 'route', forte: true },
+  { epreuve: '10 km', court: '10 km', resultat: '33 min 01 s', type: 'route' },
+  { epreuve: '5 km', court: '5 km', resultat: '15 min 59 s', type: 'route' },
   // « 50K » est le nom du format, pas une distance exacte.
-  { epreuve: 'Nice Côte d’Azur by UTMB, format 50K', resultat: '26e en 4 h 02' },
+  { epreuve: 'Nice Côte d’Azur by UTMB, format 50K', resultat: '26e en 4 h 02', type: 'trail',
+    classement: '26e', temps: '4 h 02', libelle: 'Nice Côte d’Azur by UTMB · format 50K' },
 ];
 
 // Progression marathon : `atteint: false` = objectif (affiché différemment).
 export const progressionMarathon = [
-  { libelle: 'Premier marathon', valeur: '2 h 59', atteint: true },
-  { libelle: 'Paris 2026', valeur: '2 h 38 min 21 s', atteint: true },
-  { libelle: 'Objectif Paris 2027', valeur: 'moins de 2 h 30', atteint: false },
+  // `court` : valeur affichée dans la ligne de progression de l'accueil.
+  { libelle: 'Premier marathon', valeur: '2 h 59', court: '2 h 59', atteint: true },
+  { libelle: 'Paris 2026', valeur: '2 h 38 min 21 s', court: '2 h 38', atteint: true },
+  { libelle: 'Paris 2027', valeur: 'moins de 2 h 30', court: 'moins de 2 h 30', atteint: false },
 ];
 
 // Repères de l'histoire (page /histoire).
@@ -90,12 +93,14 @@ export const photos = {
   performance: {
     fichier: 'la-gamberge-performance.jpeg',
     alt: 'Alex après l’arrivée du Marathon de Paris 2026, médaille en main. Temps réel affiché : 02:38:21.',
-    position: '50% 35%',
+    position: '50% 10%', // utilisé sur tablette (format 4:3) : garde le temps affiché et le visage
+    positionMobile: '50% 20%',
   },
   divertissement: {
     fichier: 'la-gamberge-divertissement.jpeg',
     alt: 'Alex en combinaison intégrale verte, médaille de finisher autour du cou.',
     position: '50% 28%',
+    positionMobile: '50% 22%',
   },
   // Photo personnelle (course sur route) : illustre les projets, ce n'est PAS
   // une photo de trail ni de la SaintéLyon. Ne pas la légender comme telle.
@@ -110,6 +115,8 @@ export const photos = {
 // -- Défi quotidien -----------------------------------------------------------
 export const defi = {
   intitule: 'Au moins 5 km chaque jour en 2026',
+  titreCourt: '5 km minimum. Chaque jour de 2026.',
+  phrase: 'Un fil rouge que je partage tout au long de l’année.',
   minKm: 5,
   annee: 2026,
   totalJours: 365,
@@ -219,6 +226,7 @@ export const videos = [
     plateforme: 'TikTok',
     publication: '10 juin 2026',
     vues: 1919533,
+    vuesAffichage: '1,92 M',
     releve: '10 octobre 2026',
     url: null, // À FOURNIR
     miniature: null,
@@ -256,12 +264,15 @@ export const backToRun = {
   titre: 'Ils sont venus voir. Puis ils se sont mis à courir.',
   texte:
     'J’ai créé Back to Run autour d’un défi simple : courir au moins 5 km par jour pendant 30 jours. Une aventure collective, avec ses encouragements, ses rebondissements et un Tribunal pour défendre ses écarts.',
+  texteAccueil:
+    'Avec Back to Run, j’ai proposé à ma communauté de courir au moins 5 km par jour pendant 30 jours. Un défi collectif, avec des encouragements et un Tribunal pour défendre ses écarts.',
+  prochaine: 'Prochaine édition : septembre 2027.',
   edition: 'Première édition, septembre 2026',
   principaux: [
     { valeur: 2019, legende: 'inscrits', forte: true },
-    { valeur: 1293, legende: 'participants', definition: 'ont enregistré au moins une course' },
+    { valeur: 1293, legende: 'participants', definition: 'ont enregistré au moins une course', libelleCourt: 'participants ayant enregistré une course' },
     { valeur: 99657, legende: 'km enregistrés' },
-    { valeur: 268, legende: 'finishers des 30 jours' },
+    { valeur: 268, legende: 'finishers des 30 jours', libelleCourt: 'finishers' },
   ],
   secondaires: [
     { valeur: '64 %', legende: 'des inscrits ont enregistré au moins une course' },
@@ -288,10 +299,12 @@ export const courses = [
   {
     id: 'ecotrail',
     nom: 'EcoTrail Paris Automne, 50 km',
+    nomCourt: 'EcoTrail Paris Automne',
     date: '17 octobre 2026',
     type: 'Trail',
     statut: 'prevu',
     sujet: 'Premier rendez-vous trail de l’automne.',
+    accueil: true,
     resultat: null,
   },
   {
@@ -301,6 +314,7 @@ export const courses = [
     type: 'Route',
     statut: 'prevu',
     sujet: 'Retour sur route, sur le format court.',
+    accueil: true,
     resultat: null,
   },
   {
@@ -313,16 +327,20 @@ export const courses = [
     statut: 'prevu',
     principal: true,
     sujet: 'Le grand objectif trail de fin 2026, de nuit, entre Saint-Étienne et Lyon.',
+    accroche: 'Grand objectif trail de fin 2026',
+    accueil: true,
     projet: 'Projet de récit YouTube',
     resultat: null,
   },
   {
     id: 'france-5km',
     nom: 'Championnats de France de 5 km',
+    nomCourt: 'France de 5 km',
     date: '19 décembre 2026',
     type: 'Route',
     statut: 'eventuel',
     sujet: 'Participation éventuelle, sans objectif chronométrique : la SaintéLyon passe avant.',
+    accueil: true,
     resultat: null,
   },
   {
@@ -334,6 +352,8 @@ export const courses = [
     statut: 'prevu',
     principal: true,
     sujet: 'Objectif annoncé : moins de 2 h 30.',
+    accroche: 'Objectif : moins de 2 h 30',
+    accueil: true,
     resultat: null,
   },
   {
@@ -351,19 +371,22 @@ export const courses = [
 export const offres = [
   {
     titre: 'Accompagnement matériel',
+    courte: 'Des produits adaptés à ma pratique, utilisés et présentés selon un accord défini ensemble.',
     resume: 'Dotation ponctuelle ou soutien sur plusieurs courses.',
     points: ['Chaussures', 'Vêtements', 'Accessoires running et trail', 'Nutrition de course', 'Matériel de création'],
     note: 'Les publications et autres contreparties sont convenues ensemble, au cas par cas.',
   },
   {
     titre: 'Création de contenu rémunérée',
+    courte: 'Vidéos, photos et stories pour mon audience ou vos propres supports.',
     resume: 'Proposition sur mesure selon les formats, la diffusion et les droits d’utilisation.',
     points: ['Vidéos verticales', 'Photos', 'Stories', 'Récits ou intégrations adaptés au projet', 'Contenus pour mes comptes ou pour vos supports'],
     note: 'Production et diffusion sont distinctes. Droits, diffusion publicitaire et exclusivité se définissent dans l’accord.',
     forte: true,
   },
   {
-    titre: 'Partenariat dans la durée',
+    titre: 'Partenariat durable',
+    courte: 'Une collaboration construite autour de plusieurs contenus, courses ou projets communautaires.',
     resume: 'Accompagner un objectif ou plusieurs échéances.',
     points: ['Série de contenus', 'Calendrier convenu', 'Bilan des contenus réalisés', 'Possibilités autour de Back to Run selon le projet'],
   },

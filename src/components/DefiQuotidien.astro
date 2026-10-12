@@ -1,10 +1,9 @@
 ---
 /* ==========================================================================
-   DefiQuotidien — « Au moins 5 km chaque jour en 2026 ».
-   Le compteur et l'anneau ne s'affichent QUE si `defi.joursValides` et
-   `defi.dateValidation` sont renseignés dans src/data/mediakit.js.
-   Aucun calcul à partir de la date du jour : le jour de l'année n'est pas
-   une preuve de course.
+   DefiQuotidien — « 5 km minimum. Chaque jour de 2026. »
+   Le compteur ne s'affiche QUE si `defi.joursValides` et `defi.dateValidation`
+   sont renseignés dans src/data/mediakit.js. Aucun calcul à partir de la date
+   du jour : le jour de l'année n'est pas une preuve de course.
    ========================================================================== */
 import { defi, comptes } from '../data/mediakit.js';
 
@@ -12,38 +11,22 @@ const strava = comptes.find((c) => c.id === 'strava');
 const valide = typeof defi.joursValides === 'number' && defi.dateValidation;
 const part = valide ? defi.joursValides / defi.totalJours : 0;
 const pctTexte = (part * 100).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %';
-// Anneau SVG : circonférence d'un cercle de rayon 52 (viewBox 120).
-const C = 2 * Math.PI * 52;
 ---
 
-<div class="lg-glass defi">
-  <div class="defi__texte">
-    <span class="label">Le défi quotidien</span>
-    <p class="title">{defi.intitule}</p>
-    <p class="body">
-      Chaque jour de l'année, une course d'au moins {defi.minKm} km. Un défi personnel, pas une
-      recommandation d'entraînement.
-    </p>
-    {strava && (
-      <a class="lien-fleche" href={strava.url} target="_blank" rel="noopener noreferrer">
-        Suivre sur Strava<span class="sr-only"> (nouvel onglet)</span>
-      </a>
-    )}
-  </div>
-
+<div class="defi">
+  <p class="label">Le défi quotidien</p>
+  <p class="defi__titre lead">{defi.titreCourt}</p>
+  <p class="body">{defi.phrase}</p>
   {valide && (
     <div class="defi__compteur">
-      <svg class="defi__anneau" viewBox="0 0 120 120" role="img"
-        aria-label={`${defi.joursValides} jours validés sur ${defi.totalJours}, soit ${pctTexte}`}>
-        <circle class="defi__fond" cx="60" cy="60" r="52" />
-        <circle class="defi__progres" cx="60" cy="60" r="52"
-          stroke-dasharray={`${C * part} ${C}`} transform="rotate(-90 60 60)" />
-      </svg>
-      <div class="defi__valeur" aria-hidden="true">
-        <span class="lg-stat__value">{defi.joursValides}</span>
-        <span class="caption">sur {defi.totalJours} jours</span>
-      </div>
-      <p class="lg-stat__source">Jours validés sur {defi.source}, au {defi.dateValidation}</p>
+      <p class="body"><strong>{defi.joursValides}</strong> jours validés sur {defi.totalJours} ({pctTexte})</p>
+      <div class="jauge__barre" aria-hidden="true"><span style={`--part: ${part * 100}%`}></span></div>
+      <p class="caption texte-muted">Vérifié sur {defi.source}, au {defi.dateValidation}</p>
     </div>
+  )}
+  {strava && (
+    <a class="lien-fleche" href={strava.url} target="_blank" rel="noopener noreferrer">
+      Suivre sur Strava<span class="sr-only"> (nouvel onglet)</span>
+    </a>
   )}
 </div>

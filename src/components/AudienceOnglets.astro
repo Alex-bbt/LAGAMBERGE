@@ -1,0 +1,94 @@
+---
+/* ==========================================================================
+   AudienceOnglets — abonnés Instagram / TikTok, une plateforme à la fois.
+   - Onglets accessibles (rôle tablist, flèches gauche/droite, Début/Fin).
+   - Sans JavaScript, les deux panneaux restent visibles l'un sous l'autre.
+   - Chaque valeur est écrite en texte : les barres ne sont qu'un appui visuel.
+   - Uniquement les ABONNÉS de chaque plateforme (pas les spectateurs).
+   ========================================================================== */
+import { audience } from '../data/mediakit.js';
+
+const pct = (v) => v.toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %';
+const plateformes = [
+  { id: 'instagram', nom: 'Instagram', d: audience.instagram, ages: audience.instagram.ages },
+  { id: 'tiktok', nom: 'TikTok', d: audience.tiktok, ages: null },
+];
+const france = (d) => d.pays.find((p) => p.libelle === 'France')?.valeur;
+const hommes = (d) => d.genre.find((g) => g.libelle === 'Hommes')?.valeur;
+const femmes = (d) => d.genre.find((g) => g.libelle === 'Femmes')?.valeur;
+const maxAge = Math.max(...audience.instagram.ages.map((a) => a.valeur));
+const part1834 = audience.instagram.ages
+  .filter((a) => a.libelle === '18–24' || a.libelle === '25–34')
+  .reduce((s, a) => s + a.valeur, 0);
+---
+
+<div class="audience-onglets" data-onglets>
+  <div class="onglets" role="tablist" aria-label="Plateforme" hidden data-onglets-liste>
+    {plateformes.map((p, i) => (
+      <button class="onglet button" role="tab" type="button" id={`onglet-${p.id}`} aria-controls={`panneau-${p.id}`}
+        aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? '0' : '-1'}>{p.nom}</button>
+    ))}
+  </div>
+
+  {plateformes.map((p) => (
+    <section class="panneau" id={`panneau-${p.id}`} role="tabpanel" aria-labelledby={`onglet-${p.id}`} data-panneau>
+      <h3 class="label panneau__titre">Abonnés {p.nom} <span class="texte-muted">· relevé du {p.d.releve}</span></h3>
+      <div class="panneau__grille">
+        <div class="jauge">
+          <p class="jauge__titre body"><span class="jauge__valeur title">{pct(france(p.d))}</span> en France</p>
+          <div class="jauge__barre" aria-hidden="true"><span style={`--part: ${france(p.d)}%`}></span></div>
+          <p class="caption texte-muted">Autres pays : {pct(Math.round((100 - france(p.d)) * 10) / 10)}</p>
+        </div>
+        <div class="jauge">
+          <p class="jauge__titre body"><span class="jauge__valeur title">{pct(hommes(p.d))}</span> hommes · <span class="jauge__valeur title">{pct(femmes(p.d))}</span> femmes</p>
+          <div class="jauge__barre jauge__barre--duo" aria-hidden="true"><span style={`--part: ${hommes(p.d)}%`}></span></div>
+        </div>
+        {p.ages && (
+          <div class="ages">
+            <p class="jauge__titre body"><span class="jauge__valeur title">{pct(part1834)}</span> ont entre 18 et 34 ans</p>
+            <ul class="ages__liste" role="list">
+              {p.ages.map((a) => (
+                <li class="ages__col">
+                  <span class="ages__valeur caption">{pct(a.valeur)}</span>
+                  <span class="ages__piste" aria-hidden="true"><span style={`--part: ${(a.valeur / maxAge) * 100}%`}></span></span>
+                  <span class="ages__libelle caption">{a.libelle}<span class="sr-only"> ans</span></span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </section>
+  ))}
+</div>
+
+<script>
+  // Active les onglets (les panneaux restent tous visibles sans JavaScript).
+  document.querySelectorAll('[data-onglets]').forEach((bloc) => {
+    const liste = bloc.querySelector('[data-onglets-liste]');
+    const onglets = [...bloc.querySelectorAll('[role="tab"]')];
+    const panneaux = [...bloc.querySelectorAll('[data-panneau]')];
+    liste.hidden = false;
+    const choisir = (i, focus) => {
+      onglets.forEach((o, j) => {
+        o.setAttribute('aria-selected', String(i === j));
+        o.tabIndex = i === j ? 0 : -1;
+        panneaux[j].hidden = i !== j;
+      });
+      if (focus) onglets[i].focus();
+    };
+    onglets.forEach((o, i) => {
+      o.addEventListener('click', () => choisir(i, false));
+      o.addEventListener('keydown', (e) => {
+        const n = onglets.length;
+        if (e.key === 'ArrowRight') choisir((i + 1) % n, true);
+        else if (e.key === 'ArrowLeft') choisir((i - 1 + n) % n, true);
+        else if (e.key === 'Home') choisir(0, true);
+        else if (e.key === 'End') choisir(n - 1, true);
+        else return;
+        e.preventDefault();
+      });
+    });
+    choisir(0, false);
+  });
+</script>

@@ -1,17 +1,18 @@
 ---
-/* Progression — frise marathon. Les résultats obtenus sont pleins, l'objectif
-   futur est en pointillés et étiqueté « Objectif ». */
+/* Progression marathon — une ligne simple :
+   2 h 59 → 2 h 38 → objectif moins de 2 h 30, contexte en dessous.
+   Les résultats sont en bleu roi plein, l'objectif est marqué « Objectif »
+   et souligné en pointillés. */
 import { progressionMarathon } from '../data/mediakit.js';
 ---
 
 <figure class="progression">
   <figcaption class="label">Progression sur marathon</figcaption>
-  <ol class="progression__etapes">
+  <ol class="progression__ligne" role="list">
     {progressionMarathon.map((e) => (
-      <li class:list={['progression__etape', { 'progression__etape--objectif': !e.atteint }]}>
-        <span class="progression__statut caption">{e.atteint ? 'Résultat' : 'Objectif'}</span>
-        <span class="progression__valeur">{e.valeur}</span>
-        <span class="progression__libelle">{e.libelle}</span>
+      <li class:list={['progression__pas', { 'progression__pas--objectif': !e.atteint }]}>
+        <span class="progression__valeur lead">{!e.atteint && <span class="progression__mot">Objectif </span>}{e.court ?? e.valeur}</span>
+        <span class="progression__contexte caption">{e.libelle}</span>
       </li>
     ))}
   </ol>

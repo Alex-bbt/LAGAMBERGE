@@ -1,28 +1,22 @@
 ---
 /* ==========================================================================
-   CarteVideo — une vidéo et son résultat vérifié.
-   - Avec `url` : la carte entière est un lien direct vers la vidéo (aucun
-     lecteur intégré, aucun autoplay) ; miniature affichée si fournie.
-   - Sans `url` : carte d'information (titre, plateforme, date, vues), sans
-     faux bouton de lecture.
+   CarteVideo — invitation à regarder une vidéo.
+   - Avec `url` vérifiée : la carte est un lien direct vers la vidéo (aucun
+     lecteur intégré, aucun autoplay), miniature si fournie.
+   - Sans `url` : simple carte d'information, SANS faux bouton de lecture.
    ========================================================================== */
 import { nombre } from '../data/mediakit.js';
 
-const { video, contexte } = Astro.props;
+const { video, contexte = 'À voir' } = Astro.props;
 const Balise = video.url ? 'a' : 'div';
 const attrs = video.url ? { href: video.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+const vues = video.vuesAffichage ?? nombre(video.vues);
 ---
 
-<Balise class:list={['lg-glass', 'video', { 'video--lien': video.url }]} {...attrs}>
+<Balise class:list={['video', { 'video--lien': video.url }]} {...attrs}>
   {video.miniature && <img class="video__miniature" src={video.miniature} alt="" loading="lazy" />}
-  <span class="label">{contexte ?? 'Exemple de vidéo'}</span>
-  <span class="title video__titre">{video.titre}</span>
-  <span class="caption texte-muted">{video.plateforme} · publiée le {video.publication}</span>
-  {video.vues && (
-    <span class="video__vues">
-      <span class="lg-stat__value">{nombre(video.vues)}</span>
-      <span class="lg-stat__label">vues {video.plateforme}, relevé du {video.releve}</span>
-    </span>
-  )}
-  {video.url && <span class="lien-fleche">Voir la vidéo<span class="sr-only"> sur {video.plateforme} (nouvel onglet)</span></span>}
+  <span class="label">{contexte}</span>
+  <span class="video__titre title">{video.titre}</span>
+  <span class="video__meta body">{vues} de vues · {video.plateforme}</span>
+  {video.url && <span class="lien-fleche">Regarder<span class="sr-only"> sur {video.plateforme} (nouvel onglet)</span></span>}
 </Balise>
