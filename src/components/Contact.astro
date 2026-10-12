@@ -1,47 +1,45 @@
 ---
 /* ==========================================================================
-   Contact — bouton principal + alternatives.
-   - Email renseigné (src/data/mediakit.js) : adresse visible et sélectionnable,
-     bouton « Discutons de votre projet » (mailto, objet prérempli) et « Copier ».
-   - Email absent : AUCUN bouton email. Le bouton principal ouvre Instagram,
-     et le dit clairement.
+   Contact — le bloc prioritaire de la page (carte bleu roi).
+   - Email renseigné : adresse visible et cliquable, bouton principal
+     « Discutons de votre projet » (objet prérempli), copie discrète.
+   - Email absent : AUCUN bouton email ; Instagram devient le contact.
+   - Réseaux en liens secondaires, plus discrets que le bouton.
    ========================================================================== */
 import { contact, comptes } from '../data/mediakit.js';
 
 const insta = comptes.find((c) => c.id === 'instagram');
 const autres = comptes.filter((c) => c.id !== 'instagram');
-// Lien email avec un objet prérempli
 const mailto = contact.email
   ? `mailto:${contact.email}${contact.objetEmail ? `?subject=${encodeURIComponent(contact.objetEmail)}` : ''}`
   : null;
 ---
 
-<div class="lg-glass lg-glass--royal contact">
+<div class="lg-glass lg-glass--royal contact" id="contact">
   <h3 class="label">Contact</h3>
   {contact.email ? (
     <>
-      <p class="lead contact__email" data-email>{contact.email}</p>
-      <p class="body">Écrivez-moi directement : je lis et je réponds personnellement.</p>
+      <a class="contact__email lead" href={mailto} data-email>{contact.email}</a>
       <div class="actions">
-        <a class="lg-btn lg-btn--glass" href={mailto}>Discutons de votre projet</a>
-        <button class="lg-btn lg-btn--ligne" type="button" data-copier={contact.email}>Copier l'adresse</button>
+        <a class="lg-btn lg-btn--glass contact__cta" href={mailto}>Discutons de votre projet</a>
+        <button class="contact__copier caption" type="button" data-copier={contact.email}>Copier l’adresse</button>
+        <span class="caption contact__retour" role="status" data-retour></span>
       </div>
-      <p class="caption contact__retour" role="status" data-retour></p>
       <p class="caption">Ou par message privé sur Instagram : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a></p>
     </>
   ) : (
     <>
-      <p class="body">Le plus simple aujourd'hui : un message privé sur Instagram, je réponds personnellement.</p>
+      <p class="body">Le plus simple aujourd’hui : un message privé sur Instagram.</p>
       <div class="actions">
-        <a class="lg-btn lg-btn--glass" href={insta.url} target="_blank" rel="noopener noreferrer">
+        <a class="lg-btn lg-btn--glass contact__cta" href={insta.url} target="_blank" rel="noopener noreferrer">
           Écrire sur Instagram {insta.pseudo}<span class="sr-only"> (nouvel onglet)</span>
         </a>
       </div>
     </>
   )}
-  <ul class="contact__reseaux" role="list">
+  <ul class="contact__reseaux caption" role="list">
     {autres.map((c) => (
-      <li><a href={c.url} target="_blank" rel="noopener noreferrer">{c.nom} <span class="texte-muted">{c.pseudo}</span></a></li>
+      <li><a href={c.url} target="_blank" rel="noopener noreferrer">{c.nom}<span class="sr-only"> {c.pseudo} (nouvel onglet)</span></a></li>
     ))}
   </ul>
 </div>
@@ -61,7 +59,7 @@ const mailto = contact.email
         r.selectNodeContents(zone);
         getSelection().removeAllRanges();
         getSelection().addRange(r);
-        retour.textContent = 'Adresse sélectionnée : copiez-la avec Ctrl + C.';
+        retour.textContent = 'Adresse sélectionnée.';
       }
     });
   </script>

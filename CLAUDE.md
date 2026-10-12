@@ -18,15 +18,22 @@ Objectif du site : obtenir un email de prise de contact qualifié.
 ```
 src/data/mediakit.js   ⭐ TOUTES les données (identité, stats, audience, courses,
                        défi, vidéos, Back to Run, offres, contact). null = non affiché.
-src/pages/index.astro  Media kit : #profil #coureur #createur #back-to-run #objectifs #collaborer
-src/pages/histoire.astro, communaute.astro, projets.astro   Pages d'approfondissement
-src/components/        EnTete, CarteChiffre, Barres, Colonnes, DefiQuotidien,
-                       Progression, CarteVideo, Calendrier, Contact, Photo
+src/pages/index.astro  Synthèse : #profil #coureur #createur #audience #back-to-run #objectifs #collaborer (#contact)
+src/pages/histoire.astro, communaute.astro, projets.astro, statistiques.astro
+                       Pages d'approfondissement (les détails quittent l'accueil pour y vivre)
+src/components/        EnTete, CarteChiffre, Barres, Colonnes, DefiQuotidien, Progression,
+                       CarteVideo, Calendrier, Contact, Photo, AudienceOnglets (onglets accessibles)
 src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
                        Cadrage par photo (position / positionMobile) dans mediakit.js
 ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)
 api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les pages)
 ```
+
+## Principe de mise en page
+- L'accueil est une synthèse : chiffres posés sur le fond avec filets, cartes
+  réservées aux regroupements utiles, bleu roi pour les éléments prioritaires.
+- Les valeurs exactes, définitions et populations secondaires vont dans les
+  pages d'approfondissement (/statistiques, /communaute, /projets, /histoire).
 
 ## Règles éditoriales (non négociables)
 - N'inventer aucun chiffre, lien, texte personnel, logo ou témoignage.

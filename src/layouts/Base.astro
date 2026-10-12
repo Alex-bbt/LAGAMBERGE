@@ -49,10 +49,10 @@ const insta = comptes.find((c) => c.id === 'instagram');
             <div class="menu-mobile__panneau lg-glass lg-glass--strong">
               {liens.map((l) => <a href={l.lien} class="lg-nav__link">{l.libelle}</a>)}
               <!-- Sur les très petits écrans, « Collaborer » passe dans le menu -->
-              <a href="/#collaborer" class="lg-btn lg-btn--primary menu-mobile__cta">Collaborer</a>
+              <a href="/#contact" class="lg-btn lg-btn--primary menu-mobile__cta">Collaborer</a>
             </div>
           </details>
-          <a href="/#collaborer" class="lg-btn lg-btn--primary nav-cta">Collaborer</a>
+          <a href="/#contact" class="lg-btn lg-btn--primary nav-cta">Collaborer</a>
         </div>
       </nav>
     </header>
@@ -75,10 +75,17 @@ const insta = comptes.find((c) => c.id === 'instagram');
     </footer>
 
     <script>
-      // Ferme le menu mobile après un clic sur un lien.
-      document.querySelectorAll('.menu-mobile a').forEach((a) =>
-        a.addEventListener('click', () => a.closest('details')?.removeAttribute('open'))
+      // Menu mobile : se ferme après un clic sur un lien, ou avec la touche Échap.
+      const menu = document.querySelector('.menu-mobile');
+      menu?.querySelectorAll('a').forEach((a) =>
+        a.addEventListener('click', () => menu.removeAttribute('open'))
       );
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu?.open) {
+          menu.removeAttribute('open');
+          menu.querySelector('summary')?.focus();
+        }
+      });
     </script>
   </body>
 </html>
