@@ -1,0 +1,7 @@
+---
+/* Emplacement bien visible pour un contenu qui manque encore.
+   Usage : <ARemplir texte="TEXTE À ÉCRIRE PAR ALEX" /> */
+const { texte = 'TEXTE À ÉCRIRE PAR ALEX' } = Astro.props;
+---
+
+<span class="a-remplir label">[{texte}]</span>

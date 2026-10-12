@@ -1,12 +1,9 @@
 ---
-import '../styles/global.css';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { site } from '../data/site.js';
+/* Squelette HTML commun : métadonnées, polices, navigation flottante. */
+import '../styles/site.css';
+import { contenu } from '../data/contenu.js';
 
-const { title, description } = Astro.props;
-const pageTitle = title ? `${title} — ${site.name}` : `${site.name}`;
-const pageDesc = description ?? site.description;
+const description = contenu.meta.description ?? 'Alex Bourbigot, coureur, créateur de contenu et organisateur de Back to Run.';
 ---
 
 <!doctype html>
@@ -14,39 +11,33 @@ const pageDesc = description ?? site.description;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>{pageTitle}</title>
-    <meta name="description" content={pageDesc} />
-
-    <!-- Partages (Instagram, iMessage, etc.) -->
+    <title>{contenu.meta.titre}</title>
+    <meta name="description" content={description} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={pageDesc} />
-    <meta property="og:site_name" content={site.name} />
-    <meta name="theme-color" content="#fff6ec" />
-
-    <!-- Polices -->
+    <meta property="og:title" content={contenu.meta.titre} />
+    <meta property="og:description" content={description} />
+    <!-- Pas encore de logo dessiné : icône vide pour éviter une erreur 404. -->
+    <link rel="icon" href="data:," />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-
-    <!--
-      ╔══════════════════════════════════════════════════════════════╗
-      ║  Salut toi qui fouilles le code source. 👀                    ║
-      ║  Oui, on gamberge aussi jusqu'ici. Si tu lis ça, envoie-moi   ║
-      ║  "jour 183" en DM sur Insta (@lagambergee), on est copains.   ║
-      ║  Easter egg #2 débloqué. Retourne courir maintenant.          ║
-      ╚══════════════════════════════════════════════════════════════╝
-    -->
   </head>
   <body>
-    <Header />
-    <main>
+    <a class="evitement lg-btn lg-btn--primary" href="#contenu">Aller au contenu</a>
+
+    <header class="entete">
+      <nav class="lg-glass lg-nav" aria-label="Navigation principale">
+        <a href="#prologue" class="lg-nav__brand">LA GAMBERGE</a>
+        <div class="lg-nav__links">
+          {contenu.nav.map((l) => (
+            <a href={l.lien} class="lg-nav__link lg-nav__link--bureau">{l.libelle}</a>
+          ))}
+          <a href="#contact" class="lg-btn lg-btn--primary">Collaborer</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="contenu">
       <slot />
     </main>
-    <Footer />
   </body>
 </html>

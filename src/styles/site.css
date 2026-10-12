@@ -1,0 +1,189 @@
+/* ==========================================================================
+   LA GAMBERGE — MISE EN PAGE DU SITE
+   --------------------------------------------------------------------------
+   Les couleurs, tailles, ombres et polices viennent UNIQUEMENT du design
+   system (lagamberge-design-system/design-system/), importé tel quel :
+   aucune valeur n'est recopiée ici. Ce fichier ne fait que placer les blocs.
+   ========================================================================== */
+
+@import "../../lagamberge-design-system/design-system/tokens.css";
+@import "../../lagamberge-design-system/design-system/composants.css";
+
+:root {
+  /* Largeur maximale du contenu : reprise de page-exemple.html (1200 px).
+     Seule valeur de mise en page absente des tokens — à valider. */
+  --largeur-page: 1200px;
+}
+
+/* -- Base ----------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { background: var(--mist); }
+body {
+  margin: 0;
+  background: var(--mist);
+  color: var(--royal);
+  font-family: var(--font-text);
+}
+h1, h2, h3, p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* Lien d'évitement pour la navigation au clavier */
+.evitement {
+  position: absolute;
+  left: var(--space-4);
+  top: calc(-1 * var(--space-24));
+  z-index: 20;
+}
+.evitement:focus { top: var(--space-4); }
+
+/* -- Emplacements à remplir ------------------------------------------------
+   Repère bien visible pour ce qui manque encore. Disparaît tout seul dès que
+   la donnée est remplie dans src/data/. */
+.a-remplir {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--powder);
+  outline: 2px dashed var(--royal-hover);
+  outline-offset: -2px;
+  color: var(--royal);
+}
+
+/* -- En-tête et navigation ------------------------------------------------ */
+.entete {
+  /* Fixe (et non dans le flux) : le fond du Prologue démarre tout en haut de
+     l'écran, sans bord net sous la barre. */
+  position: fixed;
+  top: var(--space-4);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-width: var(--largeur-page);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+.lg-nav__brand { white-space: nowrap; }
+.lg-nav__link--bureau { display: inline; }
+
+/* -- Chapitres -------------------------------------------------------------
+   Chaque chapitre est un lg-ambient (alterné avec --flip) : pas de bande,
+   pas de séparateur, c'est la brume qui fait la transition. */
+.chapitre {
+  padding: var(--space-24) var(--space-16);
+  scroll-margin-top: var(--space-24);
+}
+/* Premier chapitre : on laisse la place à la navigation flottante */
+.chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-16)); }
+.chapitre__inner {
+  max-width: var(--largeur-page);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--space-12);
+  align-items: center;
+}
+.chapitre__inner--seul { grid-template-columns: minmax(0, 1fr); }
+.chapitre__texte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+.chapitre__preuve {
+  display: grid;
+  gap: var(--space-4);
+}
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* Grilles de cartes (chiffres, réseaux) */
+.grille {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.grille--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grille--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pleine-largeur { grid-column: 1 / -1; }
+
+/* Carte de verre avec texte */
+.carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+}
+
+/* Lien vers un réseau : carte de verre cliquable */
+.reseau {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-decoration: none;
+  transition: box-shadow 160ms ease, background-color 160ms ease;
+}
+.reseau:hover { background: var(--glass-fill-strong); box-shadow: var(--shadow-glass-lift); }
+.reseau__fleche { flex-shrink: 0; }
+
+.marques { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* Pied de page : une simple surface de verre, dans le dernier chapitre */
+.pied {
+  max-width: var(--largeur-page);
+  margin: var(--space-16) auto 0;
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  border-radius: var(--radius-pill);
+}
+.pied__liens { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.pied__liens a { color: var(--royal-muted); }
+
+.texte-muted { color: var(--royal-muted); }
+.lg-glass--royal .texte-muted { color: var(--powder); }
+
+/* -- Mobile (même seuil que tokens.css) ----------------------------------- */
+@media (max-width: 720px) {
+  .lg-nav__link--bureau { display: none; }
+  .chapitre { padding: var(--space-16) var(--space-4); }
+  .chapitre:first-child { padding-top: calc(var(--space-16) + var(--space-16)); }
+  .chapitre__inner,
+  .grille,
+  .grille--3,
+  .grille--4 { grid-template-columns: minmax(0, 1fr); }
+  .chapitre__inner { gap: var(--space-8); }
+  .pied { border-radius: var(--radius-md); }
+}
+
+@media (min-width: 721px) and (max-width: 1080px) {
+  .chapitre { padding: var(--space-24) var(--space-8); }
+  .grille--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reseau { transition: none; }
+}
+
+/* -- Photos : formats conseillés par la charte ----------------------------- */
+.photo { width: 100%; }
+.photo--portrait { aspect-ratio: 4 / 5; }
+.photo--paysage { aspect-ratio: 3 / 2; }
+.photo--vide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  text-align: center;
+}
