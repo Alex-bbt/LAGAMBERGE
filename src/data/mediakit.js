@@ -33,11 +33,11 @@ export const identite = {
   },
   // Photo principale (originaux dans src/assets/photos/, jamais modifiés).
   // position / positionMobile : zone gardée au recadrage (x% y%), visage inclus.
+  // Accueil : affichée en entier (proportions d'origine 3:4) pour garder la
+  // silhouette et les deux pieds.
   photo: {
     fichier: 'la-gamberge-accueil.jpg',
     alt: 'Alex franchit la ligne d’arrivée du Marathon de Paris, bras ouverts.',
-    position: '46% 30%',
-    positionMobile: '48% 22%',
   },
 };
 
@@ -67,7 +67,7 @@ export const performances = [
   { epreuve: '5 km', court: '5 km', resultat: '15 min 59 s', type: 'route' },
   // « 50K » est le nom du format, pas une distance exacte.
   { epreuve: 'Nice Côte d’Azur by UTMB, format 50K', resultat: '26e en 4 h 02', type: 'trail',
-    classement: '26e', temps: '4 h 02', libelle: 'Nice Côte d’Azur by UTMB · format 50K' },
+    classement: '26e', temps: '4 h 02', libelle: 'Nice Côte d’Azur by UTMB · format 50K', libelleCourt: 'Nice by UTMB, format 50K' },
 ];
 
 // Progression marathon : `atteint: false` = objectif (affiché différemment).
@@ -92,31 +92,32 @@ export const parcours = {
 export const photos = {
   performance: {
     fichier: 'la-gamberge-performance.jpeg',
+    // Proportions d'origine : visage, médaille et incrustations intacts ;
+    // affichée dans une colonne étroite pour que le texte du site domine.
     alt: 'Alex après l’arrivée du Marathon de Paris 2026, médaille en main. Temps réel affiché : 02:38:21.',
-    position: '50% 10%', // utilisé sur tablette (format 4:3) : garde le temps affiché et le visage
-    positionMobile: '50% 20%',
   },
   divertissement: {
     fichier: 'la-gamberge-divertissement.jpeg',
+    // Proportions d'origine (3:4) : tête, mains, costume et contexte visibles.
     alt: 'Alex en combinaison intégrale verte, médaille de finisher autour du cou.',
-    position: '50% 28%',
-    positionMobile: '50% 22%',
   },
   // Photo personnelle (course sur route) : illustre les projets, ce n'est PAS
   // une photo de trail ni de la SaintéLyon. Ne pas la légender comme telle.
   personnelle: {
     fichier: 'la-gamberge-trail.jpeg',
+    // Original vertical (2:3) : recadrage léger en 4:5 vers le haut, qui garde
+    // le visage, le geste de la main et les coureurs autour.
     alt: 'Alex en pleine course sur route, au milieu d’autres coureurs, la main au front.',
-    position: '57% 40%',
-    positionMobile: '55% 30%',
+    position: '55% 20%',
+    positionMobile: '55% 25%',
   },
 };
 
 // -- Défi quotidien -----------------------------------------------------------
 export const defi = {
   intitule: 'Au moins 5 km chaque jour en 2026',
-  titreCourt: '5 km minimum. Chaque jour de 2026.',
-  phrase: 'Un fil rouge que je partage tout au long de l’année.',
+  titreCourt: '5 km minimum, chaque jour de 2026.',
+  phrase: 'Une pratique régulière pour partager des retours d’expérience concrets.',
   minKm: 5,
   annee: 2026,
   totalJours: 365,
@@ -266,7 +267,7 @@ export const backToRun = {
     'J’ai créé Back to Run autour d’un défi simple : courir au moins 5 km par jour pendant 30 jours. Une aventure collective, avec ses encouragements, ses rebondissements et un Tribunal pour défendre ses écarts.',
   texteAccueil:
     'Avec Back to Run, j’ai proposé à ma communauté de courir au moins 5 km par jour pendant 30 jours. Un défi collectif, avec des encouragements et un Tribunal pour défendre ses écarts.',
-  prochaine: 'Prochaine édition : septembre 2027.',
+  prochaine: 'Deuxième édition : septembre 2027.',
   edition: 'Première édition, septembre 2026',
   principaux: [
     { valeur: 2019, legende: 'inscrits', forte: true },
@@ -284,9 +285,11 @@ export const backToRun = {
   produits: 'Des produits pour la communauté sont en développement.',
   photo: {
     fichier: 'back-to-run-communaute.jpeg',
+    // Original vertical (3:4) : format 4:3 sur toute la largeur, pour garder
+    // les personnes aux deux extrémités ; on retire surtout du ciel.
     alt: 'Des membres de la communauté Back to Run réunis à Paris, sourire aux lèvres.',
-    position: '50% 64%',
-    positionMobile: '50% 85%',
+    position: '50% 78%',
+    positionMobile: '50% 78%',
   },
   // À FOURNIR : capture du défi, logo / mascotte.
 };

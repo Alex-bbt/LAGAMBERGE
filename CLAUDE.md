@@ -18,20 +18,25 @@ Objectif du site : obtenir un email de prise de contact qualifié.
 ```
 src/data/mediakit.js   ⭐ TOUTES les données (identité, stats, audience, courses,
                        défi, vidéos, Back to Run, offres, contact). null = non affiché.
-src/pages/index.astro  Synthèse : #profil #coureur #createur #audience #back-to-run #objectifs #collaborer (#contact)
+src/pages/index.astro  Six sections : #profil #coureur #createur (contenus + audience) #back-to-run
+                       #objectifs #collaborer ; contact : #contact (nav et « Parlons partenariat »)
 src/pages/histoire.astro, communaute.astro, projets.astro, statistiques.astro
                        Pages d'approfondissement (les détails quittent l'accueil pour y vivre)
 src/components/        EnTete, CarteChiffre, Barres, Colonnes, DefiQuotidien, Progression,
-                       CarteVideo, Calendrier, Contact, Photo, AudienceOnglets (onglets accessibles)
+                       CarteVideo, Calendrier, Contact, Photo
 src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
                        Cadrage par photo (position / positionMobile) dans mediakit.js
 ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)
 api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les pages)
 ```
 
-## Principe de mise en page
-- L'accueil est une synthèse : chiffres posés sur le fond avec filets, cartes
-  réservées aux regroupements utiles, bleu roi pour les éléments prioritaires.
+## Principe de mise en page (src/styles/site.css = système commun)
+- Même conteneur, même en-tête de section (repère + h2 display-l + intro),
+  mêmes espacements (--espace-section / --espace-bloc / --espace-interne).
+- Un seul chiffre principal (.chiffre + title) et un seul secondaire
+  (.chiffre-secondaire + lead). Panneau = regroupement ; encadré = aparté.
+- Compositions sur une grille commune (.compo, média 5/12 – contenu 7/12).
+- Photos : format choisi par photo ('naturel' quand le rognage coûte trop).
 - Les valeurs exactes, définitions et populations secondaires vont dans les
   pages d'approfondissement (/statistiques, /communaute, /projets, /histoire).
 
