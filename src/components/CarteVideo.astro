@@ -1,22 +1,25 @@
 ---
 /* ==========================================================================
-   CarteVideo — invitation à regarder une vidéo.
-   - Avec `url` vérifiée : la carte est un lien direct vers la vidéo (aucun
-     lecteur intégré, aucun autoplay), miniature si fournie.
-   - Sans `url` : simple carte d'information, SANS faux bouton de lecture.
+   CarteVideo — exemple de vidéo, présenté comme un élément média sobre
+   (même style d'encadré que le défi quotidien).
+   - Avec `url` vérifiée : lien direct vers la vidéo (aucun lecteur intégré,
+     aucun autoplay), miniature si fournie.
+   - Sans `url` : titre et légende seulement, SANS faux bouton de lecture.
+   Le nombre de vues reste une légende secondaire, pas un chiffre dominant.
    ========================================================================== */
 import { nombre } from '../data/mediakit.js';
 
-const { video, contexte = 'À voir' } = Astro.props;
-const Balise = video.url ? 'a' : 'div';
-const attrs = video.url ? { href: video.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+const { video, contexte = 'Exemple de vidéo' } = Astro.props;
 const vues = video.vuesAffichage ?? nombre(video.vues);
 ---
 
-<Balise class:list={['video', { 'video--lien': video.url }]} {...attrs}>
-  {video.miniature && <img class="video__miniature" src={video.miniature} alt="" loading="lazy" />}
-  <span class="label">{contexte}</span>
-  <span class="video__titre title">{video.titre}</span>
-  <span class="video__meta body">{vues} de vues · {video.plateforme}</span>
-  {video.url && <span class="lien-fleche">Regarder<span class="sr-only"> sur {video.plateforme} (nouvel onglet)</span></span>}
-</Balise>
+<figure class:list={['encadre', 'media', { 'media--miniature': video.miniature }]}>
+  {video.miniature && <img class="media__miniature" src={video.miniature} alt="" loading="lazy" />}
+  <figcaption class="media__texte">
+    <span class="label">{contexte}</span>
+    {video.url
+      ? <a class="encadre__titre lead" href={video.url} target="_blank" rel="noopener noreferrer">{video.titre}<span class="sr-only"> (nouvel onglet)</span></a>
+      : <span class="encadre__titre lead">{video.titre}</span>}
+    <span class="body texte-muted">{vues} de vues sur {video.plateforme}</span>
+  </figcaption>
+</figure>

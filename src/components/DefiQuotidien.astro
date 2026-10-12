@@ -1,6 +1,6 @@
 ---
 /* ==========================================================================
-   DefiQuotidien — « 5 km minimum. Chaque jour de 2026. »
+   DefiQuotidien — petit encadré éditorial (même style que l'exemple vidéo).
    Le compteur ne s'affiche QUE si `defi.joursValides` et `defi.dateValidation`
    sont renseignés dans src/data/mediakit.js. Aucun calcul à partir de la date
    du jour : le jour de l'année n'est pas une preuve de course.
@@ -13,20 +13,18 @@ const part = valide ? defi.joursValides / defi.totalJours : 0;
 const pctTexte = (part * 100).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %';
 ---
 
-<div class="defi">
-  <p class="label">Le défi quotidien</p>
-  <p class="defi__titre lead">{defi.titreCourt}</p>
+<div class="encadre">
+  <p class="encadre__titre lead">{defi.titreCourt}</p>
   <p class="body">{defi.phrase}</p>
   {valide && (
-    <div class="defi__compteur">
-      <p class="body"><strong>{defi.joursValides}</strong> jours validés sur {defi.totalJours} ({pctTexte})</p>
-      <div class="jauge__barre" aria-hidden="true"><span style={`--part: ${part * 100}%`}></span></div>
-      <p class="caption texte-muted">Vérifié sur {defi.source}, au {defi.dateValidation}</p>
+    <div class="encadre__compteur">
+      <p class="body">{defi.joursValides} jours validés sur {defi.totalJours} ({pctTexte}), vérifié sur {defi.source} au {defi.dateValidation}.</p>
+      <div class="barre" aria-hidden="true"><span style={`--part: ${part * 100}%`}></span></div>
     </div>
   )}
   {strava && (
     <a class="lien-fleche" href={strava.url} target="_blank" rel="noopener noreferrer">
-      Suivre sur Strava<span class="sr-only"> (nouvel onglet)</span>
+      Suivre le défi sur Strava<span class="sr-only"> (nouvel onglet)</span>
     </a>
   )}
 </div>
