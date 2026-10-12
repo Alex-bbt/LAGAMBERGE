@@ -1,0 +1,29 @@
+---
+/* ==========================================================================
+   Barres — graphique en barres horizontales, sans bibliothèque.
+   Une seule série (une seule couleur) : chaque barre porte sa valeur en texte,
+   donc rien ne repose sur la couleur. La liste est lisible sans CSS.
+   `echelle` : valeur qui correspond à 100 % de la largeur (100 par défaut).
+   ========================================================================== */
+const { titre, population, releve, donnees, echelle = 100, note } = Astro.props;
+const pct = (v) => v.toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %';
+---
+
+<figure class="barres">
+  <figcaption class="barres__titre">
+    <span class="label">{titre}</span>
+    <span class="caption texte-muted">{population}{releve && `, relevé du ${releve}`}</span>
+  </figcaption>
+  <ul class="barres__liste" role="list">
+    {donnees.map((d) => (
+      <li class="barres__ligne">
+        <span class="barres__libelle">{d.libelle}</span>
+        <span class="barres__piste" aria-hidden="true">
+          <span class="barres__barre" style={`--part: ${(d.valeur / echelle) * 100}%`}></span>
+        </span>
+        <span class="barres__valeur">{pct(d.valeur)}</span>
+      </li>
+    ))}
+  </ul>
+  {note && <p class="caption texte-muted">{note}</p>}
+</figure>

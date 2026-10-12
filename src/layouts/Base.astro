@@ -1,12 +1,21 @@
 ---
-import '../styles/global.css';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { site } from '../data/site.js';
+/* Squelette commun : métadonnées, navigation flottante, pied de page. */
+import '../styles/site.css';
+import { identite, stats, contact, comptes } from '../data/mediakit.js';
 
-const { title, description } = Astro.props;
-const pageTitle = title ? `${title} — ${site.name}` : `${site.name}`;
-const pageDesc = description ?? site.description;
+const { titre, description } = Astro.props;
+const titrePage = titre ? `${titre} · La Gamberge` : `La Gamberge · ${identite.positionnement}`;
+const desc = description ?? `${identite.description} Media kit de La Gamberge (Alex Bourbigot).`;
+
+// Navigation : ancres de la page principale + pages complémentaires.
+const liens = [
+  { libelle: 'Le profil', lien: '/#profil' },
+  { libelle: 'L’histoire', lien: '/histoire' },
+  { libelle: 'La communauté', lien: '/communaute' },
+  { libelle: 'Les projets', lien: '/projets' },
+];
+const chemin = Astro.url.pathname.replace(/\/$/, '') || '/';
+const insta = comptes.find((c) => c.id === 'instagram');
 ---
 
 <!doctype html>
@@ -14,39 +23,62 @@ const pageDesc = description ?? site.description;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>{pageTitle}</title>
-    <meta name="description" content={pageDesc} />
-
-    <!-- Partages (Instagram, iMessage, etc.) -->
+    <title>{titrePage}</title>
+    <meta name="description" content={desc} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={pageDesc} />
-    <meta property="og:site_name" content={site.name} />
-    <meta name="theme-color" content="#fff6ec" />
-
-    <!-- Polices -->
+    <meta property="og:title" content={titrePage} />
+    <meta property="og:description" content={desc} />
+    <!-- Pas encore de logo dessiné : icône vide pour éviter une erreur 404. -->
+    <link rel="icon" href="data:," />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-
-    <!--
-      ╔══════════════════════════════════════════════════════════════╗
-      ║  Salut toi qui fouilles le code source. 👀                    ║
-      ║  Oui, on gamberge aussi jusqu'ici. Si tu lis ça, envoie-moi   ║
-      ║  "jour 183" en DM sur Insta (@lagambergee), on est copains.   ║
-      ║  Easter egg #2 débloqué. Retourne courir maintenant.          ║
-      ╚══════════════════════════════════════════════════════════════╝
-    -->
   </head>
   <body>
-    <Header />
-    <main>
+    <a class="evitement lg-btn lg-btn--primary" href="#contenu">Aller au contenu</a>
+
+    <header class="entete">
+      <nav class="lg-glass lg-nav" aria-label="Navigation principale">
+        <a href="/" class="lg-nav__brand">LA GAMBERGE</a>
+        <div class="lg-nav__links">
+          {liens.map((l) => (
+            <a href={l.lien} class="lg-nav__link lg-nav__link--bureau" aria-current={chemin === l.lien ? 'page' : undefined}>{l.libelle}</a>
+          ))}
+          <!-- Menu mobile : fonctionne sans JavaScript (élément details) -->
+          <details class="menu-mobile">
+            <summary class="lg-btn lg-btn--glass" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg></summary>
+            <div class="menu-mobile__panneau lg-glass lg-glass--strong">
+              {liens.map((l) => <a href={l.lien} class="lg-nav__link">{l.libelle}</a>)}
+              <!-- Sur les très petits écrans, « Collaborer » passe dans le menu -->
+              <a href="/#collaborer" class="lg-btn lg-btn--primary menu-mobile__cta">Collaborer</a>
+            </div>
+          </details>
+          <a href="/#collaborer" class="lg-btn lg-btn--primary nav-cta">Collaborer</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="contenu">
       <slot />
     </main>
-    <Footer />
+
+    <footer class="lg-ambient pied-page">
+      <div class="lg-glass pied">
+        <span class="wordmark">LA GAMBERGE</span>
+        <span class="caption texte-muted">
+          {identite.personne.nom} ·
+          {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a>}
+        </span>
+        <span class="caption texte-muted">
+          Statistiques : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}.
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      // Ferme le menu mobile après un clic sur un lien.
+      document.querySelectorAll('.menu-mobile a').forEach((a) =>
+        a.addEventListener('click', () => a.closest('details')?.removeAttribute('open'))
+      );
+    </script>
   </body>
 </html>

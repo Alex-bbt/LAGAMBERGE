@@ -1,0 +1,49 @@
+---
+/* ==========================================================================
+   Photo — cadre lg-photo du design system.
+   - `photo.fichier` : nom d'un fichier de src/assets/photos/ (original conservé
+     tel quel). Astro génère au build des versions WebP redimensionnées, sans
+     métadonnées (GPS compris) : seules ces versions sont mises en ligne.
+   - Cadrage sans déformation : l'image remplit le cadre (object-fit: cover) et
+     `photo.position` / `photo.positionMobile` choisissent la zone gardée
+     (ex. '50% 30%' = centré, un peu vers le haut, pour garder le visage).
+   - `format` / `formatMobile` : 'portrait' (4:5), 'carre' (1:1), 'paysage' (3:2)
+     ou 'naturel' (proportions d'origine, rien n'est rogné).
+   - Sans fichier, le composant n'affiche RIEN.
+   ========================================================================== */
+import { Image } from 'astro:assets';
+
+const {
+  photo,
+  format = 'paysage',
+  formatMobile = format,
+  sizes = '(max-width: 720px) 100vw, 50vw',
+  class: classe = '',
+  prioritaire = false,
+} = Astro.props;
+
+const fichiers = import.meta.glob('../assets/photos/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+const image = photo?.fichier ? fichiers[`../assets/photos/${photo.fichier}`]?.default : null;
+const position = photo?.position ?? '50% 50%';
+const positionMobile = photo?.positionMobile ?? position;
+---
+
+{image && (
+  <div
+    class={`lg-photo photo photo--${format} photo--m-${formatMobile} ${classe}`}
+    style={`--cadrage: ${position}; --cadrage-mobile: ${positionMobile}; --ratio: ${image.width} / ${image.height};`}
+  >
+    <Image
+      src={image}
+      alt={photo.alt}
+      width={Math.min(1600, image?.width ?? 1600)}
+      widths={[480, 800, 1200, 1600].filter((w) => w <= (image?.width ?? 1600))}
+      sizes={sizes}
+      format="webp"
+      quality={72}
+      loading={prioritaire ? 'eager' : 'lazy'}
+      fetchpriority={prioritaire ? 'high' : 'auto'}
+      decoding="async"
+    />
+  </div>
+)}

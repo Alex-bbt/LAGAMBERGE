@@ -1,191 +1,322 @@
 ---
-import Base from '../layouts/Base.astro';
-import StreakCounter from '../components/StreakCounter.astro';
-import SeasonStats from '../components/SeasonStats.astro';
-import QualTracker from '../components/QualTracker.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import Socials from '../components/Socials.astro';
-import Newsletter from '../components/Newsletter.astro';
-import { site } from '../data/site.js';
+/* ==========================================================================
+   LA GAMBERGE — MEDIA KIT (page principale)
+   --------------------------------------------------------------------------
+   1. La Gamberge (#profil)   2. Le coureur (#coureur)
+   3. Le créateur (#createur) 4. Back to Run (#back-to-run)
+   5. Les prochains objectifs (#objectifs)  6. Collaborer (#collaborer)
 
-const previewProjects = site.projects.slice(0, 3);
+   Tout le contenu vient de src/data/mediakit.js. Chaque section est un
+   lg-ambient (alterné avec --flip) et le contenu repose sur du verre.
+   ========================================================================== */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import Photo from '../components/Photo.astro';
+import CarteChiffre from '../components/CarteChiffre.astro';
+import DefiQuotidien from '../components/DefiQuotidien.astro';
+import Progression from '../components/Progression.astro';
+import CarteVideo from '../components/CarteVideo.astro';
+import Barres from '../components/Barres.astro';
+import Colonnes from '../components/Colonnes.astro';
+import Calendrier from '../components/Calendrier.astro';
+import Contact from '../components/Contact.astro';
+import {
+  identite, performances, courses, stats, audience, videos, backToRun,
+  offres, affiliation, references, defi, comptes, photos, nombre,
+} from '../data/mediakit.js';
+
+const ig = stats.instagram;
+const marathon = performances.find((p) => p.forte);
+const compte = (id) => comptes.find((c) => c.id === id);
+const tt = stats.tiktok;
+// Courses terminées : elles rejoignent automatiquement les performances.
+const resultatsCourses = courses.filter((c) => c.resultat).map((c) => ({ epreuve: c.nom, resultat: c.resultat }));
+const toutesPerformances = [...performances, ...resultatsCourses];
+const videoDe = (section) => videos.find((v) => v.section === section && v.principale);
+const videoCoureur = videoDe('coureur');
+const videoCreateur = videoDe('createur');
+const videoBtr = videoDe('backtorun');
+const referencesPubliees = references.filter((r) => r.publier && r.nature);
+// Pays : la part non détaillée est indiquée comme « autres pays ».
+const avecAutres = (pays) => [
+  ...pays,
+  { libelle: 'Autres pays', valeur: Math.round((100 - pays.reduce((s, p) => s + p.valeur, 0)) * 10) / 10 },
+];
 ---
 
 <Base>
-  <!-- ============================ HERO ============================ -->
-  <section class="hero">
-    <div class="wrap hero-grid">
-      <div class="hero-copy">
-        <span class="eyebrow">Course à pied · vécu · gamberge</span>
-        <h1>
-          La <span class="hl">Gamberge</span>,<br />
-          c'est mon épopée<br />
-          en petites foulées.
-        </h1>
-        <p class="lede">{site.tagline}</p>
-        <p class="sub">
-          Moi, c'est le personnage principal (spoiler : c'est vraiment moi). Je
-          me suis lancé deux défis un peu absurdes cette année, je les documente
-          ici sans filtre, et j'essaie de faire ça <em>sérieusement</em> sans
-          jamais me prendre au sérieux.
-        </p>
-        <div class="hero-cta">
-          <a href="#defis" class="btn btn--tomato">Voir les défis en cours ↓</a>
-          <a href="#newsletter" class="btn btn--ghost">Me suivre par mail</a>
+  <!-- ======================= 1. LA GAMBERGE ======================= -->
+  <section id="profil" class="lg-ambient chapitre" aria-labelledby="titre-profil">
+    <div class="chapitre__inner hero">
+      <div class="chapitre__texte">
+        <h1 class="display-xl hero__marque" id="titre-profil">{identite.marque}</h1>
+        <p class="hero__positionnement title">{identite.positionnement}</p>
+        <p class="lead">{identite.description}</p>
+        <p class="body hero__promesse">{identite.promesse}</p>
+        <div class="actions">
+          <a href="#collaborer" class="lg-btn lg-btn--primary">Parlons partenariat</a>
+          <a href="#coureur" class="lg-btn lg-btn--glass">Découvrir mon univers</a>
+        </div>
+        <p class="caption texte-muted hero__contexte">{identite.personne.nom} · {identite.personne.contexte.join(' · ')}</p>
+      </div>
+
+      <Photo photo={identite.photo} format="portrait" formatMobile="carre" prioritaire
+        sizes="(max-width: 720px) 100vw, 560px" class="hero__photo" />
+
+      <!-- Repères : un seul bandeau de verre, sans carte par chiffre -->
+      <ul class="lg-glass preuves" role="list">
+        <li class="preuve">
+          <span class="title">{marathon.resultat}</span>
+          <span class="lg-stat__label">au {marathon.epreuve}</span>
+        </li>
+        <li class="preuve">
+          <span class="title">{defi.minKm} km</span>
+          <span class="lg-stat__label">au moins, chaque jour en {defi.annee}</span>
+        </li>
+        <li class="preuve">
+          <span class="title">{nombre(backToRun.principaux[0].valeur)}</span>
+          <span class="lg-stat__label">inscrits à la première édition de Back to Run</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ======================= 2. LE COUREUR ======================= -->
+  <section id="coureur" class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-coureur">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete
+        repere="Le coureur"
+        id="titre-coureur"
+        titre="Des objectifs à raconter. Des performances pour les ancrer."
+        chapeau="Je construis mes contenus autour d’objectifs sportifs concrets. La préparation, les progrès et les courses deviennent les étapes d’une aventure que je partage, avec la même envie : continuer à m’améliorer."
+      />
+
+      <ul class="bandeau-perfs" role="list" aria-label="Références chronométriques">
+        {toutesPerformances.map((p) => (
+          <li class:list={['lg-glass', 'perf', { 'lg-glass--royal': p.forte }]}>
+            <span class="perf__resultat title">{p.resultat}</span>
+            <span class="perf__epreuve">{p.epreuve}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div class="duo duo--photo">
+        <div class="pile">
+          {videoCoureur
+            ? <CarteVideo video={videoCoureur} contexte="Vidéo performance" />
+            : <Photo photo={photos.performance} format="naturel" sizes="(max-width: 720px) 100vw, 520px" />}
+        </div>
+        <div class="pile pile--aeree">
+          <Progression />
+          <DefiQuotidien />
+          <div class="bloc-texte">
+            <h3 class="label">Un terrain d’essai au quotidien</h3>
+            <p class="body">
+              Une pratique régulière et des objectifs exigeants me donnent un terrain concret pour
+              utiliser le matériel et partager mes retours d’expérience.
+            </p>
+            <ul class="puces" role="list">
+              <li>Chaussures</li><li>Vêtements</li><li>Accessoires</li><li>Nutrition de course</li><li>Organisation de la récupération</li>
+            </ul>
+          </div>
+          <a class="lien-fleche" href="/histoire">Découvrir mon parcours</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 3. LE CRÉATEUR ======================= -->
+  <section id="createur" class="lg-ambient chapitre" aria-labelledby="titre-createur">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete
+        repere="Le créateur"
+        id="titre-createur"
+        titre="La progression est sérieuse. Le ton reste léger."
+        chapeau="Je partage les entraînements et les courses, mais aussi ce qui les rend vivants : les découvertes, les imprévus et l’autodérision. La performance et le divertissement font partie de la même aventure."
+      />
+
+      <div class="duo duo--createur">
+        <Photo photo={photos.divertissement} format="portrait" sizes="(max-width: 720px) 100vw, 480px" />
+        <div class="pile pile--aeree">
+        {videoCreateur && (
+          <div class="pile">
+            <CarteVideo video={videoCreateur} contexte="Une vidéo qui a beaucoup circulé" />
+            <p class="caption texte-muted">Un exemple parmi les contenus de 2026, pas un résultat habituel.</p>
+          </div>
+        )}
+        <div class="plateformes">
+          <article class="lg-glass plateforme">
+            <h3 class="label">Instagram · <a href={compte('instagram').url} target="_blank" rel="noopener noreferrer">{compte('instagram').pseudo}</a></h3>
+            <div class="plateforme__chiffres">
+              <p><span class="lg-stat__value">{ig.abonnesAffichage}</span> <span class="lg-stat__label">abonnés</span></p>
+              <p><span class="lg-stat__value">{ig.vuesAffichage}</span> <span class="lg-stat__label">de vues en 2026</span></p>
+            </div>
+            <p class="lg-stat__source">{nombre(ig.abonnes)} abonnés au {ig.releve} · {nombre(ig.vues)} vues {ig.periode}</p>
+          </article>
+          <article class="lg-glass plateforme">
+            <h3 class="label">TikTok · <a href={compte('tiktok').url} target="_blank" rel="noopener noreferrer">{compte('tiktok').pseudo}</a></h3>
+            <div class="plateforme__chiffres">
+              <p><span class="lg-stat__value">{tt.abonnesAffichage}</span> <span class="lg-stat__label">abonnés</span></p>
+              <p><span class="lg-stat__value">{tt.vuesAffichage}</span> <span class="lg-stat__label">de vues en 2026</span></p>
+            </div>
+            <p class="lg-stat__source">{nombre(tt.abonnes)} abonnés au {tt.releve} · {nombre(tt.vues)} vues {tt.periode}</p>
+          </article>
+        </div>
         </div>
       </div>
 
-      <aside class="hero-side" aria-label="En un coup d'œil">
-        <div class="mini card tilt-b">
-          <span class="mini-num" data-streak-number>{site.streak.day}</span>
-          <span class="mini-label">jours de streak, sans en louper un</span>
+      <div class="regularite">
+        <h3 class="label">Régularité sur Instagram en 2026</h3>
+        <ul class="grille grille--4" role="list">
+          <li><CarteChiffre petit valeur={`≈ ${nombre(ig.vuesMedianesPublication)}`} legende="vues médianes par publication" source="Publications retenues de 2026" /></li>
+          <li><CarteChiffre petit valeur={ig.publicationsPlus10k} legende="publications à plus de 10 000 vues" source={`Au ${ig.releve}`} /></li>
+          <li><CarteChiffre petit valeur={ig.publicationsPlus100k} legende="publications à plus de 100 000 vues" source={`Au ${ig.releve}`} /></li>
+          <li><CarteChiffre petit valeur={`≈ ${nombre(ig.vuesMedianesStory)}`} legende="vues médianes par story" source="30 derniers jours" /></li>
+        </ul>
+      </div>
+
+      <dl class="details-chiffres lg-glass lg-glass--strong">
+        <div><dt>Interactions Instagram en 2026</dt><dd>{nombre(ig.interactions)}</dd></div>
+        <div><dt>Engagement Instagram</dt><dd>{ig.engagement} <span class="caption texte-muted">{ig.engagementDefinition}</span></dd></div>
+        <div><dt>Vidéos TikTok à plus de 100 000 vues</dt><dd>{tt.videosPlus100k}</dd></div>
+        <div><dt>Likes TikTok sur la période</dt><dd>{nombre(tt.likes)}</dd></div>
+        <div><dt>Partages et commentaires TikTok</dt><dd>{nombre(tt.partages)} partages · {nombre(tt.commentaires)} commentaires</dd></div>
+        <div><dt>Engagement TikTok</dt><dd>{tt.engagement} <span class="caption texte-muted">{tt.engagementDefinition}</span></dd></div>
+      </dl>
+      <p class="caption texte-muted">
+        Les deux taux d’engagement sont calculés différemment (couverture pour Instagram, vues pour TikTok) :
+        ils ne se comparent pas directement. Instagram : {ig.periode}. TikTok : {tt.periode}.
+      </p>
+
+      <div class="audience">
+        <h3 class="title">Qui suit La Gamberge</h3>
+        <div class="audience__grille">
+          <div class="lg-glass carte carte--graphique audience__ages">
+            <Colonnes titre="Âge" population={audience.instagram.population} releve={audience.instagram.releve}
+              donnees={audience.instagram.ages} note={audience.instagram.repereAge} />
+          </div>
+          <div class="lg-glass carte carte--graphique">
+            <Barres titre="Genre" population={audience.instagram.population} releve={audience.instagram.releve} donnees={audience.instagram.genre} />
+            <Barres titre="Genre" population={audience.tiktok.population} releve={audience.tiktok.releve} donnees={audience.tiktok.genre} />
+          </div>
+          <div class="lg-glass carte carte--graphique">
+            <Barres titre="Pays" population={audience.instagram.population} releve={audience.instagram.releve}
+              donnees={avecAutres(audience.instagram.pays)}
+              note={`${audience.instagram.villeRepere.libelle} : ${audience.instagram.villeRepere.valeur.toLocaleString('fr-FR')} % des abonnés Instagram (répartition par ville).`} />
+          </div>
+          <div class="lg-glass carte carte--graphique">
+            <Barres titre="Pays" population={audience.tiktok.population} releve={audience.tiktok.releve} donnees={avecAutres(audience.tiktok.pays)} />
+          </div>
         </div>
-        <div class="mini card tilt-a">
-          <span class="mini-num">3<span class="mini-slash">/4</span></span>
-          <span class="mini-label">qualifs France déjà en poche</span>
-        </div>
-        <div class="mini card tilt-b">
-          <span class="mini-num">∞</span>
-          <span class="mini-label">excuses trouvées, zéro utilisée</span>
-        </div>
-      </aside>
+
+        <details class="lg-glass lg-glass--strong complement">
+          <summary class="label">Spectateurs TikTok sur 365 jours (population différente des abonnés)</summary>
+          <div class="complement__corps">
+            <Barres titre="Âge (deux tranches principales)" population={audience.tiktokSpectateurs.population} releve={audience.tiktokSpectateurs.releve} donnees={audience.tiktokSpectateurs.ages} />
+            <Barres titre="Genre" population={audience.tiktokSpectateurs.population} releve={audience.tiktokSpectateurs.releve} donnees={audience.tiktokSpectateurs.genre}
+              note="Le complément à 100 % n’est pas détaillé par la plateforme." />
+            <Barres titre="Pays" population={audience.tiktokSpectateurs.population} releve={audience.tiktokSpectateurs.releve} donnees={audience.tiktokSpectateurs.pays} />
+          </div>
+        </details>
+      </div>
     </div>
   </section>
 
-  <!-- ============================ DÉFIS ============================ -->
-  <section id="defis" class="section">
-    <div class="wrap">
-      <header class="sec-head">
-        <h2>Les deux défis du moment</h2>
-        <p>Le cœur du réacteur. Ça avance vraiment, en direct, sous vos yeux.</p>
-      </header>
-      <div class="defis-stack stack">
-        <StreakCounter />
-        <div class="qual-wrap card">
-          <QualTracker />
+  <!-- ======================= 4. BACK TO RUN ======================= -->
+  <section id="back-to-run" class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-btr">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete repere="Back to Run" id="titre-btr" titre={backToRun.titre} chapeau={backToRun.texte} />
+
+      <div class="duo duo--btr">
+        <div class="pile">
+          <p class="label">{backToRun.edition}</p>
+          <ul class="grille" role="list">
+            {backToRun.principaux.map((c) => (
+              <li><CarteChiffre valeur={c.valeur} legende={c.legende} source={c.definition} royal={c.forte} /></li>
+            ))}
+          </ul>
+        </div>
+        <div class="pile">
+          {videoBtr && <CarteVideo video={videoBtr} contexte="La vidéo d’annonce" />}
+          <Photo photo={backToRun.photo} format="paysage" formatMobile="carre" sizes="(max-width: 720px) 100vw, 560px" />
+        </div>
+      </div>
+
+      <!-- Chiffres secondaires et suite : texte simple, sans cartes -->
+      <div class="duo">
+        <ul class="liste-secondaire" role="list">
+          {backToRun.secondaires.map((s) => (
+            <li>
+              <span class="liste-secondaire__valeur">{nombre(s.valeur)}</span>
+              <span class="body">{s.legende}{s.definition && <span class="caption texte-muted"> ({s.definition})</span>}</span>
+            </li>
+          ))}
+        </ul>
+        <div class="bloc-texte">
+          <p class="title">{backToRun.suite}</p>
+          <p class="body">{backToRun.produits}</p>
+          <div class="actions">
+            <a class="lg-btn lg-btn--glass" href={backToRun.url} target="_blank" rel="noopener noreferrer">Découvrir Back to Run<span class="sr-only"> (nouvel onglet)</span></a>
+            <a class="lien-fleche" href="/communaute">La communauté en détail</a>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============================ CHIFFRES ============================ -->
-  <SeasonStats />
-
-  <!-- ============================ ACTUS ============================ -->
-  <section class="section actus-preview">
-    <div class="wrap">
-      <header class="sec-head row">
-        <div>
-          <h2>Ce que je fabrique</h2>
-          <p>Projets en cours, idées en gamberge, trucs à venir.</p>
+  <!-- ===================== 5. LES PROCHAINS OBJECTIFS ===================== -->
+  <section id="objectifs" class="lg-ambient chapitre" aria-labelledby="titre-objectifs">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <div class="duo duo--photo-droite">
+        <div class="pile pile--aeree">
+          <EnTete
+            repere="Les projets"
+            id="titre-objectifs"
+            titre="Des projets pour construire la suite ensemble."
+            chapeau="Du trail à la route, chaque objectif ouvre de nouveaux sujets : préparation, matériel, nutrition de course et récit de l’expérience."
+          />
+          <a class="lien-fleche" href="/projets">Voir mes objectifs en détail</a>
         </div>
-        <a href="/actus" class="btn btn--teal">Tout voir →</a>
-      </header>
-      <div class="projects-grid">
-        {previewProjects.map((p) => <ProjectCard project={p} />)}
+        <!-- Photo personnelle (course sur route) : illustration, pas une image de la SaintéLyon -->
+        <Photo photo={photos.personnelle} format="paysage" formatMobile="portrait" sizes="(max-width: 720px) 100vw, 560px" />
       </div>
+      <Calendrier />
+      <p class="caption texte-muted">Calendrier prévisionnel au 12 octobre 2026. Les noms des courses n’impliquent aucun partenariat avec leurs organisateurs.</p>
     </div>
   </section>
 
-  <!-- ============================ RÉSEAUX ============================ -->
-  <section class="section">
-    <div class="wrap">
-      <header class="sec-head">
-        <h2>On se retrouve où ?</h2>
-        <p>Le gros du quotidien se passe sur Insta. Le reste suit.</p>
-      </header>
-      <Socials />
-    </div>
-  </section>
+  <!-- ======================= 6. COLLABORER ======================= -->
+  <section id="collaborer" class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-collaborer">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete
+        repere="Collaborer"
+        id="titre-collaborer"
+        titre="Écrivons le prochain chapitre."
+        chapeau="Vous souhaitez accompagner un projet ou me confier une création de contenu ? Construisons une collaboration adaptée à votre objectif, à mon univers et au calendrier."
+      />
 
-  <!-- ============================ NEWSLETTER ============================ -->
-  <section class="section">
-    <div class="wrap">
-      <Newsletter />
+      <ul class="offres" role="list">
+        {offres.map((o) => (
+          <li class:list={['lg-glass', 'offre', { 'offre--forte': o.forte }]}>
+            <h3 class="title">{o.titre}</h3>
+            <p class="body offre__resume">{o.resume}</p>
+            <ul class="puces" role="list">{o.points.map((p) => <li>{p}</li>)}</ul>
+            {o.note && <p class="caption texte-muted">{o.note}</p>}
+          </li>
+        ))}
+      </ul>
+      <p class="body">{affiliation}</p>
+
+      {referencesPubliees.length > 0 && (
+        <div class="lg-glass carte">
+          <h3 class="label">Ils m’ont fait confiance</h3>
+          <ul class="marques" role="list">
+            {referencesPubliees.map((r) => <li class="lg-chip">{r.nom}<span class="sr-only"> : {r.nature}</span></li>)}
+          </ul>
+        </div>
+      )}
+
+      <Contact />
     </div>
   </section>
 </Base>
-
-<style>
-  .hero { padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(2rem, 5vw, 3rem); }
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: clamp(1.5rem, 4vw, 3rem);
-    align-items: center;
-  }
-  h1 {
-    font-size: clamp(2.5rem, 7vw, 4.6rem);
-    margin: 1rem 0;
-  }
-  .hl {
-    background: var(--tomato);
-    color: var(--cream);
-    padding: 0 0.15em;
-    border-radius: 6px;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    transform: rotate(-1deg);
-    display: inline-block;
-  }
-  .lede {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-    color: var(--ink);
-    max-width: 34ch;
-  }
-  .sub { color: var(--ink-soft); max-width: 46ch; }
-  .hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
-
-  .hero-side { display: grid; gap: 1rem; }
-  .mini {
-    padding: 1.1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    background: var(--paper);
-  }
-  .mini:nth-child(1) { background: var(--sun); }
-  .mini:nth-child(2) { background: var(--teal); color: var(--cream); }
-  .mini-num {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 2.6rem;
-    line-height: 1;
-  }
-  .mini-slash { font-size: 1.4rem; opacity: 0.75; }
-  .mini-label { font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem; }
-
-  .sec-head { margin-bottom: 1.75rem; max-width: 60ch; }
-  .sec-head h2 { font-size: clamp(1.8rem, 4.5vw, 2.6rem); }
-  .sec-head p { color: var(--ink-soft); margin: 0.25rem 0 0; }
-  .sec-head.row {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-    max-width: none;
-  }
-
-  .qual-wrap { padding: clamp(1.5rem, 4vw, 2.25rem); }
-
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-
-  @media (max-width: 860px) {
-    .hero-grid { grid-template-columns: 1fr; }
-    .hero-side {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-    }
-    .mini-num { font-size: 2rem; }
-    .projects-grid { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 560px) {
-    .hero-side { grid-template-columns: 1fr; }
-    .sec-head.row { flex-direction: column; align-items: flex-start; }
-  }
-</style>

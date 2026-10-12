@@ -1,0 +1,148 @@
+
+/* La Gamberge — composants « verre liquide ». Les valeurs viennent de tokens.css. */
+
+/* Fond fluide : le bleu poudre et le blanc se fondent, sans coupure de section */
+.lg-ambient {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--mist);
+  color: var(--royal);
+  font-family: var(--font-text);
+}
+.lg-ambient::before,
+.lg-ambient::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(var(--blur-ambient));
+  pointer-events: none;
+}
+.lg-ambient::before {
+  width: 70%;
+  height: 80%;
+  left: -15%;
+  top: -25%;
+  background: radial-gradient(closest-side, var(--powder), var(--powder-soft) 60%, rgba(230, 241, 254, 0));
+}
+.lg-ambient::after {
+  width: 60%;
+  height: 70%;
+  right: -10%;
+  bottom: -30%;
+  background: radial-gradient(closest-side, var(--powder), rgba(208, 230, 253, 0));
+}
+/* Variante : nappe placée en haut à droite, pour alterner d'une section à l'autre */
+.lg-ambient--flip::before { left: auto; right: -15%; }
+.lg-ambient--flip::after { right: auto; left: -10%; }
+
+/* Verre */
+.lg-glass {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glass);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(160%);
+  backdrop-filter: blur(var(--blur-glass)) saturate(160%);
+}
+.lg-glass--strong { background: var(--glass-fill-strong); }
+.lg-glass--royal {
+  background: var(--glass-royal);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--white);
+  box-shadow: var(--shadow-royal);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg-glass { background: var(--glass-fill-strong); }
+}
+
+/* Boutons */
+.lg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-family: var(--font-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.lg-btn--primary { background: var(--royal); color: var(--white); box-shadow: var(--shadow-royal); }
+.lg-btn--primary:hover { background: var(--royal-hover); }
+.lg-btn--glass {
+  background: var(--glass-fill);
+  border-color: var(--glass-stroke);
+  color: var(--royal);
+  box-shadow: var(--shadow-glass);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(160%);
+  backdrop-filter: blur(var(--blur-glass)) saturate(160%);
+}
+.lg-btn--glass:hover { background: var(--glass-fill-strong); box-shadow: var(--shadow-glass-lift); }
+.lg-btn:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
+.lg-btn:active { transform: translateY(1px); }
+
+/* Étiquette de chapitre */
+.lg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-stroke);
+  color: var(--royal);
+  font-family: var(--font-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.lg-chip__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--royal); }
+
+/* Navigation flottante */
+.lg-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: 10px 10px 10px var(--space-6);
+  border-radius: var(--radius-pill);
+}
+.lg-nav__brand { font-family: var(--font-display); font-size: 18px; font-weight: 800; letter-spacing: 0.02em; color: var(--royal); text-decoration: none; }
+.lg-nav__links { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap; }
+.lg-nav__link { color: var(--royal); text-decoration: none; font-size: 15px; font-weight: 500; }
+.lg-nav__link:hover { color: var(--royal-hover); text-decoration: underline; text-underline-offset: 4px; }
+
+/* Chiffres clés */
+.lg-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+}
+.lg-stat__value { font-family: var(--font-display); font-size: 40px; font-weight: 800; line-height: 1; }
+.lg-stat__label { font-size: 14px; font-weight: 500; line-height: 1.4; }
+.lg-stat__source { font-size: 12px; font-weight: 500; color: var(--royal-muted); }
+.lg-glass--royal .lg-stat__source { color: var(--powder); }
+
+/* Emplacement photo */
+.lg-photo {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, var(--powder) 0%, var(--powder-soft) 55%, var(--white) 100%);
+  border: 1px solid var(--glass-stroke);
+  overflow: hidden;
+}
+.lg-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-btn { transition: none; }
+}
