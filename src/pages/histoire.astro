@@ -1,0 +1,95 @@
+---
+/* Page « L'histoire » : le parcours derrière La Gamberge.
+   Uniquement des faits fournis par Alex (src/data/mediakit.js). */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import Progression from '../components/Progression.astro';
+import DefiQuotidien from '../components/DefiQuotidien.astro';
+import { identite, parcours, performances } from '../data/mediakit.js';
+
+const p = identite.personne;
+const trail = performances.find((x) => x.epreuve.includes('UTMB'));
+const statutObjectif = { atteint: 'Atteint', manque: 'Manqué', en_cours: 'En cours' };
+---
+
+<Base titre="L’histoire" description="Le parcours d’Alex Bourbigot, de ses débuts en course à pied à La Gamberge.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-histoire">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete niveau="h1" id="titre-histoire" repere="L’histoire" titre="Derrière La Gamberge, Alex."
+        chapeau={`${p.nom}, ${p.age} ans, étudiant en Master 2 à l’IÉSEG avec le statut d’étudiant-entrepreneur. Pour une collaboration, c’est avec moi que vous échangez directement.`} />
+    </div>
+  </section>
+
+  <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-debuts">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <div class="chapitre__texte">
+        <span class="lg-chip"><span class="lg-chip__dot"></span>Les débuts</span>
+        <h2 class="display-l" id="titre-debuts">De la balle ronde à la route.</h2>
+        <p class="lead">
+          Avant la course, il y a eu le {parcours.sportsAvant.join(' et le ')}. Je cours sérieusement
+          depuis {parcours.debutCourse}.
+        </p>
+      </div>
+      <Progression />
+    </div>
+  </section>
+
+  <section class="lg-ambient chapitre" aria-labelledby="titre-route">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete repere="La route" id="titre-route" titre="Du premier marathon à 2 h 38."
+        chapeau="Premier marathon en 2 h 59, puis 2 h 38 min 21 s au Marathon de Paris 2026. Sur la route, mes références actuelles :" />
+      <ul class="bandeau-perfs" role="list">
+        {performances.filter((x) => x !== trail).map((x) => (
+          <li class:list={['lg-glass', 'perf', { 'lg-glass--royal': x.forte }]}>
+            <span class="perf__resultat title">{x.resultat}</span>
+            <span class="perf__epreuve">{x.epreuve}</span>
+          </li>
+        ))}
+      </ul>
+      {parcours.objectifsInitiaux.length > 0 && (
+        <div class="lg-glass carte">
+          <h3 class="label">Les quatre premiers objectifs</h3>
+          <ul class="liste-secondaire" role="list">
+            {parcours.objectifsInitiaux.map((o) => (
+              <li><span class="liste-secondaire__valeur">{statutObjectif[o.statut]}</span><span class="body">{o.objectif} : {o.resultat}</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-defi">
+    <div class="chapitre__inner">
+      <div class="chapitre__texte">
+        <span class="lg-chip"><span class="lg-chip__dot"></span>2026</span>
+        <h2 class="display-l" id="titre-defi">Courir tous les jours, toute l’année.</h2>
+        <p class="lead">En 2026, je cours au moins 5 km chaque jour. C’est un défi personnel, raconté au fil des semaines.</p>
+      </div>
+      <DefiQuotidien />
+    </div>
+  </section>
+
+  <section class="lg-ambient chapitre" aria-labelledby="titre-trail">
+    <div class="chapitre__inner">
+      <div class="chapitre__texte">
+        <span class="lg-chip"><span class="lg-chip__dot"></span>Le trail</span>
+        <h2 class="display-l" id="titre-trail">Puis les sentiers.</h2>
+        <p class="lead">
+          Après une première série d’objectifs sur route, dont une ambition de qualification aux
+          championnats de France, la suite de l’aventure passe par le trail, jusqu’à la SaintéLyon.
+        </p>
+        <div class="actions">
+          <a class="lg-btn lg-btn--glass" href="/projets">Voir les prochains objectifs</a>
+          <a class="lien-fleche" href="/#collaborer">Collaborer</a>
+        </div>
+      </div>
+      {trail && (
+        <div class="lg-glass lg-glass--royal perf perf--grand">
+          <span class="perf__resultat title">{trail.resultat}</span>
+          <span class="perf__epreuve">{trail.epreuve}</span>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>

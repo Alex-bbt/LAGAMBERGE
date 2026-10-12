@@ -1,25 +1,16 @@
 ---
 /* ==========================================================================
    CarteChiffre — StatCard du design system (lg-glass lg-stat).
-   Un chiffre, une légende qui dit ce qu'il mesure, une source datée.
-   `royal` = carte forte (une seule par chapitre).
-   Si la valeur est vide → [CHIFFRE À CONFIRMER] ; si la date est vide alors
-   qu'on la demande (dater = true) → [DATE À CONFIRMER].
+   Une valeur, une légende qui dit ce qu'elle mesure, une précision ou une
+   source datée facultative. `royal` = carte forte (une seule par section).
    ========================================================================== */
-import ARemplir from './ARemplir.astro';
+import { nombre } from '../data/mediakit.js';
 
-const { valeur, legende, source, date, dater = false, royal = false } = Astro.props;
+const { valeur, legende, source, royal = false, petit = false } = Astro.props;
 ---
 
-<div class={`lg-glass lg-stat ${royal ? 'lg-glass--royal' : ''}`}>
-  <span class="lg-stat__value">
-    {valeur ? valeur : <ARemplir texte="CHIFFRE À CONFIRMER" />}
-  </span>
+<div class:list={['lg-glass', 'lg-stat', { 'lg-glass--royal': royal, 'lg-stat--petit': petit }]}>
+  <span class={petit ? 'title' : 'lg-stat__value'}>{nombre(valeur)}</span>
   <span class="lg-stat__label">{legende}</span>
-  {source && (
-    <span class="lg-stat__source">
-      {source}
-      {dater && (date ? ` · au ${date}` : <> · <ARemplir texte="DATE À CONFIRMER" /></>)}
-    </span>
-  )}
+  {source && <span class="lg-stat__source">{source}</span>}
 </div>

@@ -1,0 +1,26 @@
+---
+/* Colonnes — histogramme vertical simple (une série, valeurs écrites au-dessus
+   de chaque colonne). Mise à l'échelle sur la plus grande valeur. */
+const { titre, population, releve, donnees, note } = Astro.props;
+const max = Math.max(...donnees.map((d) => d.valeur));
+const pct = (v) => v.toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %';
+---
+
+<figure class="colonnes">
+  <figcaption class="barres__titre">
+    <span class="label">{titre}</span>
+    <span class="caption texte-muted">{population}, relevé du {releve}</span>
+  </figcaption>
+  <ul class="colonnes__grille" role="list">
+    {donnees.map((d) => (
+      <li class="colonnes__col">
+        <span class="colonnes__valeur caption">{pct(d.valeur)}</span>
+        <span class="colonnes__piste" aria-hidden="true">
+          <span class="colonnes__barre" style={`--part: ${(d.valeur / max) * 100}%`}></span>
+        </span>
+        <span class="colonnes__libelle">{d.libelle}<span class="sr-only"> ans</span></span>
+      </li>
+    ))}
+  </ul>
+  {note && <p class="body colonnes__note">{note}</p>}
+</figure>

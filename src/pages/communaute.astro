@@ -1,0 +1,68 @@
+---
+/* Page « La communauté » : Back to Run en détail. */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import CarteChiffre from '../components/CarteChiffre.astro';
+import Photo from '../components/Photo.astro';
+import { backToRun, nombre } from '../data/mediakit.js';
+
+const tribunal = backToRun.secondaires.find((s) => s.legende.includes('Tribunal'));
+const tous = [...backToRun.principaux, ...backToRun.secondaires.filter((s) => s !== tribunal)];
+---
+
+<Base titre="La communauté" description="Back to Run : le défi collectif créé par La Gamberge, ses règles et les résultats de la première édition.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-communaute">
+    <div class="chapitre__inner">
+      <div class="chapitre__texte">
+        <EnTete niveau="h1" id="titre-communaute" repere="Back to Run" titre={backToRun.titre} chapeau={backToRun.texte} />
+        <a class="lg-btn lg-btn--primary" href={backToRun.url} target="_blank" rel="noopener noreferrer">Découvrir Back to Run<span class="sr-only"> (nouvel onglet)</span></a>
+      </div>
+      <div class="lg-glass carte">
+        <h2 class="label">Le principe</h2>
+        <ol class="etapes" role="list">
+          <li><span class="title">S’inscrire</span><span class="body">sur backtorun.fr.</span></li>
+          <li><span class="title">Courir</span><span class="body">au moins 5 km par jour pendant 30 jours, et enregistrer ses courses.</span></li>
+          <li><span class="title">Plaider</span><span class="body">un écart ? Direction le Tribunal, où la communauté vote.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-resultats">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete repere="Septembre 2026" id="titre-resultats" titre="La première édition, en chiffres." />
+      <ul class="grille grille--4" role="list">
+        {tous.map((c) => (
+          <li><CarteChiffre valeur={c.valeur} legende={c.legende} source={c.definition} royal={c.forte} /></li>
+        ))}
+      </ul>
+      <p class="caption texte-muted">
+        « Participants » : personnes ayant enregistré au moins une course. « Actifs sur le site » : au moins
+        une action sur le site dans la journée, pas forcément une course. Les 64 % mesurent la participation au
+        défi, pas un engagement sur les réseaux sociaux.
+      </p>
+      <Photo photo={backToRun.photo} />
+    </div>
+  </section>
+
+  <section class="lg-ambient chapitre" aria-labelledby="titre-tribunal">
+    <div class="chapitre__inner">
+      <div class="chapitre__texte">
+        <span class="lg-chip"><span class="lg-chip__dot"></span>Le Tribunal</span>
+        <h2 class="display-l" id="titre-tribunal">Défendre ses écarts devant la communauté.</h2>
+        <p class="lead">Un écart ? On vient s’expliquer devant le Tribunal, et la communauté vote.</p>
+      </div>
+      {tribunal && <CarteChiffre royal valeur={tribunal.valeur} legende={tribunal.legende} source="Première édition, septembre 2026" />}
+    </div>
+  </section>
+
+  <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-suite">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete repere="La suite" id="titre-suite" titre={backToRun.suite} chapeau={backToRun.produits} />
+      <div class="actions">
+        <a class="lg-btn lg-btn--glass" href={backToRun.url} target="_blank" rel="noopener noreferrer">backtorun.fr<span class="sr-only"> (nouvel onglet)</span></a>
+        <a class="lg-btn lg-btn--primary" href="/#collaborer">Construire l’édition 2 ensemble</a>
+      </div>
+    </div>
+  </section>
+</Base>

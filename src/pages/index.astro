@@ -1,185 +1,306 @@
 ---
 /* ==========================================================================
-   LA GAMBERGE — PAGE D'ACCUEIL EN CHAPITRES
+   LA GAMBERGE — MEDIA KIT (page principale)
    --------------------------------------------------------------------------
-   Prologue → Chapitre 1 (coureur) → 2 (créateur) → 3 (Back to Run)
-   → 4 (SaintéLyon) → Épilogue (marques + contact).
+   1. La Gamberge (#profil)   2. Le coureur (#coureur)
+   3. Le créateur (#createur) 4. Back to Run (#back-to-run)
+   5. Les prochains objectifs (#objectifs)  6. Collaborer (#collaborer)
 
-   Les textes se changent dans src/data/contenu.js, les chiffres dans
-   src/data/chiffres.js : pas besoin de toucher à ce fichier.
-
-   Règle du design system : chaque chapitre est un lg-ambient, en alternant
-   avec lg-ambient--flip, et le contenu est posé sur du verre (lg-glass).
+   Tout le contenu vient de src/data/mediakit.js. Chaque section est un
+   lg-ambient (alterné avec --flip) et le contenu repose sur du verre.
    ========================================================================== */
 import Base from '../layouts/Base.astro';
-import ARemplir from '../components/ARemplir.astro';
+import EnTete from '../components/EnTete.astro';
 import Photo from '../components/Photo.astro';
 import CarteChiffre from '../components/CarteChiffre.astro';
-import Streak from '../components/Streak.astro';
-import { contenu } from '../data/contenu.js';
-import { chiffres } from '../data/chiffres.js';
+import DefiQuotidien from '../components/DefiQuotidien.astro';
+import Progression from '../components/Progression.astro';
+import CarteVideo from '../components/CarteVideo.astro';
+import Barres from '../components/Barres.astro';
+import Colonnes from '../components/Colonnes.astro';
+import Calendrier from '../components/Calendrier.astro';
+import Contact from '../components/Contact.astro';
+import {
+  identite, performances, courses, stats, audience, videos, backToRun,
+  offres, affiliation, references, defi, comptes, nombre,
+} from '../data/mediakit.js';
 
-const { prologue, coureur, createur, communaute, saintelyon, epilogue, reseaux } = contenu;
-const date = chiffres.dateChiffres;
-const annee = chiffres.annee;
-const contact = epilogue.email ? `mailto:${epilogue.email}` : '#contact';
+const ig = stats.instagram;
+const marathon = performances.find((p) => p.forte);
+const compte = (id) => comptes.find((c) => c.id === id);
+const tt = stats.tiktok;
+// Courses terminées : elles rejoignent automatiquement les performances.
+const resultatsCourses = courses.filter((c) => c.resultat).map((c) => ({ epreuve: c.nom, resultat: c.resultat }));
+const toutesPerformances = [...performances, ...resultatsCourses];
+const videoDe = (section) => videos.find((v) => v.section === section && v.principale);
+const videoCoureur = videoDe('coureur');
+const videoCreateur = videoDe('createur');
+const videoBtr = videoDe('backtorun');
+const referencesPubliees = references.filter((r) => r.publier && r.nature);
+// Pays : la part non détaillée est indiquée comme « autres pays ».
+const avecAutres = (pays) => [
+  ...pays,
+  { libelle: 'Autres pays', valeur: Math.round((100 - pays.reduce((s, p) => s + p.valeur, 0)) * 10) / 10 },
+];
 ---
 
 <Base>
-  <!-- ============================ PROLOGUE ============================ -->
-  <section id="prologue" class="lg-ambient chapitre">
-    <div class="chapitre__inner">
+  <!-- ======================= 1. LA GAMBERGE ======================= -->
+  <section id="profil" class="lg-ambient chapitre" aria-labelledby="titre-profil">
+    <div class="chapitre__inner hero">
       <div class="chapitre__texte">
-        <span class="lg-chip"><span class="lg-chip__dot"></span>Prologue</span>
-        <h1 class="display-xl">{prologue.titre}</h1>
-        <p class="lead">{prologue.chapeau}</p>
-        <p class="body">{prologue.phrase ?? <ARemplir texte="TEXTE À ÉCRIRE PAR ALEX : qui je suis, en une phrase" />}</p>
+        <h1 class="display-xl hero__marque" id="titre-profil">{identite.marque}</h1>
+        <p class="hero__positionnement title">{identite.positionnement}</p>
+        <p class="lead">{identite.description}</p>
+        <p class="body hero__promesse">{identite.promesse}</p>
         <div class="actions">
-          <a href={contact} class="lg-btn lg-btn--primary">Travailler ensemble</a>
-          <a href="#chapitre-1" class="lg-btn lg-btn--glass">Lire l'histoire</a>
+          <a href="#collaborer" class="lg-btn lg-btn--primary">Parlons partenariat</a>
+          <a href="#coureur" class="lg-btn lg-btn--glass">Découvrir mon univers</a>
         </div>
+        <p class="caption texte-muted hero__contexte">{identite.personne.nom} · {identite.personne.contexte.join(' · ')}</p>
       </div>
-      <Photo photo={prologue.photo} format="portrait" />
-    </div>
-  </section>
 
-  <!-- ===================== CHAPITRE 1 : LE COUREUR ===================== -->
-  <section id="chapitre-1" class="lg-ambient lg-ambient--flip chapitre">
-    <div class="chapitre__inner">
-      <div class="chapitre__texte">
-        <span class="lg-chip"><span class="lg-chip__dot"></span>Chapitre 1</span>
-        <h2 class="display-l">{coureur.titre}</h2>
-        <p class="lead">{coureur.chapeau ?? <ARemplir />}</p>
-      </div>
-      <div class="chapitre__preuve">
-        <Photo photo={coureur.photo} />
-        <div class="grille">
-          <!-- Carte forte du chapitre : le streak Strava en direct -->
-          <div class="pleine-largeur"><Streak /></div>
-          {coureur.chronos.map((c) => (
-            <CarteChiffre
-              valeur={c.temps}
-              legende={c.epreuve ?? 'Épreuve à préciser'}
-              source={c.source}
-            />
-          ))}
-        </div>
+      <div class="hero__preuves">
+        <Photo photo={identite.photo} format="portrait" prioritaire />
+        <ul class="preuves" role="list">
+          <li class="lg-glass lg-glass--royal lg-stat">
+            <span class="title">{marathon.resultat}</span>
+            <span class="lg-stat__label">au {marathon.epreuve}</span>
+          </li>
+          <li class="lg-glass lg-stat">
+            <span class="title">{defi.minKm} km</span>
+            <span class="lg-stat__label">au moins, chaque jour en {defi.annee}</span>
+          </li>
+          <li class="lg-glass lg-stat">
+            <span class="title">{nombre(backToRun.principaux[0].valeur)}</span>
+            <span class="lg-stat__label">inscrits à la première édition de Back to Run</span>
+          </li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <!-- ===================== CHAPITRE 2 : LE CRÉATEUR ===================== -->
-  <section id="chapitre-2" class="lg-ambient chapitre">
+  <!-- ======================= 2. LE COUREUR ======================= -->
+  <section id="coureur" class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-coureur">
     <div class="chapitre__inner chapitre__inner--seul">
-      <div class="chapitre__texte">
-        <span class="lg-chip"><span class="lg-chip__dot"></span>Chapitre 2</span>
-        <h2 class="display-l">{createur.titre}</h2>
-        <p class="lead">{createur.chapeau ?? <ARemplir />}</p>
-      </div>
-      <div class="grille grille--4">
-        <CarteChiffre valeur={chiffres.instagram.abonnes} legende="abonnés Instagram" source="Meta" date={date} dater />
-        <CarteChiffre valeur={chiffres.instagram.vuesAnnee} legende={`vues Instagram en ${annee}`} source="Meta" date={date} dater royal />
-        <CarteChiffre valeur={chiffres.tiktok.abonnes} legende="abonnés TikTok" source="TikTok" date={date} dater />
-        <CarteChiffre valeur={chiffres.tiktok.vuesAnnee} legende={`vues TikTok en ${annee}`} source="TikTok" date={date} dater />
-      </div>
-    </div>
-  </section>
+      <EnTete
+        repere="Le coureur"
+        id="titre-coureur"
+        titre="Des objectifs à raconter. Des performances pour les ancrer."
+        chapeau="Je construis mes contenus autour d’objectifs sportifs concrets. La préparation, les progrès et les courses deviennent les étapes d’une aventure que je partage, avec la même envie : continuer à m’améliorer."
+      />
 
-  <!-- ============== CHAPITRE 3 : LA COMMUNAUTÉ (BACK TO RUN) ============== -->
-  <section id="chapitre-3" class="lg-ambient lg-ambient--flip chapitre">
-    <div class="chapitre__inner">
-      <div class="chapitre__texte">
-        <span class="lg-chip"><span class="lg-chip__dot"></span>Chapitre 3</span>
-        <h2 class="display-l">{communaute.titre}</h2>
-        <p class="lead">{communaute.chapeau}</p>
-        {communaute.lien
-          ? <a href={communaute.lien} class="lg-btn lg-btn--glass" target="_blank" rel="noopener noreferrer">Découvrir Back to Run</a>
-          : <ARemplir texte="LIEN BACK TO RUN À FOURNIR" />}
-      </div>
-      <div class="chapitre__preuve">
-        <Photo photo={communaute.photo} />
-        <div class="grille grille--3">
-          <CarteChiffre valeur={chiffres.backToRun.inscrits} legende="inscrits à Back to Run" source="Back to Run" date={date} dater royal />
-          <CarteChiffre valeur={chiffres.backToRun.kmCommunaute} legende="km courus par la communauté" source="Back to Run" date={date} dater />
-          <CarteChiffre valeur={chiffres.backToRun.actifsParJour} legende="actifs chaque jour" source="Back to Run" date={date} dater />
-        </div>
-      </div>
-    </div>
-  </section>
+      <ul class="bandeau-perfs" role="list" aria-label="Références chronométriques">
+        {toutesPerformances.map((p) => (
+          <li class:list={['lg-glass', 'perf', { 'lg-glass--royal': p.forte }]}>
+            <span class="perf__resultat title">{p.resultat}</span>
+            <span class="perf__epreuve">{p.epreuve}</span>
+          </li>
+        ))}
+      </ul>
 
-  <!-- ================= CHAPITRE 4 : CE QUI ARRIVE (SAINTÉLYON) ================= -->
-  <section id="chapitre-4" class="lg-ambient chapitre">
-    <div class="chapitre__inner">
-      <div class="chapitre__texte">
-        <span class="lg-chip"><span class="lg-chip__dot"></span>Chapitre 4</span>
-        <h2 class="display-l">{saintelyon.titre}</h2>
-        <p class="lead">{saintelyon.chapeau ?? <ARemplir />}</p>
-      </div>
-      <div class="chapitre__preuve">
-        <Photo photo={saintelyon.photo} />
-        <div class="grille">
-          <div class="lg-glass lg-glass--royal carte">
-            <span class="label">La course</span>
-            <span class="title">{saintelyon.date ?? <ARemplir texte="DATE À CONFIRMER" />}</span>
-          </div>
+      <div class="duo">
+        <div class="pile">
+          <Progression />
+          {videoCoureur && <CarteVideo video={videoCoureur} contexte="Vidéo performance" />}
           <div class="lg-glass carte">
-            <span class="label">La préparation</span>
-            <p class="body">{saintelyon.materiel ?? <ARemplir texte="TEXTE À ÉCRIRE PAR ALEX : le matériel de course" />}</p>
+            <h3 class="label">Un terrain d’essai au quotidien</h3>
+            <p class="body">
+              Une pratique régulière et des objectifs exigeants me donnent un terrain concret pour
+              utiliser le matériel et partager mes retours d’expérience.
+            </p>
+            <ul class="puces" role="list">
+              <li>Chaussures</li><li>Vêtements</li><li>Accessoires</li><li>Nutrition de course</li><li>Organisation de la récupération</li>
+            </ul>
+          </div>
+        </div>
+        <div class="pile">
+          <DefiQuotidien />
+          <a class="lg-btn lg-btn--glass" href="/histoire">Découvrir mon parcours</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 3. LE CRÉATEUR ======================= -->
+  <section id="createur" class="lg-ambient chapitre" aria-labelledby="titre-createur">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete
+        repere="Le créateur"
+        id="titre-createur"
+        titre="La progression est sérieuse. Le ton reste léger."
+        chapeau="Je partage les entraînements et les courses, mais aussi ce qui les rend vivants : les découvertes, les imprévus et l’autodérision. La performance et le divertissement font partie de la même aventure."
+      />
+
+      <div class="duo duo--createur">
+        {videoCreateur && (
+          <div class="pile">
+            <CarteVideo video={videoCreateur} contexte="Une vidéo qui a beaucoup circulé" />
+            <p class="caption texte-muted">Un exemple parmi les contenus de 2026, pas un résultat habituel.</p>
+          </div>
+        )}
+        <div class="plateformes">
+          <article class="lg-glass plateforme">
+            <h3 class="label">Instagram · <a href={compte('instagram').url} target="_blank" rel="noopener noreferrer">{compte('instagram').pseudo}</a></h3>
+            <div class="plateforme__chiffres">
+              <p><span class="lg-stat__value">{ig.abonnesAffichage}</span> <span class="lg-stat__label">abonnés</span></p>
+              <p><span class="lg-stat__value">{ig.vuesAffichage}</span> <span class="lg-stat__label">de vues en 2026</span></p>
+            </div>
+            <p class="lg-stat__source">{nombre(ig.abonnes)} abonnés au {ig.releve} · {nombre(ig.vues)} vues {ig.periode}</p>
+          </article>
+          <article class="lg-glass plateforme">
+            <h3 class="label">TikTok · <a href={compte('tiktok').url} target="_blank" rel="noopener noreferrer">{compte('tiktok').pseudo}</a></h3>
+            <div class="plateforme__chiffres">
+              <p><span class="lg-stat__value">{tt.abonnesAffichage}</span> <span class="lg-stat__label">abonnés</span></p>
+              <p><span class="lg-stat__value">{tt.vuesAffichage}</span> <span class="lg-stat__label">de vues en 2026</span></p>
+            </div>
+            <p class="lg-stat__source">{nombre(tt.abonnes)} abonnés au {tt.releve} · {nombre(tt.vues)} vues {tt.periode}</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="regularite">
+        <h3 class="label">Régularité sur Instagram en 2026</h3>
+        <ul class="grille grille--4" role="list">
+          <li><CarteChiffre petit valeur={`≈ ${nombre(ig.vuesMedianesPublication)}`} legende="vues médianes par publication" source="Publications retenues de 2026" /></li>
+          <li><CarteChiffre petit valeur={ig.publicationsPlus10k} legende="publications à plus de 10 000 vues" source={`Au ${ig.releve}`} /></li>
+          <li><CarteChiffre petit valeur={ig.publicationsPlus100k} legende="publications à plus de 100 000 vues" source={`Au ${ig.releve}`} /></li>
+          <li><CarteChiffre petit valeur={`≈ ${nombre(ig.vuesMedianesStory)}`} legende="vues médianes par story" source="30 derniers jours" /></li>
+        </ul>
+      </div>
+
+      <dl class="details-chiffres lg-glass lg-glass--strong">
+        <div><dt>Interactions Instagram en 2026</dt><dd>{nombre(ig.interactions)}</dd></div>
+        <div><dt>Engagement Instagram</dt><dd>{ig.engagement} <span class="caption texte-muted">{ig.engagementDefinition}</span></dd></div>
+        <div><dt>Vidéos TikTok à plus de 100 000 vues</dt><dd>{tt.videosPlus100k}</dd></div>
+        <div><dt>Likes TikTok sur la période</dt><dd>{nombre(tt.likes)}</dd></div>
+        <div><dt>Partages et commentaires TikTok</dt><dd>{nombre(tt.partages)} partages · {nombre(tt.commentaires)} commentaires</dd></div>
+        <div><dt>Engagement TikTok</dt><dd>{tt.engagement} <span class="caption texte-muted">{tt.engagementDefinition}</span></dd></div>
+      </dl>
+      <p class="caption texte-muted">
+        Les deux taux d’engagement sont calculés différemment (couverture pour Instagram, vues pour TikTok) :
+        ils ne se comparent pas directement. Instagram : {ig.periode}. TikTok : {tt.periode}.
+      </p>
+
+      <div class="audience">
+        <h3 class="title">Qui suit La Gamberge</h3>
+        <div class="audience__grille">
+          <div class="lg-glass carte carte--graphique audience__ages">
+            <Colonnes titre="Âge" population={audience.instagram.population} releve={audience.instagram.releve}
+              donnees={audience.instagram.ages} note={audience.instagram.repereAge} />
+          </div>
+          <div class="lg-glass carte carte--graphique">
+            <Barres titre="Genre" population={audience.instagram.population} releve={audience.instagram.releve} donnees={audience.instagram.genre} />
+            <Barres titre="Genre" population={audience.tiktok.population} releve={audience.tiktok.releve} donnees={audience.tiktok.genre} />
+          </div>
+          <div class="lg-glass carte carte--graphique">
+            <Barres titre="Pays" population={audience.instagram.population} releve={audience.instagram.releve}
+              donnees={avecAutres(audience.instagram.pays)}
+              note={`${audience.instagram.villeRepere.libelle} : ${audience.instagram.villeRepere.valeur.toLocaleString('fr-FR')} % des abonnés Instagram (répartition par ville).`} />
+          </div>
+          <div class="lg-glass carte carte--graphique">
+            <Barres titre="Pays" population={audience.tiktok.population} releve={audience.tiktok.releve} donnees={avecAutres(audience.tiktok.pays)} />
+          </div>
+        </div>
+
+        <details class="lg-glass lg-glass--strong complement">
+          <summary class="label">Spectateurs TikTok sur 365 jours (population différente des abonnés)</summary>
+          <div class="complement__corps">
+            <Barres titre="Âge (deux tranches principales)" population={audience.tiktokSpectateurs.population} releve={audience.tiktokSpectateurs.releve} donnees={audience.tiktokSpectateurs.ages} />
+            <Barres titre="Genre" population={audience.tiktokSpectateurs.population} releve={audience.tiktokSpectateurs.releve} donnees={audience.tiktokSpectateurs.genre}
+              note="Le complément à 100 % n’est pas détaillé par la plateforme." />
+            <Barres titre="Pays" population={audience.tiktokSpectateurs.population} releve={audience.tiktokSpectateurs.releve} donnees={audience.tiktokSpectateurs.pays} />
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 4. BACK TO RUN ======================= -->
+  <section id="back-to-run" class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-btr">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete repere="Back to Run" id="titre-btr" titre={backToRun.titre} chapeau={backToRun.texte} />
+
+      <div class="duo duo--btr">
+        <div class="pile">
+          <p class="label">{backToRun.edition}</p>
+          <ul class="grille" role="list">
+            {backToRun.principaux.map((c) => (
+              <li><CarteChiffre valeur={c.valeur} legende={c.legende} source={c.definition} royal={c.forte} /></li>
+            ))}
+          </ul>
+        </div>
+        <div class="pile">
+          {videoBtr && <CarteVideo video={videoBtr} contexte="La vidéo d’annonce" />}
+          <Photo photo={backToRun.photo} />
+          <ul class="lg-glass liste-secondaire" role="list">
+            {backToRun.secondaires.map((s) => (
+              <li>
+                <span class="liste-secondaire__valeur">{nombre(s.valeur)}</span>
+                <span class="body">{s.legende}{s.definition && <span class="caption texte-muted"> ({s.definition})</span>}</span>
+              </li>
+            ))}
+          </ul>
+          <div class="lg-glass carte">
+            <p class="title">{backToRun.suite}</p>
+            <p class="body">{backToRun.produits}</p>
+          </div>
+          <div class="actions">
+            <a class="lg-btn lg-btn--glass" href={backToRun.url} target="_blank" rel="noopener noreferrer">Découvrir Back to Run<span class="sr-only"> (nouvel onglet)</span></a>
+            <a class="lien-fleche" href="/communaute">La communauté en détail</a>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============================ ÉPILOGUE ============================ -->
-  <section id="contact" class="lg-ambient lg-ambient--flip chapitre">
-    <div class="chapitre__inner">
-      <div class="chapitre__texte">
-        <span class="lg-chip"><span class="lg-chip__dot"></span>Épilogue</span>
-        <h2 class="display-l">{epilogue.titre}</h2>
-        <p class="lead">{epilogue.chapeau ?? <ARemplir />}</p>
-        <div class="lg-glass carte">
-          <h3 class="label">Ils m'ont fait confiance</h3>
-          <div class="marques">
-            {epilogue.marques.length > 0
-              ? epilogue.marques.map((m) => <span class="lg-chip">{m}</span>)
-              : <ARemplir texte="NOMS DES MARQUES À CONFIRMER" />}
-          </div>
-        </div>
-      </div>
-
-      <div class="chapitre__preuve">
-        <div class="lg-glass lg-glass--royal carte">
-          <h3 class="title">Me contacter</h3>
-          <p class="body">
-            {epilogue.email
-              ? <a href={contact}>{epilogue.email}</a>
-              : <ARemplir texte="EMAIL DE CONTACT À FOURNIR" />}
-          </p>
-          <p class="caption texte-muted">Ou en message privé sur Instagram, {reseaux[0].pseudo}.</p>
-        </div>
-        <div class="grille">
-          {reseaux.map((r) => (
-            <a class="lg-glass reseau" href={r.lien} target="_blank" rel="noopener noreferrer">
-              <span>
-                <span class="title">{r.nom}</span><br />
-                <span class="caption texte-muted">{r.pseudo}</span>
-              </span>
-              <!-- Icône « lien externe » : trait de 2 px en bleu roi (charte) -->
-              <svg class="reseau__fleche" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M7 17 17 7M8 7h9v9" />
-              </svg>
-            </a>
-          ))}
-        </div>
-      </div>
+  <!-- ===================== 5. LES PROCHAINS OBJECTIFS ===================== -->
+  <section id="objectifs" class="lg-ambient chapitre" aria-labelledby="titre-objectifs">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete
+        repere="Les projets"
+        id="titre-objectifs"
+        titre="Des projets pour construire la suite ensemble."
+        chapeau="Du trail à la route, chaque objectif ouvre de nouveaux sujets : préparation, matériel, nutrition de course et récit de l’expérience."
+      />
+      <Calendrier />
+      <p class="caption texte-muted">Calendrier prévisionnel au 12 octobre 2026. Les noms des courses n’impliquent aucun partenariat avec leurs organisateurs.</p>
+      <a class="lg-btn lg-btn--glass" href="/projets">Voir mes objectifs en détail</a>
     </div>
+  </section>
 
-    <footer class="lg-glass pied">
-      <span class="wordmark">LA GAMBERGE</span>
-      <span class="caption texte-muted">
-        Chiffres au {date ?? <ARemplir texte="DATE À CONFIRMER" />} · © {new Date().getFullYear()} Alex Bourbigot
-      </span>
-    </footer>
+  <!-- ======================= 6. COLLABORER ======================= -->
+  <section id="collaborer" class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-collaborer">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete
+        repere="Collaborer"
+        id="titre-collaborer"
+        titre="Écrivons le prochain chapitre."
+        chapeau="Vous souhaitez accompagner un projet ou me confier une création de contenu ? Construisons une collaboration adaptée à votre objectif, à mon univers et au calendrier."
+      />
+
+      <ul class="offres" role="list">
+        {offres.map((o) => (
+          <li class:list={['lg-glass', 'offre', { 'offre--forte': o.forte }]}>
+            <h3 class="title">{o.titre}</h3>
+            <p class="body offre__resume">{o.resume}</p>
+            <ul class="puces" role="list">{o.points.map((p) => <li>{p}</li>)}</ul>
+            {o.note && <p class="caption texte-muted">{o.note}</p>}
+          </li>
+        ))}
+      </ul>
+      <p class="body">{affiliation}</p>
+
+      {referencesPubliees.length > 0 && (
+        <div class="lg-glass carte">
+          <h3 class="label">Ils m’ont fait confiance</h3>
+          <ul class="marques" role="list">
+            {referencesPubliees.map((r) => <li class="lg-chip">{r.nom}<span class="sr-only"> : {r.nature}</span></li>)}
+          </ul>
+        </div>
+      )}
+
+      <Contact />
+    </div>
   </section>
 </Base>

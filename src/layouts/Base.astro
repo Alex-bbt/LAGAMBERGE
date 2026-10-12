@@ -1,9 +1,21 @@
 ---
-/* Squelette HTML commun : métadonnées, polices, navigation flottante. */
+/* Squelette commun : métadonnées, navigation flottante, pied de page. */
 import '../styles/site.css';
-import { contenu } from '../data/contenu.js';
+import { identite, stats, contact, comptes } from '../data/mediakit.js';
 
-const description = contenu.meta.description ?? 'Alex Bourbigot, coureur, créateur de contenu et organisateur de Back to Run.';
+const { titre, description } = Astro.props;
+const titrePage = titre ? `${titre} · La Gamberge` : `La Gamberge · ${identite.positionnement}`;
+const desc = description ?? `${identite.description} Media kit de La Gamberge (Alex Bourbigot).`;
+
+// Navigation : ancres de la page principale + pages complémentaires.
+const liens = [
+  { libelle: 'Le profil', lien: '/#profil' },
+  { libelle: 'L’histoire', lien: '/histoire' },
+  { libelle: 'La communauté', lien: '/communaute' },
+  { libelle: 'Les projets', lien: '/projets' },
+];
+const chemin = Astro.url.pathname.replace(/\/$/, '') || '/';
+const insta = comptes.find((c) => c.id === 'instagram');
 ---
 
 <!doctype html>
@@ -11,11 +23,11 @@ const description = contenu.meta.description ?? 'Alex Bourbigot, coureur, créat
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{contenu.meta.titre}</title>
-    <meta name="description" content={description} />
+    <title>{titrePage}</title>
+    <meta name="description" content={desc} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={contenu.meta.titre} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={titrePage} />
+    <meta property="og:description" content={desc} />
     <!-- Pas encore de logo dessiné : icône vide pour éviter une erreur 404. -->
     <link rel="icon" href="data:," />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -26,12 +38,21 @@ const description = contenu.meta.description ?? 'Alex Bourbigot, coureur, créat
 
     <header class="entete">
       <nav class="lg-glass lg-nav" aria-label="Navigation principale">
-        <a href="#prologue" class="lg-nav__brand">LA GAMBERGE</a>
+        <a href="/" class="lg-nav__brand">LA GAMBERGE</a>
         <div class="lg-nav__links">
-          {contenu.nav.map((l) => (
-            <a href={l.lien} class="lg-nav__link lg-nav__link--bureau">{l.libelle}</a>
+          {liens.map((l) => (
+            <a href={l.lien} class="lg-nav__link lg-nav__link--bureau" aria-current={chemin === l.lien ? 'page' : undefined}>{l.libelle}</a>
           ))}
-          <a href="#contact" class="lg-btn lg-btn--primary">Collaborer</a>
+          <!-- Menu mobile : fonctionne sans JavaScript (élément details) -->
+          <details class="menu-mobile">
+            <summary class="lg-btn lg-btn--glass" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg></summary>
+            <div class="menu-mobile__panneau lg-glass lg-glass--strong">
+              {liens.map((l) => <a href={l.lien} class="lg-nav__link">{l.libelle}</a>)}
+              <!-- Sur les très petits écrans, « Collaborer » passe dans le menu -->
+              <a href="/#collaborer" class="lg-btn lg-btn--primary menu-mobile__cta">Collaborer</a>
+            </div>
+          </details>
+          <a href="/#collaborer" class="lg-btn lg-btn--primary nav-cta">Collaborer</a>
         </div>
       </nav>
     </header>
@@ -39,5 +60,25 @@ const description = contenu.meta.description ?? 'Alex Bourbigot, coureur, créat
     <main id="contenu">
       <slot />
     </main>
+
+    <footer class="lg-ambient pied-page">
+      <div class="lg-glass pied">
+        <span class="wordmark">LA GAMBERGE</span>
+        <span class="caption texte-muted">
+          {identite.personne.nom} ·
+          {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a>}
+        </span>
+        <span class="caption texte-muted">
+          Statistiques : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}.
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      // Ferme le menu mobile après un clic sur un lien.
+      document.querySelectorAll('.menu-mobile a').forEach((a) =>
+        a.addEventListener('click', () => a.closest('details')?.removeAttribute('open'))
+      );
+    </script>
   </body>
 </html>

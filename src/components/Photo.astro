@@ -1,34 +1,26 @@
 ---
 /* ==========================================================================
    Photo — cadre lg-photo du design system.
-   - Si `fichier` est rempli (nom d'un fichier de src/assets/photos/), la photo
-     est affichée, redimensionnée et compressée automatiquement par Astro.
-   - Sinon : emplacement [PHOTO : description] bien visible.
+   Affiche la photo si `photo.fichier` correspond à un fichier de
+   src/assets/photos/ (Astro la redimensionne et la compresse).
+   Sinon le composant n'affiche RIEN : pas d'emplacement vide sur le site.
    ========================================================================== */
 import { Image } from 'astro:assets';
-import ARemplir from './ARemplir.astro';
 
-const { photo, format = 'paysage', class: classe = '' } = Astro.props;
+const { photo, format = 'paysage', class: classe = '', prioritaire = false } = Astro.props;
 
-// Toutes les photos déposées dans src/assets/photos/, indexées par nom.
 const fichiers = import.meta.glob('../assets/photos/*.{jpg,jpeg,png,webp,avif}', { eager: true });
-const image = photo?.fichier
-  ? fichiers[`../assets/photos/${photo.fichier}`]?.default
-  : null;
+const image = photo?.fichier ? fichiers[`../assets/photos/${photo.fichier}`]?.default : null;
 ---
 
-{image ? (
+{image && (
   <div class={`lg-photo photo photo--${format} ${classe}`}>
     <Image
       src={image}
       alt={photo.alt}
       widths={[480, 800, 1200]}
       sizes="(max-width: 720px) 100vw, 50vw"
-      loading="lazy"
+      loading={prioritaire ? 'eager' : 'lazy'}
     />
-  </div>
-) : (
-  <div class={`lg-photo photo photo--${format} photo--vide ${classe}`}>
-    <ARemplir texte={`PHOTO : ${photo?.description ?? 'à fournir'}`} />
   </div>
 )}

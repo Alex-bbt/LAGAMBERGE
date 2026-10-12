@@ -1,0 +1,64 @@
+---
+/* ==========================================================================
+   Contact — bouton principal + alternatives.
+   - Email renseigné (src/data/mediakit.js) : bouton mailto + adresse visible
+     et bouton « Copier ».
+   - Email absent : AUCUN bouton email. Le bouton principal ouvre Instagram,
+     et le dit clairement.
+   ========================================================================== */
+import { contact, comptes } from '../data/mediakit.js';
+
+const insta = comptes.find((c) => c.id === 'instagram');
+const autres = comptes.filter((c) => c.id !== 'instagram');
+---
+
+<div class="lg-glass lg-glass--royal contact">
+  <h3 class="title">Discutons de votre projet</h3>
+  {contact.email ? (
+    <>
+      <p class="body">Écrivez-moi directement, je réponds personnellement.</p>
+      <div class="actions">
+        <a class="lg-btn lg-btn--glass" href={`mailto:${contact.email}`}>Écrire un email</a>
+        <button class="lg-btn lg-btn--glass" type="button" data-copier={contact.email}>Copier l'adresse</button>
+      </div>
+      <p class="contact__email body" data-email>{contact.email}</p>
+      <p class="caption contact__retour" role="status" data-retour></p>
+      <p class="caption">Ou par message privé sur Instagram : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a></p>
+    </>
+  ) : (
+    <>
+      <p class="body">Le plus simple aujourd'hui : un message privé sur Instagram, je réponds personnellement.</p>
+      <div class="actions">
+        <a class="lg-btn lg-btn--glass" href={insta.url} target="_blank" rel="noopener noreferrer">
+          Écrire sur Instagram {insta.pseudo}<span class="sr-only"> (nouvel onglet)</span>
+        </a>
+      </div>
+    </>
+  )}
+  <ul class="contact__reseaux" role="list">
+    {autres.map((c) => (
+      <li><a href={c.url} target="_blank" rel="noopener noreferrer">{c.nom} <span class="texte-muted">{c.pseudo}</span></a></li>
+    ))}
+  </ul>
+</div>
+
+{contact.email && (
+  <script>
+    // Copie de l'adresse ; en cas de refus du navigateur, on sélectionne le texte.
+    const bouton = document.querySelector('[data-copier]');
+    const retour = document.querySelector('[data-retour]');
+    bouton?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(bouton.dataset.copier);
+        retour.textContent = 'Adresse copiée.';
+      } catch {
+        const zone = document.querySelector('[data-email]');
+        const r = document.createRange();
+        r.selectNodeContents(zone);
+        getSelection().removeAllRanges();
+        getSelection().addRange(r);
+        retour.textContent = 'Adresse sélectionnée : copiez-la avec Ctrl + C.';
+      }
+    });
+  </script>
+)}
