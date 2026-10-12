@@ -149,7 +149,13 @@ main > .chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-1
   align-items: start;
 }
 .pile { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; align-items: stretch; }
-.pile > .lg-btn, .pile > .actions { align-self: flex-start; }
+.pile > .lg-btn, .pile > .actions, .pile > .lien-fleche { align-self: flex-start; }
+.pile--aeree { gap: var(--space-8); }
+/* Photo + contenu : la photo garde sa place, le texte respire à côté */
+.duo--photo { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: var(--space-12); }
+.duo--photo-droite { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: var(--space-12); align-items: center; }
+/* Bloc de texte posé directement sur le fond, sans carte */
+.bloc-texte { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
 
 .grille {
   display: grid;
@@ -187,8 +193,19 @@ main > .chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-1
 .hero { align-items: center; }
 .hero__marque { letter-spacing: 0.02em; }
 .hero__promesse { max-width: calc(var(--space-24) * 6); }
-.hero__preuves { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
-.preuves { display: flex; flex-direction: column; gap: var(--space-4); }
+.hero { align-items: stretch; }
+.hero .chapitre__texte { justify-content: center; }
+/* Repères : un bandeau de verre unique sous le texte et la photo */
+.preuves {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-8);
+  border-radius: var(--radius-lg);
+}
+.preuve { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.preuve + .preuve { border-left: 1px solid var(--hairline); padding-left: var(--space-6); }
 
 /* -- 2. Performances ------------------------------------------------------ */
 .bandeau-perfs {
@@ -272,7 +289,7 @@ main > .chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-1
 }
 
 /* -- 3. Créateur ----------------------------------------------------------- */
-.duo--createur { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+.duo--createur { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: var(--space-12); }
 .plateformes { display: grid; gap: var(--space-4); }
 .plateforme { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-6); }
 .plateforme__chiffres { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-12); }
@@ -380,7 +397,6 @@ main > .chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-1
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-6);
 }
 .liste-secondaire > li { display: grid; grid-template-columns: calc(var(--space-24) + var(--space-8)) minmax(0, 1fr); gap: var(--space-4); align-items: baseline; }
 .liste-secondaire__valeur { font-family: var(--font-display); font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -441,7 +457,11 @@ main > .chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-1
   border-radius: var(--radius-xl);
 }
 .contact a:not(.lg-btn) { color: var(--white); text-underline-offset: 3px; }
-.contact__email { font-weight: 700; user-select: all; overflow-wrap: anywhere; }
+.contact__email { user-select: all; overflow-wrap: break-word; font-weight: 700; }
+/* Bouton secondaire au trait blanc, sur la carte bleu roi */
+.lg-btn--ligne { background: transparent; color: var(--white); border-color: var(--glass-stroke); }
+.lg-btn--ligne:hover { background: var(--glass-fill); color: var(--royal); }
+.lg-btn--ligne:focus-visible { outline: 3px solid var(--white); outline-offset: 3px; }
 .contact__reseaux { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); }
 
 /* -- Pied de page ----------------------------------------------------------- */
@@ -458,10 +478,23 @@ main > .chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-1
   border-radius: var(--radius-pill);
 }
 
-/* -- Photos : formats conseillés par la charte ----------------------------- */
+/* -- Photos -----------------------------------------------------------------
+   Le cadre fixe le format ; l'image le remplit sans déformation (cover) et
+   --cadrage / --cadrage-mobile (src/data/mediakit.js) gardent le visage. */
 .photo { width: 100%; max-width: 100%; }
+.photo img { object-position: var(--cadrage, 50% 50%); }
 .photo--portrait { aspect-ratio: 4 / 5; }
+.photo--carre { aspect-ratio: 1 / 1; }
 .photo--paysage { aspect-ratio: 3 / 2; }
+.photo--naturel { aspect-ratio: var(--ratio); }
+.hero__photo { box-shadow: var(--shadow-glass-lift); }
+@media (max-width: 720px) {
+  .photo img { object-position: var(--cadrage-mobile, var(--cadrage, 50% 50%)); }
+  .photo--m-portrait { aspect-ratio: 4 / 5; }
+  .photo--m-carre { aspect-ratio: 1 / 1; }
+  .photo--m-paysage { aspect-ratio: 3 / 2; }
+  .photo--m-naturel { aspect-ratio: var(--ratio); }
+}
 
 /* -- Écrans moyens --------------------------------------------------------- */
 @media (max-width: 1080px) {
@@ -488,8 +521,11 @@ main > .chapitre:first-child { padding-top: calc(var(--space-24) + var(--space-1
 @media (max-width: 720px) {
   .chapitre { padding: var(--space-16) var(--space-4); }
   main > .chapitre:first-child { padding-top: calc(var(--space-16) + var(--space-16)); }
+  .preuves { grid-template-columns: minmax(0, 1fr); padding: var(--space-6); gap: var(--space-4); }
+  .preuve + .preuve { border-left: 0; padding-left: 0; border-top: 1px solid var(--hairline); padding-top: var(--space-4); }
+  .duo--photo, .duo--photo-droite { gap: var(--space-8); }
   .chapitre__inner,
-  .duo, .duo--createur, .duo--btr,
+  .duo, .duo--createur, .duo--btr, .duo--photo, .duo--photo-droite,
   .grille, .grille--4,
   .audience__grille,
   .bandeau-perfs,

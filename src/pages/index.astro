@@ -22,7 +22,7 @@ import Calendrier from '../components/Calendrier.astro';
 import Contact from '../components/Contact.astro';
 import {
   identite, performances, courses, stats, audience, videos, backToRun,
-  offres, affiliation, references, defi, comptes, nombre,
+  offres, affiliation, references, defi, comptes, photos, nombre,
 } from '../data/mediakit.js';
 
 const ig = stats.instagram;
@@ -60,23 +60,24 @@ const avecAutres = (pays) => [
         <p class="caption texte-muted hero__contexte">{identite.personne.nom} · {identite.personne.contexte.join(' · ')}</p>
       </div>
 
-      <div class="hero__preuves">
-        <Photo photo={identite.photo} format="portrait" prioritaire />
-        <ul class="preuves" role="list">
-          <li class="lg-glass lg-glass--royal lg-stat">
-            <span class="title">{marathon.resultat}</span>
-            <span class="lg-stat__label">au {marathon.epreuve}</span>
-          </li>
-          <li class="lg-glass lg-stat">
-            <span class="title">{defi.minKm} km</span>
-            <span class="lg-stat__label">au moins, chaque jour en {defi.annee}</span>
-          </li>
-          <li class="lg-glass lg-stat">
-            <span class="title">{nombre(backToRun.principaux[0].valeur)}</span>
-            <span class="lg-stat__label">inscrits à la première édition de Back to Run</span>
-          </li>
-        </ul>
-      </div>
+      <Photo photo={identite.photo} format="portrait" formatMobile="carre" prioritaire
+        sizes="(max-width: 720px) 100vw, 560px" class="hero__photo" />
+
+      <!-- Repères : un seul bandeau de verre, sans carte par chiffre -->
+      <ul class="lg-glass preuves" role="list">
+        <li class="preuve">
+          <span class="title">{marathon.resultat}</span>
+          <span class="lg-stat__label">au {marathon.epreuve}</span>
+        </li>
+        <li class="preuve">
+          <span class="title">{defi.minKm} km</span>
+          <span class="lg-stat__label">au moins, chaque jour en {defi.annee}</span>
+        </li>
+        <li class="preuve">
+          <span class="title">{nombre(backToRun.principaux[0].valeur)}</span>
+          <span class="lg-stat__label">inscrits à la première édition de Back to Run</span>
+        </li>
+      </ul>
     </div>
   </section>
 
@@ -99,11 +100,16 @@ const avecAutres = (pays) => [
         ))}
       </ul>
 
-      <div class="duo">
+      <div class="duo duo--photo">
         <div class="pile">
+          {videoCoureur
+            ? <CarteVideo video={videoCoureur} contexte="Vidéo performance" />
+            : <Photo photo={photos.performance} format="naturel" sizes="(max-width: 720px) 100vw, 520px" />}
+        </div>
+        <div class="pile pile--aeree">
           <Progression />
-          {videoCoureur && <CarteVideo video={videoCoureur} contexte="Vidéo performance" />}
-          <div class="lg-glass carte">
+          <DefiQuotidien />
+          <div class="bloc-texte">
             <h3 class="label">Un terrain d’essai au quotidien</h3>
             <p class="body">
               Une pratique régulière et des objectifs exigeants me donnent un terrain concret pour
@@ -113,10 +119,7 @@ const avecAutres = (pays) => [
               <li>Chaussures</li><li>Vêtements</li><li>Accessoires</li><li>Nutrition de course</li><li>Organisation de la récupération</li>
             </ul>
           </div>
-        </div>
-        <div class="pile">
-          <DefiQuotidien />
-          <a class="lg-btn lg-btn--glass" href="/histoire">Découvrir mon parcours</a>
+          <a class="lien-fleche" href="/histoire">Découvrir mon parcours</a>
         </div>
       </div>
     </div>
@@ -133,6 +136,8 @@ const avecAutres = (pays) => [
       />
 
       <div class="duo duo--createur">
+        <Photo photo={photos.divertissement} format="portrait" sizes="(max-width: 720px) 100vw, 480px" />
+        <div class="pile pile--aeree">
         {videoCreateur && (
           <div class="pile">
             <CarteVideo video={videoCreateur} contexte="Une vidéo qui a beaucoup circulé" />
@@ -156,6 +161,7 @@ const avecAutres = (pays) => [
             </div>
             <p class="lg-stat__source">{nombre(tt.abonnes)} abonnés au {tt.releve} · {nombre(tt.vues)} vues {tt.periode}</p>
           </article>
+        </div>
         </div>
       </div>
 
@@ -232,19 +238,23 @@ const avecAutres = (pays) => [
         </div>
         <div class="pile">
           {videoBtr && <CarteVideo video={videoBtr} contexte="La vidéo d’annonce" />}
-          <Photo photo={backToRun.photo} />
-          <ul class="lg-glass liste-secondaire" role="list">
-            {backToRun.secondaires.map((s) => (
-              <li>
-                <span class="liste-secondaire__valeur">{nombre(s.valeur)}</span>
-                <span class="body">{s.legende}{s.definition && <span class="caption texte-muted"> ({s.definition})</span>}</span>
-              </li>
-            ))}
-          </ul>
-          <div class="lg-glass carte">
-            <p class="title">{backToRun.suite}</p>
-            <p class="body">{backToRun.produits}</p>
-          </div>
+          <Photo photo={backToRun.photo} format="paysage" formatMobile="carre" sizes="(max-width: 720px) 100vw, 560px" />
+        </div>
+      </div>
+
+      <!-- Chiffres secondaires et suite : texte simple, sans cartes -->
+      <div class="duo">
+        <ul class="liste-secondaire" role="list">
+          {backToRun.secondaires.map((s) => (
+            <li>
+              <span class="liste-secondaire__valeur">{nombre(s.valeur)}</span>
+              <span class="body">{s.legende}{s.definition && <span class="caption texte-muted"> ({s.definition})</span>}</span>
+            </li>
+          ))}
+        </ul>
+        <div class="bloc-texte">
+          <p class="title">{backToRun.suite}</p>
+          <p class="body">{backToRun.produits}</p>
           <div class="actions">
             <a class="lg-btn lg-btn--glass" href={backToRun.url} target="_blank" rel="noopener noreferrer">Découvrir Back to Run<span class="sr-only"> (nouvel onglet)</span></a>
             <a class="lien-fleche" href="/communaute">La communauté en détail</a>
@@ -257,15 +267,21 @@ const avecAutres = (pays) => [
   <!-- ===================== 5. LES PROCHAINS OBJECTIFS ===================== -->
   <section id="objectifs" class="lg-ambient chapitre" aria-labelledby="titre-objectifs">
     <div class="chapitre__inner chapitre__inner--seul">
-      <EnTete
-        repere="Les projets"
-        id="titre-objectifs"
-        titre="Des projets pour construire la suite ensemble."
-        chapeau="Du trail à la route, chaque objectif ouvre de nouveaux sujets : préparation, matériel, nutrition de course et récit de l’expérience."
-      />
+      <div class="duo duo--photo-droite">
+        <div class="pile pile--aeree">
+          <EnTete
+            repere="Les projets"
+            id="titre-objectifs"
+            titre="Des projets pour construire la suite ensemble."
+            chapeau="Du trail à la route, chaque objectif ouvre de nouveaux sujets : préparation, matériel, nutrition de course et récit de l’expérience."
+          />
+          <a class="lien-fleche" href="/projets">Voir mes objectifs en détail</a>
+        </div>
+        <!-- Photo personnelle (course sur route) : illustration, pas une image de la SaintéLyon -->
+        <Photo photo={photos.personnelle} format="paysage" formatMobile="portrait" sizes="(max-width: 720px) 100vw, 560px" />
+      </div>
       <Calendrier />
       <p class="caption texte-muted">Calendrier prévisionnel au 12 octobre 2026. Les noms des courses n’impliquent aucun partenariat avec leurs organisateurs.</p>
-      <a class="lg-btn lg-btn--glass" href="/projets">Voir mes objectifs en détail</a>
     </div>
   </section>
 

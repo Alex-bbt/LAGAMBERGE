@@ -31,16 +31,22 @@ export const identite = {
     age: 23,
     contexte: ['23 ans', 'Master 2 à l’IÉSEG', 'Étudiant-entrepreneur'],
   },
-  // Photo principale : dépose le fichier dans src/assets/photos/ puis écris son nom.
-  // À FOURNIR : une vraie photo d'Alex en course (portrait 4:5).
-  photo: { fichier: null, alt: '' },
+  // Photo principale (originaux dans src/assets/photos/, jamais modifiés).
+  // position / positionMobile : zone gardée au recadrage (x% y%), visage inclus.
+  photo: {
+    fichier: 'la-gamberge-accueil.jpg',
+    alt: 'Alex franchit la ligne d’arrivée du Marathon de Paris, bras ouverts.',
+    position: '46% 30%',
+    positionMobile: '48% 22%',
+  },
 };
 
 // -- Contact ------------------------------------------------------------------
 export const contact = {
   // À FOURNIR : adresse email professionnelle. Tant qu'elle vaut null, aucun
   // bouton email n'est affiché : le contact passe par Instagram.
-  email: null,
+  email: 'contact@lagamberge.com',
+  objetEmail: 'Partenariat La Gamberge',
 };
 
 // -- Comptes ------------------------------------------------------------------
@@ -77,6 +83,28 @@ export const parcours = {
   // Tant que la liste est vide, le bloc n'est pas publié.
   // Format : { objectif: '…', resultat: '…', statut: 'atteint' | 'manque' | 'en_cours' }
   objectifsInitiaux: [],
+};
+
+// -- Photos des sections -------------------------------------------------------
+export const photos = {
+  performance: {
+    fichier: 'la-gamberge-performance.jpeg',
+    alt: 'Alex après l’arrivée du Marathon de Paris 2026, médaille en main. Temps réel affiché : 02:38:21.',
+    position: '50% 35%',
+  },
+  divertissement: {
+    fichier: 'la-gamberge-divertissement.jpeg',
+    alt: 'Alex en combinaison intégrale verte, médaille de finisher autour du cou.',
+    position: '50% 28%',
+  },
+  // Photo personnelle (course sur route) : illustre les projets, ce n'est PAS
+  // une photo de trail ni de la SaintéLyon. Ne pas la légender comme telle.
+  personnelle: {
+    fichier: 'la-gamberge-trail.jpeg',
+    alt: 'Alex en pleine course sur route, au milieu d’autres coureurs, la main au front.',
+    position: '57% 40%',
+    positionMobile: '55% 30%',
+  },
 };
 
 // -- Défi quotidien -----------------------------------------------------------
@@ -243,8 +271,13 @@ export const backToRun = {
   ],
   suite: 'Deuxième édition\u00a0: septembre 2027.',
   produits: 'Des produits pour la communauté sont en développement.',
-  // À FOURNIR : photo de groupe, capture du défi, logo / mascotte.
-  photo: { fichier: null, alt: '' },
+  photo: {
+    fichier: 'back-to-run-communaute.jpeg',
+    alt: 'Des membres de la communauté Back to Run réunis à Paris, sourire aux lèvres.',
+    position: '50% 64%',
+    positionMobile: '50% 85%',
+  },
+  // À FOURNIR : capture du défi, logo / mascotte.
 };
 
 // -- Courses (calendrier + résultats) ----------------------------------------

@@ -22,7 +22,8 @@ src/pages/index.astro  Media kit : #profil #coureur #createur #back-to-run #obje
 src/pages/histoire.astro, communaute.astro, projets.astro   Pages d'approfondissement
 src/components/        EnTete, CarteChiffre, Barres, Colonnes, DefiQuotidien,
                        Progression, CarteVideo, Calendrier, Contact, Photo
-src/assets/photos/     Photos (optimisées par Astro), référencées dans mediakit.js
+src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
+                       Cadrage par photo (position / positionMobile) dans mediakit.js
 ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)
 api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les pages)
 ```

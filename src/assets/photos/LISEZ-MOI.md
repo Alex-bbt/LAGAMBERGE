@@ -1,10 +1,19 @@
 # Photos du site
 
-1. Dépose ici tes photos (jpg, png ou webp), avec un nom simple sans espace
-   ni accent : `prologue.jpg`, `back-to-run.jpg`…
-2. Dans `src/data/contenu.js`, écris ce nom dans `fichier` et décris l'image
-   dans `alt` (une phrase : ce qu'on voit sur la photo).
-3. Astro redimensionne et compresse les photos tout seul au moment du build :
-   tu peux déposer les originaux en grand.
+Ce dossier contient les **originaux**, jamais modifiés ni mis en ligne tels quels.
+Au build, Astro génère des versions WebP redimensionnées (480 à 1 600 px de large,
+sans métadonnées, GPS compris) : ce sont les seules envoyées aux visiteurs.
 
-Formats conseillés : portrait 4:5 pour le Prologue, paysage 3:2 dans les chapitres.
+| Fichier | Section | Remarque |
+|---|---|---|
+| la-gamberge-accueil.jpg | Haut de page | Arrivée du Marathon de Paris |
+| la-gamberge-performance.jpeg | Le coureur | Affichée en proportions d'origine (encarts du temps intacts) |
+| la-gamberge-divertissement.jpeg | Le créateur | |
+| back-to-run-communaute.jpeg | Back to Run | |
+| la-gamberge-trail.jpeg | Les projets | Photo personnelle sur route : ne pas la légender comme du trail ni comme la SaintéLyon |
+
+## Changer une photo
+1. Dépose le fichier ici (nom simple, sans espace ni accent).
+2. Dans `src/data/mediakit.js`, écris son nom dans `fichier`, décris l'image dans `alt`.
+3. Cadrage : `position` (ordinateur) et `positionMobile` (mobile), en « x% y% ».
+   Exemple : '50% 30%' garde le centre horizontal et le haut de l'image (visage).
