@@ -852,3 +852,225 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
   .frise__evt { width: calc(var(--space-24) * 2.2); }
   .frise__detail { padding: var(--space-6) var(--space-4); }
 }
+
+/* ==========================================================================
+   FINITIONS (octobre 2026)
+   Tuiles d'information (non cliquables) ≠ tuiles de navigation (cliquables) :
+   les premières ont un fond bleu roi et un curseur normal ; les secondes ont
+   un libellé de destination, un survol et un focus visibles.
+   ========================================================================== */
+
+/* 1. Statistiques : deux grandes tuiles d'information */
+.dominants__liste > li.tuile-stat {
+  padding: var(--space-8);
+  border-top: 0;
+  border-radius: var(--radius-lg);
+  background: var(--royal);
+  color: var(--white);
+  box-shadow: var(--shadow-royal);
+  cursor: default;
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease;
+}
+.tuile-stat .lead { color: var(--powder); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  /* transform : les tuiles voisines ne bougent pas */
+  .tuile-stat:hover { transform: translateY(calc(var(--space-1) * -0.5)) scale(1.025); box-shadow: var(--shadow-royal), var(--shadow-glass-lift); }
+}
+
+/* 2. Pourquoi moi ? : tuiles chrono cliquables vers /performances */
+.chronos-tuiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); padding-top: var(--space-2); }
+.tuile-chrono {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  height: 100%;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline);
+  background: var(--powder-soft);
+  color: var(--royal);
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tuile-chrono .chiffre { font-size: calc(var(--space-4) + var(--space-1)); }
+.tuile-chrono__destination { margin-top: auto; padding-top: var(--space-2); font-weight: 700; color: var(--royal-muted); text-decoration: underline; text-underline-offset: 3px; }
+.tuile-chrono__destination::after { content: " →"; }
+.tuile-chrono:hover { background: var(--powder); }
+.tuile-chrono:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .tuile-chrono:hover { transform: translateY(calc(var(--space-1) * -0.5)); box-shadow: var(--shadow-glass); }
+}
+
+/* 3. Défi quotidien : ligne distincte, légèrement mise en évidence */
+.lien-defi {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bone);
+  font-weight: 700;
+  text-underline-offset: 4px;
+}
+.lien-defi::after { content: "→"; }
+.lien-defi:hover { background: var(--powder); }
+
+/* 5. Engagement : deux taux côte à côte, même présentation (pas de classement) */
+.engagement__taux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.engagement__taux > li { display: flex; flex-direction: column; gap: var(--space-1); padding-left: var(--space-4); border-left: 3px solid var(--royal); }
+.engagement .details-sobre__corps { gap: var(--space-2); }
+
+/* 6-7. Entrée et identité Back to Run (même fond Bone que la section) */
+.entree-btr { color: var(--royal); padding-bottom: var(--space-6); border-bottom: 1px solid var(--hairline); }
+.logo-btr { width: min(calc(var(--space-24) * 2.2), 55%); height: auto; }
+
+/* 9. Offres : vignettes Bone sur le fond bleu roi */
+.offre-grande {
+  background: var(--bone);
+  border: 0;
+  color: var(--royal);
+  padding: var(--space-8) var(--space-8) var(--space-6);
+}
+.offre-grande__numero { color: var(--royal-muted); }
+.offre-grande__precision { color: var(--royal-muted); border-top-color: var(--hairline); }
+.offre-grande--secondaire .title { font-size: calc(var(--space-4) + var(--space-1)); }
+.offre-grande--secondaire .lead { font-size: var(--space-4); }
+.fond-roi .offre-grande :focus-visible { outline-color: var(--royal); }
+
+/* 10. Références */
+.references { display: flex; flex-direction: column; gap: var(--space-4); }
+.references__titre { color: var(--powder); }
+.references__liste { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.references__marque {
+  display: inline-flex;
+  align-items: center;
+  min-height: calc(var(--space-12) + var(--space-2));
+  padding: 0 var(--space-8);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--royal-muted);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* 11. Contact : bloc final ample */
+.fond-roi .contact {
+  align-items: center;
+  text-align: center;
+  gap: var(--space-6);
+  padding: var(--space-16) var(--space-8);
+  border: 2px solid var(--bone);
+  border-radius: var(--radius-xl);
+}
+.fond-roi .contact__email {
+  font-size: clamp(calc(var(--space-4) + var(--space-1) / 2), 4.5vw, var(--space-16));
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.fond-roi .contact .actions { justify-content: center; gap: var(--space-4); }
+.fond-roi .contact .lg-btn { min-height: calc(var(--space-12) + var(--space-2)); padding: 0 var(--space-8); }
+
+/* Réseaux en icônes (contact et pied de page) */
+.reseaux-icones { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.reseaux-icones__lien {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline);
+  color: var(--royal);
+  transition: background 0.2s ease;
+}
+.reseaux-icones__lien:hover { background: var(--powder-soft); }
+.reseaux-icones__bulle {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--royal);
+  color: var(--white);
+  font-size: var(--space-3);
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.reseaux-icones__lien:hover .reseaux-icones__bulle,
+.reseaux-icones__lien:focus .reseaux-icones__bulle { opacity: 1; }
+.reseaux-icones--contact { justify-content: center; }
+.reseaux-icones--contact .reseaux-icones__lien { color: var(--white); border-color: var(--powder); }
+.reseaux-icones--contact .reseaux-icones__lien:hover { background: var(--royal-hover); }
+.reseaux-icones--contact .reseaux-icones__bulle { background: var(--bone); color: var(--royal); }
+
+/* Page /performances */
+.vitrine { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--espace-interne); align-items: start; }
+/* La performance avec photo occupe toute la largeur, photo à gauche */
+.vitrine__carte:has(.vitrine__photo) { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: var(--space-8); }
+.chapitre__inner > .lg-btn { justify-self: start; }
+.vitrine__carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-stroke);
+  scroll-margin-top: var(--decalage-ancre);
+}
+.vitrine__carte:target { box-shadow: 0 0 0 3px var(--royal); }
+.vitrine__photo { max-width: calc(var(--space-24) * 3.2); }
+.vitrine__texte { display: flex; flex-direction: column; gap: var(--space-3); }
+.vitrine__faits { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-8); }
+.vitrine__faits > div { display: flex; flex-direction: column; gap: var(--space-1); }
+.vitrine__faits dd { margin: 0; }
+.objectifs-perf { display: flex; flex-direction: column; gap: var(--space-3); }
+.objectif-perf { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4) var(--space-6); border-left: 3px dashed var(--royal-muted); background: var(--glass-fill); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+
+/* Page /defi-2026 */
+.defi { display: flex; flex-direction: column; gap: var(--space-8); align-items: flex-start; }
+.defi__donnees { display: flex; flex-direction: column; gap: var(--space-8); width: 100%; }
+.defi__tuiles { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: var(--space-4); }
+.defi__tuile { display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-1); padding: var(--space-6); border-radius: var(--radius-lg); background: var(--glass-fill-strong); border: 1px solid var(--glass-stroke); }
+.defi__tuile--principale { background: var(--royal); color: var(--white); }
+.defi__tuile--principale .lead { color: var(--powder); }
+.defi__progression { display: flex; flex-direction: column; gap: var(--space-2); }
+.barre--grande { height: var(--space-4); }
+.calendrier-defi { display: flex; flex-direction: column; gap: var(--space-4); }
+.legende-defi { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.legende-defi > span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.calendrier-defi__mois { display: flex; flex-direction: column; gap: var(--space-1); }
+.calendrier-defi__ligne { display: grid; grid-template-columns: calc(var(--space-24) * 0.9) minmax(0, 1fr) calc(var(--space-24) * 0.9); align-items: center; gap: var(--space-3); }
+.calendrier-defi__cases { display: grid; grid-template-columns: repeat(31, minmax(0, 1fr)); gap: calc(var(--space-1) / 2); }
+.case { display: inline-block; aspect-ratio: 1; min-width: var(--space-3); border-radius: calc(var(--space-1) * 0.75); background: var(--white); box-shadow: inset 0 0 0 1px var(--hairline); }
+.case--valide { background: var(--royal); box-shadow: none; }
+.case--courte { background: var(--powder); box-shadow: none; }
+.case--futur { background: transparent; box-shadow: inset 0 0 0 1px var(--hairline); opacity: 0.5; }
+.legende-defi .case { width: var(--space-3); min-width: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tuile-stat, .tuile-chrono, .reseaux-icones__lien, .reseaux-icones__bulle { transition: none; }
+}
+@media (max-width: 1080px) {
+  .defi__tuiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vitrine { grid-template-columns: minmax(0, 1fr); }
+  .vitrine__carte:has(.vitrine__photo) { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 720px) {
+  .chronos-tuiles { grid-template-columns: minmax(0, 1fr); }
+  .tuile-chrono { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-3); }
+  .tuile-chrono__destination { margin-left: auto; padding-top: 0; }
+  .engagement__taux { grid-template-columns: minmax(0, 1fr); }
+  .dominants__liste > li.tuile-stat { padding: var(--space-6); }
+  .fond-roi .contact { padding: var(--space-12) var(--space-3); }
+  .defi__tuiles { grid-template-columns: minmax(0, 1fr); }
+  .calendrier-defi__ligne { grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }
+  .case { min-width: 0; }
+}
+/* Note de non-déduplication : texte plein, l'ombre des tuiles assombrit le fond */
+.dominants > .caption.texte-muted { color: var(--royal); padding-top: var(--space-2); }

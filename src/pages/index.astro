@@ -18,7 +18,9 @@ import Base from '../layouts/Base.astro';
 import Photo from '../components/Photo.astro';
 import Contact from '../components/Contact.astro';
 import AudienceGraphiques from '../components/AudienceGraphiques.astro';
-import { identite, performances, courses, stats, backToRun, offres, photos, nombre } from '../data/mediakit.js';
+import { Image } from 'astro:assets';
+import { identite, performances, courses, stats, backToRun, offres, references, photos, nombre } from '../data/mediakit.js';
+import logoBtr from '../assets/back-to-run/btr-logo-mascotte.png';
 
 const ig = stats.instagram;
 const tt = stats.tiktok;
@@ -26,6 +28,7 @@ const cumul = stats.cumul;
 const chronos = performances.filter((p) => p.type === 'route');
 const projets = courses.filter((c) => !c.resultat && c.principal);
 const preuves = ['inscrits', 'participants', 'km enregistrés'].map((l) => backToRun.principaux.find((c) => c.legende === l));
+const marques = references.filter((r) => r.publier);
 const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant enregistré au moins une course' : c.legende);
 ---
 
@@ -55,9 +58,10 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
       <h2 class="display-l" id="titre-statistiques" data-apparition>Statistiques et audience</h2>
 
       <div class="dominants" data-apparition>
+        <!-- Tuiles d'information : non cliquables (aucun lien, aucun rôle bouton) -->
         <ul class="dominants__liste" role="list">
-          <li><span class="dominant">{nombre(cumul.abonnes)}</span><span class="lead">{cumul.abonnesLegende}</span></li>
-          <li><span class="dominant">{cumul.vuesAffichage}</span><span class="lead">{cumul.vuesLegende}</span></li>
+          <li class="tuile-stat"><span class="dominant">{nombre(cumul.abonnes)}</span><span class="lead">{cumul.abonnesLegende}</span></li>
+          <li class="tuile-stat"><span class="dominant">{cumul.vuesAffichage}</span><span class="lead">{cumul.vuesLegende}</span></li>
         </ul>
         <p class="caption texte-muted">{cumul.note}</p>
         <details class="details-sobre">
@@ -93,11 +97,19 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
         </div>
         <div class="argument__texte">
           <p class="repere caption">01 · Crédibilité sportive</p>
-          <h3 class="title" id="titre-credibilite">Une pratique qui donne du poids à mes retours d’expérience</h3>
-          <p class="lead intro">Je m’investis dans des objectifs exigeants, préparés sur plusieurs mois. La course fait partie de mon quotidien : au moins 5 km chaque jour en 2026.</p>
-          <ul class="chiffres chronos" role="list" aria-label="Références sur route">
+          <h3 class="title" id="titre-credibilite">Un avis ancré dans la pratique</h3>
+          <p class="lead intro">Je m’investis dans des objectifs exigeants, préparés sur plusieurs mois. La course fait partie de mon quotidien :</p>
+          <p class="lead"><a class="lien-defi" href="/defi-2026">Au moins 5 km chaque jour en 2026.</a></p>
+          <!-- Tuiles cliquables : chaque chrono mène à sa fiche sur /performances -->
+          <ul class="chronos-tuiles" role="list" aria-label="Références sur route">
             {chronos.map((p) => (
-              <li><span class="chiffre title">{p.resultat}</span><span class="body">{p.court}</span></li>
+              <li>
+                <a class="tuile-chrono" href={`/performances#${p.id}`}>
+                  <span class="chiffre title">{p.resultat}</span>
+                  <span class="body">{p.court}</span>
+                  <span class="tuile-chrono__destination caption">Mes performances</span>
+                </a>
+              </li>
             ))}
           </ul>
         </div>
@@ -113,24 +125,33 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
           <h3 class="title" id="titre-aventure">La performance, avec du divertissement</h3>
           <p class="lead intro">Je raconte la préparation, les progrès et les imprévus avec autodérision. Un objectif devient une aventure à suivre dans la durée.</p>
           <div class="engagement">
-            <span class="chiffre title">{ig.engagement}</span>
-            <span class="body">{ig.engagementLegende}</span>
+            <ul class="engagement__taux" role="list">
+              <li><span class="label texte-muted">Instagram</span><span class="chiffre title">{ig.engagement}</span><span class="body">{ig.engagementLegende}</span></li>
+              <li><span class="label texte-muted">TikTok</span><span class="chiffre title">{tt.engagementCourt}</span><span class="body">{tt.engagementLegende}</span></li>
+            </ul>
             <details class="details-sobre">
-              <summary class="caption">Définition</summary>
-              <p class="caption texte-muted details-sobre__corps">{ig.engagementDetail}</p>
+              <summary class="caption">Calcul des deux taux</summary>
+              <div class="details-sobre__corps caption texte-muted">
+                <p>Instagram : {ig.engagementDetail}</p>
+                <p>TikTok : {tt.engagementDetail}</p>
+                <p>Les dénominateurs diffèrent (couverture, vues) : les deux taux ne se comparent pas directement.</p>
+              </div>
             </details>
           </div>
         </div>
       </article>
 
-      <p class="transition lead">Cette participation existe aussi au-delà des vidéos.</p>
     </div>
   </section>
 
   <!-- ======================= 4. BACK TO RUN ======================= -->
   <section id="back-to-run" class="section section--ample fond-accent" aria-labelledby="titre-btr">
-    <div class="conteneur compo compo--texte-photo compo--centre compo--egal">
+    <div class="conteneur pile-ample">
+    <!-- Entrée de la section (transition depuis « Pourquoi moi ? ») -->
+    <p class="entree-btr title" data-apparition>Et quand la communauté passe à l’action ?</p>
+    <div class="compo compo--texte-photo compo--centre compo--egal">
       <div class="compo__contenu" data-apparition>
+        <Image src={logoBtr} alt="Back to Run" class="logo-btr" width={440} format="webp" />
         <h2 class="display-l" id="titre-btr">Back to Run : faire participer la communauté</h2>
         <p class="lead intro">J’ai créé un défi collectif : courir au moins 5 km par jour pendant 30 jours. Une initiative pour passer de l’envie à la pratique.</p>
         <ul class="preuves-btr" role="list" aria-label="Back to Run, première édition">
@@ -144,6 +165,7 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
       <div class="compo__media" data-apparition>
         <Photo photo={backToRun.photo} format="quatre-tiers" sizes="(max-width: 1080px) 100vw, 580px" />
       </div>
+    </div>
     </div>
   </section>
 
@@ -176,7 +198,7 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
       <h2 class="display-l" id="titre-collaborer" data-apparition>Comment collaborer ?</h2>
       <ul class="offres-grandes" role="list" data-apparition>
         {offres.map((o, i) => (
-          <li class="offre-grande">
+          <li class:list={['offre-grande', { 'offre-grande--secondaire': o.secondaire }]}>
             <span class="offre-grande__numero label">Offre {i + 1}</span>
             <h3 class="title">{o.titre}</h3>
             <p class="lead">{o.texte}</p>
@@ -184,6 +206,14 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
           </li>
         ))}
       </ul>
+      {marques.length > 0 && (
+        <div class="references" data-apparition>
+          <h3 class="label references__titre">Collaborations et produits reçus</h3>
+          <ul class="references__liste" role="list">
+            {marques.map((m) => <li class="references__marque">{m.nom}</li>)}
+          </ul>
+        </div>
+      )}
       <Contact />
     </div>
   </section>

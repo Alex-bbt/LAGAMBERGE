@@ -4,8 +4,10 @@
    - Email renseigné : adresse très visible et cliquable, bouton principal
      « Discutons de votre projet » (couleur d'accent, objet prérempli), copie.
    - Email absent : AUCUN bouton email ; Instagram devient le contact.
-   - Instagram en alternative discrète ; les autres réseaux sont dans le pied de page.
+   - Bloc final : email dominant, bouton principal, copie, puis les réseaux
+     en icônes (composant Reseaux, mêmes URL que partout).
    ========================================================================== */
+import Reseaux from './Reseaux.astro';
 import { contact, comptes } from '../data/mediakit.js';
 
 const insta = comptes.find((c) => c.id === 'instagram');
@@ -23,7 +25,7 @@ const mailto = contact.email
         <button class="lg-btn contact__copier" type="button" data-copier={contact.email}>Copier l’adresse</button>
         <span class="caption contact__retour" role="status" data-retour></span>
       </div>
-      <p class="caption">Ou sur Instagram : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}<span class="sr-only"> (nouvel onglet)</span></a></p>
+      <Reseaux classe="reseaux-icones--contact" />
     </>
   ) : (
     <div class="actions">

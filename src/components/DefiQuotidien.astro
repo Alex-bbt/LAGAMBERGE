@@ -22,6 +22,7 @@ const pctTexte = (part * 100).toLocaleString('fr-FR', { maximumFractionDigits: 1
       <div class="barre" aria-hidden="true"><span style={`--part: ${part * 100}%`}></span></div>
     </div>
   )}
+  <a class="lien-fleche" href="/defi-2026">Voir le suivi du défi</a>
   {strava && (
     <a class="lien-fleche" href={strava.url} target="_blank" rel="noopener noreferrer">
       Suivre le défi sur Strava<span class="sr-only"> (nouvel onglet)</span>

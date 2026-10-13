@@ -45,6 +45,7 @@ const exemples = videos.filter((v) => v.vues).sort((a, b) => b.vues - a.vues);
           <dl>
             <div><dt>Abonnés</dt><dd>{nombre(tt.abonnes)}</dd></div>
             <div><dt>Vues</dt><dd>{nombre(tt.vues)}</dd></div>
+            <div><dt>Vues médianes par vidéo publiée en 2026</dt><dd>{tt.medianeVuesAffichage}<span class="caption texte-muted">{tt.medianePerimetre}, relevé du {tt.medianeReleve}. La moitié des vidéos font entre {nombre(tt.quartilesVues[0])} et {nombre(tt.quartilesVues[1])} vues.</span></dd></div>
             <div><dt>Vidéos à plus de 100 000 vues</dt><dd>{tt.videosPlus100k}</dd></div>
             <div><dt>Likes</dt><dd>{nombre(tt.likes)}</dd></div>
             <div><dt>Partages</dt><dd>{nombre(tt.partages)}</dd></div>
