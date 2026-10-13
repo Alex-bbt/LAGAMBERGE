@@ -41,6 +41,8 @@ src/pages/mentions-legales.astro, confidentialite.astro
                        Données : `editeur` / `hebergeur` (mediakit.js). Champ null = non affiché ;
                        build de PRODUCTION en échec tant qu'un champ obligatoire manque
                        (src/data/legal.js). Jamais de valeur provisoire ni de TVA inexistante.
+                       Éditeur = même entreprise que Back to Run (EI « Roue Libre »,
+                       back-to-run/src/lib/legal-entity.ts) ; RCS non confirmé, donc non publié.
 src/styles/polices.css Unbounded 500/800 + Manrope 400/500/700 hébergées (public/fonts/la-gamberge/,
                        licences OFL) ; l'@import Google de tokens.css est retiré au build par un
                        plugin PostCSS (astro.config.mjs). Aucune requête vers Google.

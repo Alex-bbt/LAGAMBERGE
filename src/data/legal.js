@@ -10,7 +10,6 @@ const OBLIGATOIRES = {
   siren: 'SIREN',
   registre: 'registre d’immatriculation',
   directeurPublication: 'directeur de la publication',
-  messagerie: 'fournisseur de la messagerie contact@',
 };
 
 export const champsManquants = () =>

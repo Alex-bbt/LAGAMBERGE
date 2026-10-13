@@ -23,7 +23,7 @@ const messagerie = e.messagerie ? `${e.messagerie.nom}${e.messagerie.pays ? ` ($
 
       <section aria-labelledby="conf-responsable">
         <h2 class="title" id="conf-responsable">Responsable du traitement</h2>
-        <p class="body">{[e.nom, e.statut].filter(Boolean).join(', ')}{e.adresse && ` — ${e.adresse}`}. Contact : <a href={`mailto:${e.email}`}>{e.email}</a>.</p>
+        <p class="body">{[e.nom, e.statut?.toLowerCase()].filter(Boolean).join(", ")}{e.adresse && ` — ${e.adresse}`}. Contact : <a href={`mailto:${e.email}`}>{e.email}</a>.</p>
       </section>
 
       <section aria-labelledby="conf-emails">
@@ -32,7 +32,7 @@ const messagerie = e.messagerie ? `${e.messagerie.nom}${e.messagerie.pays ? ` ($
           <div><dt>Données</dt><dd>Votre adresse email, votre nom, votre entreprise ou fonction s’il y a lieu, et le contenu de vos messages.</dd></div>
           <div><dt>Finalités</dt><dd>Répondre à votre message, préparer, conclure et suivre une éventuelle collaboration.</dd></div>
           <div><dt>Bases légales</dt><dd>Mesures précontractuelles prises à votre demande et exécution du contrat (RGPD, art. 6.1.b) ; intérêt légitime à suivre une relation professionnelle (art. 6.1.f).</dd></div>
-          <div><dt>Destinataires</dt><dd>{e.nom}, seul{messagerie && <>, et le fournisseur de la messagerie, {messagerie}, qui héberge les emails</>}. Aucune donnée n’est vendue ni cédée.</dd></div>
+          <div><dt>Destinataires</dt><dd>{e.nom}, et son prestataire de messagerie électronique{messagerie && <> ({messagerie})</>}, qui héberge les emails. Aucune donnée n’est vendue ni cédée.</dd></div>
           <div><dt>Durées</dt><dd>3 ans après le dernier échange s’il n’y a pas de collaboration. En cas de collaboration : la durée de celle-ci, puis 5 ans (délai de prescription, art. 2224 du Code civil) ; les factures sont conservées 10 ans (art. L123-22 du Code de commerce).</dd></div>
         </dl>
       </section>

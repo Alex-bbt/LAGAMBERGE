@@ -621,24 +621,33 @@ export const references = [
 ];
 
 // -- Mentions légales et confidentialité ---------------------------------------
-// Éditeur : uniquement des informations RÉELLES fournies par Alex. Un champ à
-// null n'est pas affiché ; en production (Vercel), le build échoue tant qu'un
-// champ obligatoire manque (voir src/data/legal.js) : jamais de champ provisoire.
+// Éditeur : mêmes informations que Back to Run (dépôt Alex-bbt/back-to-run,
+// src/lib/legal-entity.ts, régime professionnel), reprises le 13 octobre 2026
+// sur indication d'Alex. Un champ à null n'est pas affiché ; en production
+// (Vercel), le build échoue tant qu'un champ obligatoire manque (voir
+// src/data/legal.js) : jamais de champ provisoire.
 export const editeur = {
   nom: 'Alex Bourbigot',
-  nomCommercial: 'La Gamberge',
-  statut: null, // À FOURNIR : ex. « Entrepreneur individuel (micro-entrepreneur) »
-  adresse: null, // À FOURNIR : adresse professionnelle ou de domiciliation
-  telephone: null, // À FOURNIR
+  // Nom commercial déclaré de l'entreprise individuelle.
+  denomination: 'Roue Libre',
+  // Nom sous lequel Alex publie ses contenus (pas une dénomination déclarée).
+  marque: 'La Gamberge',
+  statut: 'Entreprise individuelle (micro-entreprise)',
+  adresse: '71 rue Lavoisier, 78140 Vélizy-Villacoublay, France',
+  telephone: '06 51 81 11 90',
   email: 'contact@lagamberge.com',
-  siren: null, // À FOURNIR (9 chiffres)
-  siret: null, // À FOURNIR (14 chiffres)
-  registre: null, // À FOURNIR : ex. « Registre national des entreprises (RNE) »
-  directeurPublication: null, // À FOURNIR (en principe l'éditeur lui-même)
-  // Pas de numéro de TVA : n'en ajouter que si Alex en possède un.
+  siren: '945 096 501',
+  siret: '945 096 501 00016',
+  // L'attestation d'immatriculation au RNE existe (voir Back to Run). Une
+  // inscription au RCS de Versailles n'est PAS confirmée : non publiée.
+  registre: 'Registre national des entreprises (RNE)',
+  directeurPublication: 'Alex Bourbigot',
+  // Pas de numéro de TVA (franchise en base) : rien n'est affiché.
   tva: null,
-  // Fournisseur de la boîte contact@lagamberge.com (destinataire des emails).
-  messagerie: null, // À FOURNIR : { nom: '…', pays: '…' }
+  // Fournisseur de la boîte contact@lagamberge.com : non identifié. La page
+  // Confidentialité cite la catégorie (« prestataire de messagerie »), ce que
+  // permet l'art. 13 du RGPD. Renseigner { nom, pays } pour le nommer.
+  messagerie: null,
 };
 
 // Hébergeur : coordonnées vérifiées le 13 octobre 2026 dans l'avenant sur le

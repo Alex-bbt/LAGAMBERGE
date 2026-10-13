@@ -12,7 +12,9 @@ import { verifierMentions } from '../data/legal.js';
 verifierMentions();
 const e = editeur;
 const lignesEditeur = [
-  ['Éditeur', [e.nom, e.statut].filter(Boolean).join(', ') + (e.nomCommercial ? `, sous le nom « ${e.nomCommercial} »` : '')],
+  ['Éditeur', e.nom],
+  ['Forme juridique', e.statut],
+  ['Nom commercial', e.denomination],
   ['Adresse', e.adresse],
   ['Téléphone', e.telephone],
   ['Email', e.email],
@@ -29,6 +31,7 @@ const lignesEditeur = [
 
       <section aria-labelledby="mentions-editeur">
         <h2 class="title" id="mentions-editeur">Éditeur du site</h2>
+        <p class="body">Le site lagamberge.com présente l’activité de créateur de contenu d’{e.nom}, publiée sous le nom « {e.marque} ».</p>
         <dl class="texte-legal__liste">
           {lignesEditeur.map(([l, v]) => (
             <div><dt>{l}</dt><dd>{l === 'Email' ? <a href={`mailto:${v}`}>{v}</a> : v}</dd></div>
