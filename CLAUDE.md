@@ -9,17 +9,21 @@ Objectif du site : obtenir un email de prise de contact qualifié.
 - Pas de framework CSS : le design system de `lagamberge-design-system/design-system/`
   (tokens.css + composants.css, classes `lg-*`) est importé tel quel par
   `src/styles/site.css`. **Ne jamais modifier `lagamberge-design-system/`.**
-- Aucune couleur, taille, ombre ou police en dur : uniquement `var(--…)` et `lg-*`.
-- Règle visuelle : chaque section est un `lg-ambient` (alterné avec
-  `lg-ambient--flip`), le contenu repose sur du verre (`lg-glass`). Jamais de
-  fond sombre ni de bande pleine largeur à bord net.
+- Aucune couleur, taille, ombre ou police en dur : uniquement `var(--…)` et `lg-*`
+  (seule exception : `--bone: #F1E4D1`, défini dans site.css).
+- Palette : Royal Blue #162660, Powder Blue #D0E6FD, Bone #F1E4D1.
+- Accueil (version courte) : fonds nets qui changent d'une section à l'autre —
+  `.fond-clair`, `.fond-poudre`, `.fond-accent` (Bone), `.fond-blanc`, `.fond-roi`.
+  Bone sert à une section et aux CTA (`.btn-accent`).
 
 ## Arborescence
 ```
 src/data/mediakit.js   ⭐ TOUTES les données (identité, stats, audience, courses,
                        défi, vidéos, Back to Run, offres, contact). null = non affiché.
-src/pages/index.astro  Six sections : #profil #coureur #createur (contenus + audience) #back-to-run
-                       #objectifs #collaborer ; contact : #contact (nav et « Parlons partenariat »)
+src/pages/index.astro  Cinq sections : #profil (clair) #coureur (poudre) #createur (Bone, contenus
+                       + Back to Run) #objectifs (blanc) #collaborer (bleu roi, #contact).
+                       Nav : Profil, Projets, Collaborer. Pied : pages détaillées, réseaux,
+                       note unique des dates de relevé.
 src/pages/histoire.astro, communaute.astro, projets.astro, statistiques.astro
                        Pages d'approfondissement (les détails quittent l'accueil pour y vivre)
 src/components/        EnTete, CarteChiffre, Barres, Colonnes, DefiQuotidien, Progression,
@@ -39,6 +43,9 @@ api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les p
 - Photos : format choisi par photo ('naturel' quand le rognage coûte trop).
 - Les valeurs exactes, définitions et populations secondaires vont dans les
   pages d'approfondissement (/statistiques, /communaute, /projets, /histoire).
+
+- Accueil : 200 mots maximum, 8 chiffres de preuve, aucun chiffre répété,
+  aucun graphique. Le reste vit dans les pages détaillées.
 
 ## Règles éditoriales (non négociables)
 - N'inventer aucun chiffre, lien, texte personnel, logo ou témoignage.
