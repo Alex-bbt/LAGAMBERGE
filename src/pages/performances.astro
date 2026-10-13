@@ -5,8 +5,9 @@
      Aucune carte ne se déploie dans la grille ; survol = élévation légère.
    - Clic / Entrée / Espace : fenêtre <dialog> centrée (focus dedans, Échap
      pour fermer, retour du focus sur la carte, défilement intérieur).
-   - Accès par ancre (#marathon…) : la carte est mise en évidence et placée
-     entièrement sous la navigation fixe (hauteur mesurée + marge).
+   - Accès par ancre (#marathon…) : saut natif du navigateur, la carte
+     (:target) est mise en évidence et s'arrête sous la navigation grâce à
+     son scroll-margin-top. Aucun script de défilement.
    - Temps réel = référence ; temps officiel à part s'il existe ; aucune
      médaille ni podium. Données : `performances` (src/data/mediakit.js).
    ========================================================================== */
@@ -61,7 +62,7 @@ const lignes = (p) => [
   <!-- Objectifs : séparés des performances réalisées -->
   <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-a-venir">
     <div class="chapitre__inner chapitre__inner--seul">
-      <EnTete repere="À venir" id="titre-a-venir" titre="Objectifs, pas encore des résultats." />
+      <EnTete repere="À venir" id="titre-a-venir" titre="Prochains objectifs" />
       <ul class="objectifs-perf" role="list">
         {objectifs.map((c) => (
           <li class="objectif-perf"><span class="label texte-muted">{c.dateCourte ?? c.date} · objectif</span><span class="lead">{c.nom} — {c.accrocheAccueil ?? c.accroche}</span></li>
@@ -111,23 +112,7 @@ const lignes = (p) => [
   document.querySelectorAll('dialog.perf-detail').forEach((d) => {
     d.querySelector('[data-fermer]')?.addEventListener('click', () => d.close());
     d.addEventListener('click', (e) => { if (e.target === d) d.close(); }); // clic sur le voile
-    d.addEventListener('close', () => { declencheur?.focus(); declencheur = null; });
+    // preventScroll : rendre le focus ne fait pas bouger la page.
+    d.addEventListener('close', () => { declencheur?.focus({ preventScroll: true }); declencheur = null; });
   });
-
-  // Accès direct par ancre : carte mise en évidence et entièrement visible
-  // sous la navigation fixe (hauteur réelle mesurée + 28 px de marge).
-  const cibler = () => {
-    document.querySelectorAll('.mur__case.est-cible').forEach((c) => c.classList.remove('est-cible'));
-    const id = location.hash ? decodeURIComponent(location.hash.slice(1)) : '';
-    const caseCible = id && document.getElementById(id);
-    if (!caseCible || !caseCible.classList.contains('mur__case')) return;
-    caseCible.classList.add('est-cible');
-    const nav = document.querySelector('.entete');
-    const marge = (nav ? nav.getBoundingClientRect().bottom : 0) + 28;
-    const haut = caseCible.getBoundingClientRect().top + scrollY - marge;
-    scrollTo({ top: Math.max(0, haut), behavior: 'instant' });
-  };
-  // Après le premier rendu (polices comprises) pour une position exacte.
-  (document.fonts?.ready ?? Promise.resolve()).then(() => requestAnimationFrame(cibler));
-  addEventListener('hashchange', cibler);
 </script>
