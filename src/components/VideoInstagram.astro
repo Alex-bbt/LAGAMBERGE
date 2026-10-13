@@ -6,35 +6,41 @@
    - Au clic : le lecteur officiel Instagram (iframe /embed/) remplace la
      couverture. Aucun chargement ni son automatique.
    - Toujours : lien « Voir sur Instagram ».
-   Données : `videosAvant` dans src/data/mediakit.js.
+   - `compact` : cadre seul + lien (ex. bloc Divertissement de l'accueil),
+     sans titre, résumé ni nombre de vues.
+   Données : `videosAvant` / `videoDivertissement` dans src/data/mediakit.js.
    ========================================================================== */
 import { Image } from 'astro:assets';
 import { nombre } from '../data/mediakit.js';
 
-const { video: v } = Astro.props;
+const { video: v, compact = false, sizes = '(max-width: 720px) 90vw, 380px' } = Astro.props;
 const miniatures = import.meta.glob('../assets/videos/*.{jpg,jpeg,png,webp}', { eager: true });
 const miniature = v.miniature ? miniatures[`../assets/videos/${v.miniature}`]?.default : null;
 const embed = `${v.url.replace(/\/?$/, '/')}embed/`;
 ---
 
-<figure class="video-avant" data-video data-embed={embed} data-titre={v.titre}>
+<figure class:list={['video-avant', { 'video-avant--compact': compact }]} data-video data-embed={embed} data-titre={v.titre}>
   <div class:list={['video-avant__cadre', { 'video-avant__cadre--miniature': miniature }]} data-cadre style={miniature ? `--ratio: ${miniature.width} / ${miniature.height}` : undefined}>
     <button class="video-avant__lecture" type="button" data-lire aria-label={`Lire la vidéo : ${v.titre}`}>
       {miniature
-        ? <Image src={miniature} alt="" class="video-avant__miniature" widths={[360, 640]} sizes="(max-width: 720px) 90vw, 380px" format="webp" />
+        ? <Image src={miniature} alt="" class="video-avant__miniature" widths={[360, Math.min(640, miniature.width)]} sizes={sizes} format="webp" />
         : <span class="video-avant__couverture" aria-hidden="true"><span class="dominant video-avant__vues">{nombre(v.vues)}</span><span class="lead">vues</span></span>}
       <span class="video-avant__bouton" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
       </span>
     </button>
   </div>
-  <figcaption class="video-avant__texte">
-    <span class="label texte-muted">{v.format}</span>
-    <span class="lead video-avant__titre">{v.titre}</span>
-    <span class="body">{v.resume}</span>
-    <span class="caption texte-muted">{nombre(v.vues)} vues sur {v.plateforme} · relevé du {v.releve}</span>
-    <a class="lien-fleche" href={v.url} target="_blank" rel="noopener noreferrer">Voir sur {v.plateforme}<span class="sr-only"> (nouvel onglet)</span></a>
-  </figcaption>
+  {compact ? (
+    <figcaption class="video-avant__texte"><a class="lien-fleche caption" href={v.url} target="_blank" rel="noopener noreferrer">Voir sur {v.plateforme}<span class="sr-only"> (nouvel onglet)</span></a></figcaption>
+  ) : (
+    <figcaption class="video-avant__texte">
+      <span class="label texte-muted">{v.format}</span>
+      <span class="lead video-avant__titre">{v.titre}</span>
+      <span class="body">{v.resume}</span>
+      <span class="caption texte-muted">{nombre(v.vues)} vues sur {v.plateforme} · relevé du {v.releve}</span>
+      <a class="lien-fleche" href={v.url} target="_blank" rel="noopener noreferrer">Voir sur {v.plateforme}<span class="sr-only"> (nouvel onglet)</span></a>
+    </figcaption>
+  )}
 </figure>
 
 <script>
