@@ -86,59 +86,80 @@ const pad = (n) => String(n).padStart(2, '0');
 </Base>
 
 <script>
-  // Lit les agrégats Strava calculés côté serveur. Aucun chiffre n'est déduit
-  // de la date : sans données, la page l'indique et n'affiche rien.
+  // Affichage immédiat du dernier bilan connu, puis actualisation :
+  // 1. ce navigateur a déjà vu un bilan → il s'affiche aussitôt (avec SA date) ;
+  // 2. /api/streak renvoie le dernier bilan enregistré côté serveur (cache
+  //    Supabase partagé par tous les visiteurs) et relance Strava en
+  //    arrière-plan si besoin ;
+  // 3. en cas d'erreur, le bilan déjà affiché reste en place (jamais de zéros).
+  // Aucun chiffre n'est déduit de la date.
   const bloc = document.querySelector('[data-defi]');
   const etat = bloc.querySelector('[data-etat]');
   const total = Number(bloc.dataset.total);
   const annee = bloc.dataset.annee;
   const nf = new Intl.NumberFormat('fr-FR');
   const $ = (s) => bloc.querySelector(s);
+  const CLE = 'lg-defi-bilan';
+  let affiche = false;
 
-  const indisponible = () => {
-    etat.textContent = 'Données Strava momentanément indisponibles. Le suivi reprendra dès la prochaine synchronisation.';
+  const valide = (d) => d && d.configured && Array.isArray(d.validatedDates) && d.updatedAt;
+  const dateParis = (iso) => new Date(iso).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Paris' });
+
+  const afficher = (d, { local = false } = {}) => {
+    const valides = new Set(d.validatedDates.filter((j) => j.startsWith(annee)));
+    const km = d.dailyKm || {};
+    const n = valides.size;
+
+    $('[data-valide]').textContent = nf.format(n);
+    if (typeof d.seasonKm === 'number') $('[data-km]').textContent = nf.format(d.seasonKm);
+    if (typeof d.seasonMovingTime === 'number') $('[data-temps]').textContent = `${nf.format(Math.round(d.seasonMovingTime / 3600))} h`;
+    if (typeof d.seasonRuns === 'number') $('[data-activites]').textContent = nf.format(d.seasonRuns);
+
+    const part = (n / total) * 100;
+    $('[data-barre]').style.setProperty('--part', `${part}%`);
+    $('[data-progression-texte]').textContent =
+      `${nf.format(n)} jours validés sur ${total}, soit ${part.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} % du défi.`;
+
+    const today = d.today;
+    const parMois = Array(12).fill(0);
+    bloc.querySelectorAll('[data-jour]').forEach((c) => {
+      const j = c.dataset.jour;
+      c.className = 'case';
+      if (today && j > today) { c.classList.add('case--futur'); c.title = `${j} : à venir`; return; }
+      if (valides.has(j)) { c.classList.add('case--valide'); parMois[Number(j.slice(5, 7)) - 1]++; }
+      else if (km[j] > 0) c.classList.add('case--courte');
+      c.title = `${j} : ${km[j] ? `${String(km[j]).replace('.', ',')} km` : 'aucune course'}${valides.has(j) ? ' · validé' : ''}`;
+    });
+    bloc.querySelectorAll('[data-mois]').forEach((el) => {
+      el.textContent = `${parMois[Number(el.dataset.mois)]} validés`;
+    });
+
+    // La date affichée est toujours celle du calcul Strava, jamais l'heure de visite.
+    $('[data-maj]').textContent = `Dernière synchronisation avec Strava : ${dateParis(d.updatedAt)} (heure de Paris).`
+      + (local ? ' Actualisation en cours…' : d.refreshing ? ' Une nouvelle synchronisation est en cours.' : '');
+    etat.hidden = true;
+    $('[data-donnees]').hidden = false;
+    affiche = true;
   };
+
+  try {
+    const memo = JSON.parse(localStorage.getItem(CLE) || 'null');
+    if (valide(memo)) afficher(memo, { local: true });
+  } catch { /* stockage indisponible : on attend le serveur */ }
 
   fetch(bloc.dataset.api, { headers: { Accept: 'application/json' } })
     .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
     .then((d) => {
-      if (!d || !d.configured || !Array.isArray(d.validatedDates)) return indisponible();
-      const valides = new Set(d.validatedDates.filter((j) => j.startsWith(annee)));
-      const km = d.dailyKm || {};
-      const n = valides.size;
-
-      $('[data-valide]').textContent = nf.format(n);
-      if (typeof d.seasonKm === 'number') $('[data-km]').textContent = nf.format(d.seasonKm);
-      if (typeof d.seasonMovingTime === 'number') $('[data-temps]').textContent = `${nf.format(Math.round(d.seasonMovingTime / 3600))} h`;
-      if (typeof d.seasonRuns === 'number') $('[data-activites]').textContent = nf.format(d.seasonRuns);
-
-      const part = (n / total) * 100;
-      $('[data-barre]').style.setProperty('--part', `${part}%`);
-      $('[data-progression-texte]').textContent =
-        `${nf.format(n)} jours validés sur ${total}, soit ${part.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} % du défi.`;
-
-      const today = d.today;
-      const parMois = Array(12).fill(0);
-      bloc.querySelectorAll('[data-jour]').forEach((c) => {
-        const j = c.dataset.jour;
-        if (today && j > today) { c.classList.add('case--futur'); c.title = `${j} : à venir`; return; }
-        if (valides.has(j)) { c.classList.add('case--valide'); parMois[Number(j.slice(5, 7)) - 1]++; }
-        else if (km[j] > 0) c.classList.add('case--courte');
-        c.title = `${j} : ${km[j] ? `${String(km[j]).replace('.', ',')} km` : 'aucune course'}${valides.has(j) ? ' · validé' : ''}`;
-      });
-      bloc.querySelectorAll('[data-mois]').forEach((el) => {
-        el.textContent = `${parMois[Number(el.dataset.mois)]} validés`;
-      });
-
-      if (d.updatedAt) {
-        const quand = new Date(d.updatedAt).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Paris' });
-        // Valeur de secours (Strava injoignable) : on parle de mise à jour, pas de synchronisation.
-        $('[data-maj]').textContent = d.stale
-          ? `Dernière mise à jour : ${quand} (heure de Paris). Strava est momentanément injoignable.`
-          : `Dernière synchronisation avec Strava : ${quand} (heure de Paris).`;
-      }
-      etat.hidden = true;
-      $('[data-donnees]').hidden = false;
+      if (!valide(d)) throw new Error('donnees');
+      afficher(d);
+      try { localStorage.setItem(CLE, JSON.stringify(d)); } catch { /* sans importance */ }
     })
-    .catch(indisponible);
+    .catch(() => {
+      if (affiche) {
+        // Le bilan déjà affiché reste en place, avec sa vraie date.
+        $('[data-maj]').textContent = $('[data-maj]').textContent.replace(' Actualisation en cours…', ' Actualisation impossible pour le moment.');
+      } else {
+        etat.textContent = 'Données Strava momentanément indisponibles. Le suivi reprendra dès la prochaine synchronisation.';
+      }
+    });
 </script>

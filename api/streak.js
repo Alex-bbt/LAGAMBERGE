@@ -1,65 +1,79 @@
 // Fonction serverless Vercel : GET /api/streak
-// Renvoie l'état de la streak, calculé en direct depuis Strava.
+// Renvoie le bilan du défi, calculé depuis Strava.
 //
-// Stratégie "dernière valeur connue" (voir lib/snapshot.mjs) :
-//   1. Si un snapshot récent existe en base → on le sert IMMÉDIATEMENT
-//      (rapide, pas d'aller-retour Strava) : l'utilisateur voit tout de suite
-//      la vraie dernière valeur validée, jamais un chiffre vieux de plusieurs
-//      jours.
-//   2. Sinon → on interroge Strava, on PERSISTE le résultat (nouveau snapshot)
-//      puis on le renvoie.
-//   3. Si Strava échoue → on sert le dernier snapshot connu (même un peu vieux)
-//      plutôt que rien. En tout dernier recours seulement : { configured:false }
-//      → le site retombe sur la valeur manuelle de src/data/site.js.
-//
+// Stratégie « dernier bilan connu, puis actualisation en arrière-plan »
+// (voir lib/snapshot.mjs, cache persistant Supabase, partagé par tous les
+// visiteurs) :
+//   1. Un snapshot existe → on le renvoie IMMÉDIATEMENT, quel que soit son
+//      âge. Sa date de calcul (`updatedAt`) reste celle de la dernière
+//      synchronisation réelle : jamais présentée comme une nouvelle sync.
+//   2. S'il a plus de 10 minutes, on relance Strava EN ARRIÈRE-PLAN
+//      (waitUntil) ; le visiteur suivant reçoit le bilan actualisé.
+//   3. Aucun snapshot (premier appel) → calcul Strava direct, puis écriture.
+//   4. Strava en échec → on conserve le dernier snapshot, rien n'est effacé.
+// Les identifiants Strava ne quittent jamais le serveur.
 // Ne plante jamais la page.
 
+import { waitUntil } from '@vercel/functions';
 import { getStreakFromStrava } from '../lib/strava.mjs';
 import { readSnapshot, writeSnapshot } from '../lib/snapshot.mjs';
 
-// En-dessous de cet âge, un snapshot est jugé assez frais pour être servi tel
-// quel sans redemander à Strava (le CDN met déjà en cache 5 min par-dessus).
+// Au-delà de cet âge, le snapshot est encore servi mais une actualisation
+// Strava est lancée en arrière-plan.
 const FRESH_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+// CDN : 5 min de cache, puis le dernier bilan reste servi pendant que le CDN
+// revalide en arrière-plan.
 const CACHE_OK = 'public, s-maxage=300, stale-while-revalidate=86400';
 
-export default async function handler(req, res) {
-  // 1) Snapshot récent → réponse instantanée, toujours à jour de la dernière
-  //    journée validée connue.
-  const snap = await readSnapshot(process.env);
-  if (snap && Date.now() - new Date(snap.updatedAt).getTime() < FRESH_TTL_MS) {
-    res.setHeader('Cache-Control', CACHE_OK);
-    res.status(200).json({ ...snap.data, configured: true, cached: true });
-    return;
+// Logique testable : les dépendances (lecture/écriture du cache, Strava,
+// waitUntil) sont injectées. Voir l'export par défaut pour le branchement réel.
+export function creerHandler({ lire, ecrire, strava, enArrierePlan, env, maintenant = () => Date.now() }) {
+  // Synchronise Strava et persiste le résultat. Ne lève jamais.
+  async function synchroniser() {
+    try {
+      const data = await strava(env);
+      if (data && data.configured) await ecrire(env, data);
+      return data || null;
+    } catch {
+      return null;
+    }
   }
 
-  // 2) Pas de snapshot frais → on recalcule depuis Strava.
-  try {
-    const data = await getStreakFromStrava(process.env);
+  return async function handler(req, res) {
+    const snap = await lire(env);
+
+    // 1-2) Dernier bilan connu : réponse immédiate, actualisation si besoin.
+    if (snap && snap.data && snap.data.configured !== false) {
+      const age = maintenant() - new Date(snap.updatedAt).getTime();
+      const aActualiser = !(age < FRESH_TTL_MS);
+      if (aActualiser) {
+        const tache = synchroniser();
+        try { enArrierePlan(tache); } catch { /* hors Vercel : la promesse continue seule */ }
+      }
+      res.setHeader('Cache-Control', CACHE_OK);
+      res.status(200).json({ ...snap.data, configured: true, cached: true, refreshing: aActualiser });
+      return;
+    }
+
+    // 3) Pas encore de snapshot : calcul direct.
+    const data = await synchroniser();
     if (data && data.configured) {
-      // On persiste la dernière valeur validée : elle deviendra la valeur par
-      // défaut fraîche au prochain chargement (attente Strava quasi nulle).
-      await writeSnapshot(process.env, data);
       res.setHeader('Cache-Control', CACHE_OK);
       res.status(200).json(data);
       return;
     }
-    // Strava non configuré : si on a malgré tout un vieux snapshot, on le sert.
-    if (snap) {
-      res.setHeader('Cache-Control', 'no-store');
-      res.status(200).json({ ...snap.data, configured: true, cached: true, stale: true });
-      return;
-    }
     res.setHeader('Cache-Control', 'no-store');
-    res.status(200).json(data);
-  } catch (err) {
-    // 3) Strava indisponible : on sert la dernière valeur connue si on en a une.
-    if (snap) {
-      res.setHeader('Cache-Control', 'no-store');
-      res.status(200).json({ ...snap.data, configured: true, cached: true, stale: true });
-      return;
-    }
-    res.setHeader('Cache-Control', 'no-store');
-    res.status(200).json({ configured: false, error: 'strava_unavailable' });
-  }
+    res.status(200).json(data && data.configured === false ? data : { configured: false, error: 'strava_unavailable' });
+  };
+}
+
+export default function handler(req, res) {
+  return creerHandler({
+    lire: readSnapshot,
+    ecrire: writeSnapshot,
+    strava: getStreakFromStrava,
+    enArrierePlan: waitUntil,
+    env: process.env,
+  })(req, res);
 }

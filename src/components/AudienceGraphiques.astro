@@ -54,6 +54,7 @@ const plateformes = [
     const onglets = [...bloc.querySelectorAll('[role="tab"]')];
     const panneaux = [...bloc.querySelectorAll('[data-panneau]')];
     liste.hidden = false;
+    bloc.classList.add('onglets-actifs'); // panneaux superposés : plus de marge entre eux
     const choisir = (i, focus) => {
       onglets.forEach((o, j) => {
         o.setAttribute('aria-selected', String(i === j));
