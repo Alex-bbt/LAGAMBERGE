@@ -1074,3 +1074,20 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 }
 /* Note de non-déduplication : texte plein, l'ombre des tuiles assombrit le fond */
 .dominants > .caption.texte-muted { color: var(--royal); padding-top: var(--space-2); }
+
+/* Logos de courses : petits, à côté du nom (participation personnelle, pas un partenariat) */
+.rendez-vous-grand--logo { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-6); align-items: center; }
+.rendez-vous-grand--logo > :not(.rendez-vous-grand__logo) { grid-column: 2; }
+.rendez-vous-grand__logo { grid-column: 1; grid-row: 1 / span 3; width: auto; height: calc(var(--space-16) + var(--space-4)); max-width: calc(var(--space-24) * 1.2); object-fit: contain; border-radius: var(--radius-sm); }
+
+/* Logos de marques : cases Bone de même hauteur, logos centrés et équilibrés */
+.references__marque--logo { padding: var(--space-3) var(--space-6); min-width: calc(var(--space-24) * 1.6); min-height: calc(var(--space-16) + var(--space-4)); justify-content: center; background: var(--bone); border-color: var(--bone); }
+.references__logo { width: auto; height: auto; max-height: calc(var(--space-8) + var(--space-1)); max-width: calc(var(--space-24) * 1.25); object-fit: contain; }
+/* Logo carré (Vaï Vaï Coco) : un peu plus haut pour un poids visuel équivalent */
+.references__marque--logo img[alt="Vaï Vaï Coco"] { max-height: var(--space-12); }
+@media (max-width: 720px) {
+  .references__liste { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .references__marque--logo { min-width: 0; }
+  .rendez-vous-grand--logo { display: flex; }
+  .rendez-vous-grand__logo { height: var(--space-12); align-self: flex-start; margin-bottom: var(--space-2); }
+}

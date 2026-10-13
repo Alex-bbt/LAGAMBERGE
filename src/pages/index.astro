@@ -22,6 +22,10 @@ import { Image } from 'astro:assets';
 import { identite, performances, courses, stats, backToRun, offres, references, photos, nombre } from '../data/mediakit.js';
 import logoBtr from '../assets/back-to-run/btr-logo-mascotte.png';
 
+// Logos officiels fournis par Alex (src/assets/logos/), référencés par nom de fichier dans les données.
+const fichiersLogos = import.meta.glob('../assets/logos/*.{png,jpg,jpeg,svg,webp}', { eager: true });
+const logo = (f) => (f ? fichiersLogos[`../assets/logos/${f}`]?.default : null);
+
 const ig = stats.instagram;
 const tt = stats.tiktok;
 const cumul = stats.cumul;
@@ -180,7 +184,10 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
         <h2 class="display-l" id="titre-objectifs">Prochains objectifs</h2>
         <ul class="rendez-vous-grands" role="list">
           {projets.map((c) => (
-            <li class="rendez-vous-grand">
+            <li class:list={['rendez-vous-grand', { 'rendez-vous-grand--logo': logo(c.logo) }]}>
+              {logo(c.logo) && (
+                <Image src={logo(c.logo)} alt={`Logo ${c.nom}`} class="rendez-vous-grand__logo" height={112} format="webp" />
+              )}
               <span class="label texte-muted">{c.dateCourte ?? c.date}</span>
               <h3 class="title">{c.nom}</h3>
               <p class="lead">{c.accrocheAccueil ?? c.accroche}</p>
@@ -210,7 +217,11 @@ const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant
         <div class="references" data-apparition>
           <h3 class="label references__titre">Collaborations et produits reçus</h3>
           <ul class="references__liste" role="list">
-            {marques.map((m) => <li class="references__marque">{m.nom}</li>)}
+            {marques.map((m) => (
+              <li class:list={['references__marque', { 'references__marque--logo': logo(m.logo) }]}>
+                {logo(m.logo) ? <Image src={logo(m.logo)} alt={m.nom} class="references__logo" height={96} format="webp" /> : m.nom}
+              </li>
+            ))}
           </ul>
         </div>
       )}

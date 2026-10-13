@@ -381,7 +381,7 @@ export const courses = [
     accroche: 'Grand objectif trail de fin 2026',
     dateCourte: 'Novembre 2026',
     accrocheAccueil: 'Grand objectif trail · Projet de récit YouTube',
-    logo: null, // À FOURNIR : logo officiel de l'édition 2026 (src/assets/logos/)
+    logo: 'saintelyon.jpeg', // fourni par Alex (src/assets/logos/)
     reserve: 'Format (distance) à confirmer.',
     accueil: true,
     projet: 'Projet de récit YouTube',
@@ -410,7 +410,7 @@ export const courses = [
     sujet: 'Objectif annoncé : moins de 2 h 30.',
     accroche: 'Objectif : moins de 2 h 30',
     accrocheAccueil: 'Objectif : moins de 2 h 30',
-    logo: null, // À FOURNIR : logo officiel du Marathon de Paris 2027
+    logo: 'marathon-paris.jpg', // fourni par Alex (src/assets/logos/)
     reserve: 'Date exacte à confirmer (début avril selon les sources).',
     accueil: true,
     resultat: null,
@@ -453,13 +453,14 @@ export const affiliation =
 
 // Références « Collaborations et produits reçus » (liste indiquée par Alex le
 // 13 octobre 2026). Nature des relations non détaillée : aucune légende par
-// marque tant que `nature` vaut null. `publier: false` = orthographe ou
-// identité à confirmer. `logo` : fichier officiel seulement (À FOURNIR).
+// marque tant que `nature` vaut null. `logo` : fichier officiel fourni par
+// Alex (src/assets/logos/, ajoutés le 13 octobre 2026) ; l'orthographe suit
+// le logo (Joyfuel, Vaï Vaï Coco).
 export const references = [
-  { nom: 'DJI', nature: null, publier: true, logo: null },
-  { nom: 'Shokz', nature: null, publier: true, logo: null },
-  { nom: 'JoyFule', nature: null, publier: false, logo: null }, // À CONFIRMER : orthographe et identité
-  { nom: 'Vive by Coco', nature: null, publier: false, logo: null }, // À CONFIRMER : orthographe et identité
+  { nom: 'DJI', nature: null, publier: true, logo: 'DJI.png' },
+  { nom: 'Shokz', nature: null, publier: true, logo: 'shokz.png' },
+  { nom: 'Joyfuel', nature: null, publier: true, logo: 'joyfule.png' },
+  { nom: 'Vaï Vaï Coco', nature: null, publier: true, logo: 'vaivai-coco.png' },
   // Hors liste d'Alex : non publiés.
   { nom: 'Brevo', nature: null, publier: false, logo: null },
   { nom: 'Nomio', nature: 'Envoi de produits', publier: false, logo: null },
