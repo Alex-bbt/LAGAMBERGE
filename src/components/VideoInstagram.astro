@@ -18,10 +18,10 @@ const embed = `${v.url.replace(/\/?$/, '/')}embed/`;
 ---
 
 <figure class="video-avant" data-video data-embed={embed} data-titre={v.titre}>
-  <div class="video-avant__cadre" data-cadre>
+  <div class:list={['video-avant__cadre', { 'video-avant__cadre--miniature': miniature }]} data-cadre style={miniature ? `--ratio: ${miniature.width} / ${miniature.height}` : undefined}>
     <button class="video-avant__lecture" type="button" data-lire aria-label={`Lire la vidéo : ${v.titre}`}>
       {miniature
-        ? <Image src={miniature} alt="" class="video-avant__miniature" width={480} format="webp" />
+        ? <Image src={miniature} alt="" class="video-avant__miniature" widths={[360, 640]} sizes="(max-width: 720px) 90vw, 380px" format="webp" />
         : <span class="video-avant__couverture" aria-hidden="true"><span class="dominant video-avant__vues">{nombre(v.vues)}</span><span class="lead">vues</span></span>}
       <span class="video-avant__bouton" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>

@@ -313,8 +313,8 @@ export const videos = [
 
 // -- Vidéos mises en avant (page /statistiques) ------------------------------
 // Trois formats typiques, choisis par Alex. Vues communiquées par Alex le
-// 13 octobre 2026. `miniature` : image de couverture réelle (src/assets/videos/),
-// À FOURNIR ; sans elle, une couverture neutre s'affiche (aucune fausse capture).
+// 13 octobre 2026. `miniature` : couverture réelle fournie par Alex
+// (src/assets/videos/) ; sans elle, une couverture neutre s'affiche.
 // La vidéo n'est chargée (lecteur officiel Instagram) qu'au clic.
 export const videosAvant = [
   {
@@ -326,18 +326,18 @@ export const videosAvant = [
     url: 'https://www.instagram.com/p/DZaWXEPI757/',
     vues: 2958127,
     releve: '13 octobre 2026',
-    miniature: null,
+    miniature: 'depart-10k.webp',
   },
   {
     id: 'grosse-echeance',
     format: 'Format long',
-    titre: 'Le récit d’une grosse échéance',
+    titre: 'Le récit de mon Marathon de Paris',
     resume: 'Une vidéo plus longue : le format que je réalise lors des grosses échéances.',
     plateforme: 'Instagram',
     url: 'https://www.instagram.com/reel/DXXAo85iP85/',
     vues: 52838,
     releve: '13 octobre 2026',
-    miniature: null,
+    miniature: 'marathon-paris.webp',
   },
   {
     id: 'sketch',
@@ -348,7 +348,7 @@ export const videosAvant = [
     url: 'https://www.instagram.com/reel/DT-6y1HiCuf/',
     vues: 532531,
     releve: '13 octobre 2026',
-    miniature: null,
+    miniature: 'sketch.webp',
   },
 ];
 

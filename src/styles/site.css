@@ -1148,3 +1148,7 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) { .video-avant__bouton { transition: none; } }
 @media (max-width: 1080px) { .videos-avant { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .videos-avant { grid-template-columns: minmax(0, 1fr); } .video-avant__cadre { max-width: calc(var(--space-24) * 3.6); } }
+/* Couverture réelle : proportions verticales de la vidéo, sans rognage */
+.video-avant__cadre--miniature { aspect-ratio: var(--ratio); background: var(--royal); }
+.video-avant__cadre--miniature .video-avant__bouton { transform: translate(-50%, -50%); }
+.video-avant__cadre--miniature .video-avant__lecture:hover .video-avant__bouton { transform: translate(-50%, -50%) scale(1.06); }
