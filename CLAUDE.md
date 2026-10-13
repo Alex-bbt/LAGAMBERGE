@@ -44,6 +44,10 @@ api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les p
 - Les valeurs exactes, définitions et populations secondaires vont dans les
   pages d'approfondissement (/statistiques, /communaute, /projets, /histoire).
 
+- Exception : /communaute (Back to Run) suit la DA de Back to Run (dépôt Alex-bbt/back-to-run) :
+  styles `src/styles/back-to-run.css` rangés sous `.theme-btr` (tokens `--btr-*`),
+  Figtree + Caprasimo (chiffres seulement) dans `public/fonts/back-to-run/`,
+  poses de la mascotte dans `src/assets/back-to-run/`. Nav et pied restent La Gamberge.
 - Accueil : 200 mots maximum, 8 chiffres de preuve, aucun chiffre répété,
   aucun graphique. Le reste vit dans les pages détaillées.
 
