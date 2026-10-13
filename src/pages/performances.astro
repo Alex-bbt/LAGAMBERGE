@@ -1,14 +1,14 @@
 ---
 /* ==========================================================================
-   Page « Mes performances » : mur de performances.
-   - Chaque tuile montre le résultat et le nom de la course.
-   - Date et détails : au clic, au toucher, au clavier (Entrée/Espace), et
-     au survol sur ordinateur. Basé sur <details> : tout reste accessible
-     sans JavaScript et sans survol.
-   - Temps réel = référence ; temps officiel affiché à part s'il existe.
-   - Aucune médaille ni podium : classements tels qu'ils figurent sur les
-     justificatifs. Les objectifs à venir restent dans un bloc séparé.
-   Données : `performances` dans src/data/mediakit.js.
+   Page « Mes performances » : mur de cartes stables + fenêtre de détails.
+   - Chaque carte : résultat principal, course, date, « Voir les détails ».
+     Aucune carte ne se déploie dans la grille ; survol = élévation légère.
+   - Clic / Entrée / Espace : fenêtre <dialog> centrée (focus dedans, Échap
+     pour fermer, retour du focus sur la carte, défilement intérieur).
+   - Accès par ancre (#marathon…) : la carte est mise en évidence et placée
+     entièrement sous la navigation fixe (hauteur mesurée + marge).
+   - Temps réel = référence ; temps officiel à part s'il existe ; aucune
+     médaille ni podium. Données : `performances` (src/data/mediakit.js).
    ========================================================================== */
 import Base from '../layouts/Base.astro';
 import EnTete from '../components/EnTete.astro';
@@ -19,11 +19,20 @@ const groupes = [
   { titre: 'Sur route', items: performances.filter((p) => p.type === 'route') },
   { titre: 'En trail', items: performances.filter((p) => p.type === 'trail') },
 ];
-const libelleTemps = (p) => (p.tempsReel ? 'Temps réel' : p.tempsCourse ? 'Temps' : null);
+// Espaces insécables : « 57 516 », « 2 h 38 min 21 s », « 12 avril 2026 » ne se coupent pas.
+const insec = (v) => (typeof v === 'string' ? v.replace(/ /g, ' ') : v);
+const lignes = (p) => [
+  ['Date', p.date],
+  ['Distance', p.distance],
+  [p.tempsReel ? 'Temps réel' : 'Temps', p.tempsReel ?? p.tempsCourse],
+  ['Temps officiel', p.tempsOfficiel && p.tempsOfficiel !== p.tempsReel ? p.tempsOfficiel : null],
+  ...p.classements.map((c) => [c.libelle, c.valeur]),
+  ['Récompense', p.recompense],
+].filter(([, v]) => v);
 ---
 
 <Base titre="Mes performances" description="Les références de La Gamberge sur route et en trail : temps réels, classements et dates.">
-  <section class="lg-ambient chapitre" aria-labelledby="titre-performances">
+  <section class="lg-ambient chapitre chapitre--performances" aria-labelledby="titre-performances">
     <div class="chapitre__inner chapitre__inner--seul">
       <EnTete niveau="h1" id="titre-performances" repere="Performances réalisées" titre="Mes performances"
         chapeau="Mes références sur route et en trail." />
@@ -34,26 +43,12 @@ const libelleTemps = (p) => (p.tempsReel ? 'Temps réel' : p.tempsCourse ? 'Temp
           <ul class="mur__grille" role="list">
             {g.items.map((p) => (
               <li class="mur__case" id={p.id}>
-                <details class="perf-tuile" data-perf>
-                  <summary class="perf-tuile__resume">
-                    <span class="chiffre title perf-tuile__resultat">{p.resultat}</span>
-                    <span class="lead perf-tuile__course">{p.course}</span>
-                    <span class="caption perf-tuile__ouvrir">Date et détails</span>
-                  </summary>
-                  <dl class="perf-tuile__details">
-                    <div><dt>Date</dt><dd>{p.date}{p.dateCommuniquee && <span class="texte-muted perf-tuile__mention">communiquée</span>}</dd></div>
-                    {p.distance && <div><dt>Distance</dt><dd>{p.distance}</dd></div>}
-                    {libelleTemps(p) && <div><dt>{libelleTemps(p)}</dt><dd>{p.tempsReel ?? p.tempsCourse}</dd></div>}
-                    {p.tempsOfficiel && <div><dt>Temps officiel</dt><dd>{p.tempsOfficiel}</dd></div>}
-                    {p.classements.map((c) => <div><dt>{c.libelle}</dt><dd>{c.valeur}</dd></div>)}
-                    {p.recompense && <div><dt>Récompense</dt><dd>{p.recompense}</dd></div>}
-                  </dl>
-                  {p.details.length > 0 && (
-                    <ul class="perf-tuile__notes caption texte-muted" role="list">
-                      {p.details.map((d) => <li>{d}</li>)}
-                    </ul>
-                  )}
-                </details>
+                <button class="perf-carte" type="button" data-ouvrir={`detail-${p.id}`} aria-haspopup="dialog">
+                  <span class="chiffre title perf-carte__resultat">{insec(p.resultat)}</span>
+                  <span class="lead perf-carte__course">{p.course}</span>
+                  <span class="caption texte-muted perf-carte__date">{insec(p.date)}</span>
+                  <span class="caption perf-carte__action">Voir les détails</span>
+                </button>
               </li>
             ))}
           </ul>
@@ -75,31 +70,64 @@ const libelleTemps = (p) => (p.tempsReel ? 'Temps réel' : p.tempsCourse ? 'Temp
       <a class="lg-btn lg-btn--glass" href="/projets">Tout le calendrier</a>
     </div>
   </section>
+
+  <!-- Fenêtres de détails (une par performance) -->
+  {performances.map((p) => (
+    <dialog class="perf-detail" id={`detail-${p.id}`} aria-labelledby={`detail-titre-${p.id}`}>
+      <div class="perf-detail__entete">
+        <h2 class="title" id={`detail-titre-${p.id}`}>{p.course}</h2>
+        <button class="perf-detail__fermer" type="button" data-fermer aria-label="Fermer les détails">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
+        </button>
+      </div>
+      <dl class="perf-detail__donnees">
+        {lignes(p).map(([l, v]) => <div><dt>{l}</dt><dd>{insec(v)}</dd></div>)}
+      </dl>
+      {(p.noteClassements || p.details.length > 0 || p.dateCommuniquee) && (
+        <ul class="perf-detail__notes caption texte-muted" role="list">
+          {p.noteClassements && <li>{p.noteClassements}</li>}
+          {p.dateCommuniquee && <li>Date communiquée par Alex.</li>}
+          {p.details.map((d) => <li>{d}</li>)}
+        </ul>
+      )}
+      {p.justificatif && <a class="lien-fleche" href={p.justificatif} target="_blank" rel="noopener noreferrer">Voir le justificatif<span class="sr-only"> (nouvel onglet)</span></a>}
+    </dialog>
+  ))}
 </Base>
 
 <script>
-  // Date et détails : ouverture au clic/toucher et au clavier (natif <details>),
-  // au focus, au survol sur ordinateur, et à l'arrivée par une ancre (#marathon…).
-  // Un clic garde ouverte une tuile ouverte par le focus ou le survol.
-  const tuiles = [...document.querySelectorAll('[data-perf]')];
-  const survol = matchMedia('(hover: hover) and (pointer: fine)');
-  tuiles.forEach((t) => {
-    let ouvertPar = null; // 'clic' | 'focus' | 'survol' | null
-    const ouvrir = (par) => { if (!t.open) { t.open = true; ouvertPar = par; } };
-    t.querySelector('summary').addEventListener('click', (e) => {
-      if (t.open && (ouvertPar === 'focus' || ouvertPar === 'survol')) { e.preventDefault(); ouvertPar = 'clic'; return; }
-      ouvertPar = t.open ? null : 'clic';
+  // Fenêtre de détails : ouverture au clic / clavier, fermeture par le bouton,
+  // Échap (natif) ou clic hors de la fenêtre ; le focus revient sur la carte.
+  let declencheur = null;
+  document.querySelectorAll('[data-ouvrir]').forEach((carte) => {
+    carte.addEventListener('click', () => {
+      const d = document.getElementById(carte.dataset.ouvrir);
+      if (!d) return;
+      declencheur = carte;
+      d.showModal();
+      d.querySelector('[data-fermer]')?.focus();
     });
-    t.addEventListener('focusin', () => ouvrir('focus'));
-    t.addEventListener('focusout', (e) => { if (ouvertPar === 'focus' && !t.contains(e.relatedTarget)) { t.open = false; ouvertPar = null; } });
-    t.addEventListener('mouseenter', () => { if (survol.matches) ouvrir('survol'); });
-    t.addEventListener('mouseleave', () => { if (survol.matches && ouvertPar === 'survol') { t.open = false; ouvertPar = null; } });
   });
-  const ouvrirCible = () => {
-    const cible = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-    const d = cible?.querySelector('[data-perf]');
-    if (d) d.open = true;
+  document.querySelectorAll('dialog.perf-detail').forEach((d) => {
+    d.querySelector('[data-fermer]')?.addEventListener('click', () => d.close());
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); }); // clic sur le voile
+    d.addEventListener('close', () => { declencheur?.focus(); declencheur = null; });
+  });
+
+  // Accès direct par ancre : carte mise en évidence et entièrement visible
+  // sous la navigation fixe (hauteur réelle mesurée + 28 px de marge).
+  const cibler = () => {
+    document.querySelectorAll('.mur__case.est-cible').forEach((c) => c.classList.remove('est-cible'));
+    const id = location.hash ? decodeURIComponent(location.hash.slice(1)) : '';
+    const caseCible = id && document.getElementById(id);
+    if (!caseCible || !caseCible.classList.contains('mur__case')) return;
+    caseCible.classList.add('est-cible');
+    const nav = document.querySelector('.entete');
+    const marge = (nav ? nav.getBoundingClientRect().bottom : 0) + 28;
+    const haut = caseCible.getBoundingClientRect().top + scrollY - marge;
+    scrollTo({ top: Math.max(0, haut), behavior: 'instant' });
   };
-  ouvrirCible();
-  addEventListener('hashchange', ouvrirCible);
+  // Après le premier rendu (polices comprises) pour une position exacte.
+  (document.fonts?.ready ?? Promise.resolve()).then(() => requestAnimationFrame(cibler));
+  addEventListener('hashchange', cibler);
 </script>

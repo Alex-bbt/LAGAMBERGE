@@ -1266,3 +1266,95 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 /* /performances : la marge générale (scroll-padding) ne s'applique pas au
    saut vers une ancre au chargement ; les tuiles portent leur propre marge. */
 .mur__case { scroll-margin-top: var(--decalage-ancre); }
+
+/* ==========================================================================
+   CORRECTIONS CIBLÉES (après V1)
+   ========================================================================== */
+
+/* Chiffres principaux : encore ~9 % plus petits sur ordinateur
+   (au téléphone, le minimum de 48 px reste atteint : proportions inchangées) */
+:root { --taille-dominant: clamp(var(--space-12), 5.65vw, calc(var(--space-16) + var(--space-4) + var(--space-1))); }
+
+/* Ancres : hauteur réelle de la navigation (~86 px) + ~28 px de marge */
+:root { --decalage-ancre: calc(var(--space-24) + var(--space-6)); }
+.mur__case { scroll-margin-top: var(--decalage-ancre); }
+/* /performances : en-tête nettement sous la navigation fixe */
+main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) + var(--space-16)); }
+@media (max-width: 720px) {
+  main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) + var(--space-12)); }
+}
+
+/* Mur : cartes stables, mêmes dimensions par rangée */
+.mur__grille { align-items: stretch; }
+.mur__case { display: flex; }
+.perf-carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: calc(var(--space-24) * 1.75);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-stroke);
+  background: var(--glass-fill-strong);
+  box-shadow: var(--shadow-glass);
+  color: var(--royal);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.perf-carte__resultat { white-space: nowrap; }
+.perf-carte__action { margin-top: auto; padding-top: var(--space-3); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.perf-carte__action::after { content: " →"; }
+.perf-carte:hover { border-color: var(--royal-muted); }
+.perf-carte:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .perf-carte:hover { transform: translateY(calc(var(--space-1) * -0.5)); box-shadow: var(--shadow-glass-lift); }
+}
+.mur__case.est-cible .perf-carte { border-color: var(--royal); box-shadow: 0 0 0 3px var(--royal), var(--shadow-glass); }
+
+/* Fenêtre de détails */
+.perf-detail {
+  width: min(calc(var(--space-24) * 6.6), calc(100vw - var(--space-8)));
+  max-height: calc(100svh - var(--space-8));
+  overflow-y: auto;
+  padding: var(--space-8);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  color: var(--royal);
+  box-shadow: var(--shadow-royal);
+}
+.perf-detail::backdrop { background: var(--glass-royal); }
+.perf-detail[open] { display: flex; flex-direction: column; gap: var(--space-4); }
+.perf-detail__entete { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
+.perf-detail__fermer {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline);
+  background: var(--powder-soft);
+  color: var(--royal);
+  cursor: pointer;
+}
+.perf-detail__fermer:hover { background: var(--powder); }
+.perf-detail__fermer:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
+.perf-detail__donnees { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); margin: 0; border-top: 1px solid var(--hairline); }
+.perf-detail__donnees > div { display: contents; }
+.perf-detail__donnees dt, .perf-detail__donnees dd { padding: var(--space-3) 0; border-bottom: 1px solid var(--hairline); }
+.perf-detail__donnees dt { color: var(--royal-muted); padding-right: var(--space-6); }
+.perf-detail__donnees dd { margin: 0; font-weight: 700; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.perf-detail__notes { display: flex; flex-direction: column; gap: var(--space-1); }
+@media (max-width: 480px) { .perf-detail { padding: var(--space-6) var(--space-4); } }
+@media (max-width: 360px) {
+  /* Libellé au-dessus de la valeur quand deux colonnes ne tiennent pas */
+  .perf-detail__donnees { grid-template-columns: minmax(0, 1fr); }
+  .perf-detail__donnees dt { padding: var(--space-3) 0 0; border-bottom: 0; }
+  .perf-detail__donnees dd { text-align: left; padding-top: var(--space-1); white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) { .perf-carte { transition: none; } }

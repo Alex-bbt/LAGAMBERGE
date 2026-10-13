@@ -75,10 +75,11 @@ export const performances = [
     course: 'Marathon de Paris 2026', epreuve: 'Marathon de Paris 2026', court: 'Marathon', distance: 'Marathon',
     date: '12 avril 2026', resultat: '2 h 38 min 21 s', tempsReel: '2 h 38 min 21 s', tempsOfficiel: null,
     classements: [
-      { libelle: 'Classement général (temps réel)', valeur: '234e / 57 516' },
-      { libelle: 'Classement hommes', valeur: '223e / 39 253' },
+      { libelle: 'Classement général', valeur: '234e / 57 516' },
+      { libelle: 'Hommes', valeur: '223e / 39 253' },
       { libelle: 'Catégorie SH', valeur: '145e / 15 233' },
     ],
+    noteClassements: 'Classements établis au temps réel.',
     details: [], recompense: null,
   },
   {
@@ -107,8 +108,8 @@ export const performances = [
     date: '28 février 2026', dateCommuniquee: true, resultat: '1 h 16 min 04 s', tempsReel: '1 h 16 min 04 s', tempsOfficiel: null,
     classements: [
       { libelle: 'Classement général', valeur: '10e / 1 154' },
-      { libelle: 'Classement hommes', valeur: '10e / 827' },
-      { libelle: 'Classement catégorie', valeur: '5e / 249' },
+      { libelle: 'Hommes', valeur: '10e / 827' },
+      { libelle: 'Catégorie', valeur: '5e / 249' },
     ],
     details: [], recompense: null,
   },
@@ -117,10 +118,11 @@ export const performances = [
     course: 'Marathon de Paris 2025', epreuve: 'Marathon de Paris 2025', court: 'Marathon', distance: 'Marathon',
     date: '13 avril 2025', resultat: '2 h 59 min 37 s', tempsReel: '2 h 59 min 37 s', tempsOfficiel: null,
     classements: [
-      { libelle: 'Classement général (temps réel)', valeur: '1 944e / 54 934' },
-      { libelle: 'Classement hommes', valeur: '1 901e / 38 589' },
+      { libelle: 'Classement général', valeur: '1 944e / 54 934' },
+      { libelle: 'Hommes', valeur: '1 901e / 38 589' },
       { libelle: 'Catégorie SEH', valeur: '1 011e / 15 599' },
     ],
+    noteClassements: 'Classements établis au temps réel.',
     details: ['Premier marathon'], recompense: null,
   },
   {
@@ -129,21 +131,23 @@ export const performances = [
     course: 'Nice Côte d’Azur by UTMB — Levens–Nice', epreuve: 'Nice Côte d’Azur by UTMB, format 50K', court: 'Trail', distance: null,
     date: '25 septembre 2026', resultat: '4 h 02 min 39 s', tempsReel: null, tempsCourse: '4 h 02 min 39 s', tempsOfficiel: null,
     classements: [
-      { libelle: 'Rang général', valeur: '26e / 666' },
-      { libelle: 'Rang hommes', valeur: '26e / 546' },
+      { libelle: 'Classement général', valeur: '26e / 666' },
+      { libelle: 'Hommes', valeur: '26e / 546' },
     ],
     details: ['Distance affichée dans le résultat : 39 km', 'Dénivelé positif affiché : 1 388 m', 'Score de course UTMB : 637', '« 50K » désigne le format, pas la distance exacte'],
     recompense: null,
     classement: '26e', temps: '4 h 02', libelle: 'Nice Côte d’Azur by UTMB · format 50K', libelleCourt: 'Nice by UTMB, format 50K',
   },
   {
-    // Justificatif non identifié : seules les informations communiquées sont affichées.
+    // Données confirmées par Alex (13 octobre 2026). Temps non qualifié de
+    // « réel » ni d'« officiel » faute d'information. Justificatif : À FOURNIR.
     id: 'viroflay', type: 'trail',
-    course: 'Trail de Viroflay', epreuve: 'Trail de Viroflay', court: 'Trail', distance: null,
-    date: '30 août 2026', dateCommuniquee: true, resultat: '2e', tempsReel: null, tempsOfficiel: null,
-    classements: [{ libelle: 'Classement', valeur: '2e' }],
-    details: [], recompense: null, justificatif: null, // À FOURNIR
+    course: 'Trail de la QRBC — Viroflay', epreuve: 'Trail de la QRBC — Viroflay', court: 'Trail', distance: '20 km',
+    date: '30 août 2026', resultat: '1 h 25 min 07 s', tempsReel: null, tempsCourse: '1 h 25 min 07 s', tempsOfficiel: null,
+    classements: [{ libelle: 'Classement général', valeur: '2e / 44' }],
+    details: [], recompense: null, justificatif: null,
   },
+
 ];
 
 // Progression marathon : `atteint: false` = objectif (affiché différemment).
@@ -461,7 +465,13 @@ export const backToRun = {
     position: '50% 93%',
     positionMobile: '50% 93%',
   },
-  // À FOURNIR : capture du défi, logo / mascotte.
+  // Accueil : recadrage dérivé de l'original (conservé), au format 5:4,
+  // centré sur le groupe (de 13 % à 81 % de la largeur dans l'original),
+  // têtes et pieds compris. Affiché en proportions naturelles.
+  photoAccueil: {
+    fichier: 'back-to-run-communaute-cadre.jpeg',
+    alt: 'Des membres de la communauté Back to Run réunis à Paris, sourire aux lèvres.',
+  },
 };
 
 // -- Courses (calendrier + résultats) ----------------------------------------

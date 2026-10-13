@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Monogramme La Gamberge : « LG » en Bone sur Royal Blue (palette du site) -->
+  <rect width="32" height="32" rx="7" fill="#162660"/>
+  <g fill="none" stroke="#F1E4D1" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M6.2 8.6V23.4H12.6"/>
+    <path d="M25.6 11.4A6.4 6.4 0 1 0 26.6 16.6H21.6"/>
+  </g>
+</svg>

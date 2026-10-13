@@ -32,8 +32,10 @@ src/pages/index.astro  Six étapes : #profil (clair) → #statistiques (poudre, 
                        réseaux, note unique des dates de relevé.
 src/pages/histoire.astro, communaute.astro, projets.astro, statistiques.astro
                        Pages d'approfondissement (les détails quittent l'accueil pour y vivre)
-src/pages/performances.astro  Mur de performances (<details> : clic, toucher, focus, survol ;
-                              ancres #marathon, #10-km, #5-km depuis les tuiles de l'accueil)
+src/pages/performances.astro  Mur de cartes stables (aucune ne se déploie) + fenêtre <dialog>
+                              de détails ; ancres #marathon, #10-km, #5-km : carte mise en
+                              évidence, placée sous la navigation (hauteur mesurée + 28 px)
+public/favicon.*       Monogramme « LG » (SVG, ICO, PNG 16/32, apple-touch-icon 180)
 src/pages/defi-2026.astro     Suivi du défi, lit /api/streak (dernier bilan affiché tout de suite)
 src/components/        EnTete, CarteChiffre, Barres, Colonnes, AudienceGraphiques (sélecteur
                        Instagram/TikTok), Frise (calendrier horizontal de /projets),
