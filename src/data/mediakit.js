@@ -273,10 +273,11 @@ stats.cumul = {
   periodes: 'Vues depuis le 1er janvier 2026. Instagram au 12 octobre ; TikTok au 10 octobre.',
   // Prochain rafraîchissement global envisagé au passage des 20 000 abonnements cumulés.
 };
-// Vues médianes des stories TikTok (30 derniers jours) : À FOURNIR, avec la
-// période du relevé. null = « Non renseigné ».
+// Stories TikTok : aucune story publiée (confirmé par Alex le 13 octobre 2026).
+// Indicateur sans objet : ni zéro ni valeur estimée.
 stats.tiktok.vuesMedianesStory = null;
 stats.tiktok.vuesMedianesStoryPeriode = null;
+stats.tiktok.storiesSansObjet = 'Non applicable — aucune story publiée';
 stats.instagram.engagementLegende = 'Engagement rapporté à la couverture';
 stats.tiktok.engagementLegende = 'Engagement rapporté aux vues';
 stats.tiktok.engagementDetail = '(Likes + commentaires + partages) / vues. Vidéos de 2026, du 1er janvier au 10 octobre.';
@@ -443,6 +444,9 @@ export const videoDivertissement = {
   plateforme: 'Instagram',
   url: 'https://www.instagram.com/p/DZVU9EwosdJ/',
   miniature: 'course-incognito.webp',
+  // Instagram ne permet pas la lecture intégrée de cette vidéo : miniature
+  // locale + lien vers la publication (aucun lecteur tiers chargé).
+  lecture: 'externe',
 };
 
 // -- Back to Run --------------------------------------------------------------
@@ -516,8 +520,8 @@ export const courses = [
   {
     id: 'saintelyon',
     nom: 'SaintéLyon',
-    // À FOURNIR : format inscrit (80 ou 100 km ?). Non affiché tant qu'il manque.
-    format: null,
+    // Distance et dénivelé communiqués par Alex le 13 octobre 2026.
+    format: '80 km · 2 000 m D+',
     date: '28 et 29 novembre 2026',
     type: 'Trail de nuit',
     statut: 'prevu',
@@ -527,7 +531,6 @@ export const courses = [
     dateCourte: 'Novembre 2026',
     accrocheAccueil: 'Grand objectif trail · Projet de récit YouTube',
     logo: 'saintelyon.jpeg', // fourni par Alex (src/assets/logos/)
-    reserve: 'Format (distance) à confirmer.',
     accueil: true,
     projet: 'Projet de récit YouTube',
     resultat: null,
@@ -579,11 +582,13 @@ export const offres = [
     titre: 'Création de contenu rémunérée',
     texte: 'Vidéos, photos et stories pour mes réseaux ou vos propres supports.',
     precision: 'Formats, calendrier, rémunération et droits d’utilisation définis ensemble.',
+    formats: 'Reel, TikTok, stories ou UGC selon le projet · Tarifs sur demande',
   },
   {
     titre: 'Accompagnement dans la durée',
     texte: 'Un partenariat autour de plusieurs courses, contenus ou initiatives communautaires.',
     precision: 'Accompagnement matériel et/ou rémunération, avec des engagements adaptés au projet.',
+    formats: 'Reel, TikTok, stories ou UGC selon le projet · Tarifs sur demande',
   },
   {
     titre: 'Dotation de produits',
@@ -596,20 +601,58 @@ export const offres = [
 export const affiliation =
   'Une affiliation rémunérée peut compléter la collaboration, avec des commissions et des conditions définies ensemble.';
 
-// Références « Collaborations et produits reçus » (liste indiquée par Alex le
-// 13 octobre 2026). Nature des relations non détaillée : aucune légende par
-// marque tant que `nature` vaut null. `logo` : fichier officiel fourni par
-// Alex (src/assets/logos/, ajoutés le 13 octobre 2026) ; l'orthographe suit
-// le logo (Joyfuel, Vaï Vaï Coco).
+// Références « Ils m'ont fait confiance » (liste indiquée par Alex le
+// 13 octobre 2026). Nature vérifiée avec Alex, NON publiée (montants et
+// conditions restent privés) : `type` sert seulement à contrôler que la
+// mention générale reste exacte.
+//   - 'reseaux' : collaboration diffusée sur les comptes d'Alex (DJI, Shokz) ;
+//   - 'ugc'     : contenus créés pour la marque, non diffusés sur ses comptes.
+// `logo` : fichier officiel fourni par Alex (src/assets/logos/) ; l'orthographe
+// suit le logo (Joyfuel, Vaï Vaï Coco).
+export const referencesMention = 'Contenus pour les marques et collaborations sur mes réseaux';
 export const references = [
-  { nom: 'DJI', nature: null, publier: true, logo: 'DJI.png' },
-  { nom: 'Shokz', nature: null, publier: true, logo: 'shokz.png' },
-  { nom: 'Joyfuel', nature: null, publier: true, logo: 'joyfule.png' },
-  { nom: 'Vaï Vaï Coco', nature: null, publier: true, logo: 'vaivai-coco.png' },
+  { nom: 'DJI', type: 'reseaux', publier: true, logo: 'DJI.png' },
+  { nom: 'Shokz', type: 'reseaux', publier: true, logo: 'shokz.png' },
+  { nom: 'Joyfuel', type: 'ugc', publier: true, logo: 'joyfule.png' },
+  { nom: 'Vaï Vaï Coco', type: 'ugc', publier: true, logo: 'vaivai-coco.png' },
   // Hors liste d'Alex : non publiés.
   { nom: 'Brevo', nature: null, publier: false, logo: null },
   { nom: 'Nomio', nature: 'Envoi de produits', publier: false, logo: null },
 ];
+
+// -- Mentions légales et confidentialité ---------------------------------------
+// Éditeur : uniquement des informations RÉELLES fournies par Alex. Un champ à
+// null n'est pas affiché ; en production (Vercel), le build échoue tant qu'un
+// champ obligatoire manque (voir src/data/legal.js) : jamais de champ provisoire.
+export const editeur = {
+  nom: 'Alex Bourbigot',
+  nomCommercial: 'La Gamberge',
+  statut: null, // À FOURNIR : ex. « Entrepreneur individuel (micro-entrepreneur) »
+  adresse: null, // À FOURNIR : adresse professionnelle ou de domiciliation
+  telephone: null, // À FOURNIR
+  email: 'contact@lagamberge.com',
+  siren: null, // À FOURNIR (9 chiffres)
+  siret: null, // À FOURNIR (14 chiffres)
+  registre: null, // À FOURNIR : ex. « Registre national des entreprises (RNE) »
+  directeurPublication: null, // À FOURNIR (en principe l'éditeur lui-même)
+  // Pas de numéro de TVA : n'en ajouter que si Alex en possède un.
+  tva: null,
+  // Fournisseur de la boîte contact@lagamberge.com (destinataire des emails).
+  messagerie: null, // À FOURNIR : { nom: '…', pays: '…' }
+};
+
+// Hébergeur : coordonnées vérifiées le 13 octobre 2026 dans l'avenant sur le
+// traitement des données (DPA) publié par Vercel (vercel.com/legal/dpa).
+// Vercel ne publie pas de numéro de téléphone : contact par formulaire officiel.
+export const hebergeur = {
+  nom: 'Vercel Inc.',
+  adresse: '440 N Barranca Ave #4133, Covina, CA 91723, États-Unis',
+  contact: 'https://vercel.com/contact',
+  site: 'https://vercel.com',
+  confidentialite: 'https://vercel.com/legal/privacy-notice',
+};
+
+export const miseAJourLegale = '13 octobre 2026';
 
 // -- Utilitaire d'affichage ----------------------------------------------------
 // Formate un nombre à la française (espaces fines insécables).

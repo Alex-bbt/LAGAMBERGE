@@ -12,6 +12,7 @@
    - trois espacements : entre sections, entre blocs, à l'intérieur d'un bloc.
    ========================================================================== */
 
+@import "./polices.css";
 @import "../../lagamberge-design-system/design-system/tokens.css";
 @import "../../lagamberge-design-system/design-system/composants.css";
 
@@ -1389,3 +1390,41 @@ main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) +
 /* Vidéo hébergée sur le site : garde le cadre de la miniature (pas de hauteur d'embed). */
 .video-avant__lecteur--natif { object-fit: contain; background: var(--royal); }
 .video-avant__cadre:has(.video-avant__lecteur--natif) { aspect-ratio: var(--ratio, 4 / 5); height: auto; }
+
+/* -- Finalisation V1 ------------------------------------------------------- */
+/* Offres payantes : formats proposés et tarifs, sous la précision */
+.offre-grande__formats { color: var(--royal); font-weight: 700; }
+/* Références : courte mention générale sous le titre */
+.references__mention { color: var(--powder); margin-top: calc(-1 * var(--space-2)); }
+/* Contact : invitation au-dessus de l'adresse */
+.contact__invite { color: var(--white); }
+/* Pied de page : dates de relevé par type de données, liens légaux */
+.pied > p { flex-basis: 100%; }
+.pied__releves { margin-top: calc(-1 * var(--space-2)); }
+.pied__legal { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.pied__legal a { color: var(--royal-muted); }
+/* Vidéos : lien externe et accord avant le lecteur Instagram */
+.video-avant__lecture[href] { color: var(--white); }
+.video-avant__externe { position: absolute; left: 50%; bottom: var(--space-4); transform: translateX(-50%); padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); background: var(--royal); color: var(--white); white-space: nowrap; }
+.video-avant__accord { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--space-4); padding: var(--space-6); background: color-mix(in srgb, var(--royal) 86%, transparent); color: var(--white); overflow-y: auto; }
+.video-avant__accord[hidden] { display: none; }
+.video-avant__accord a { color: var(--white); }
+.video-avant__choix { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.video-avant__choix .lg-btn { flex: 1 1 auto; justify-content: center; }
+.video-avant__refus { background: transparent; color: var(--white); border: 2px solid var(--white); }
+.video-avant__accord-note { color: var(--powder); }
+@media (max-width: 400px) { .video-avant__accord { padding: var(--space-4); gap: var(--space-3); } }
+/* Pages Mentions légales et Confidentialité */
+.texte-legal { gap: var(--espace-bloc); }
+.texte-legal > section { display: flex; flex-direction: column; gap: var(--espace-interne); max-width: calc(var(--space-24) * 8); }
+.texte-legal__liste { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; }
+.texte-legal__liste > div { display: grid; grid-template-columns: calc(var(--space-24) * 2) minmax(0, 1fr); gap: var(--space-1) var(--space-6); padding-bottom: var(--space-3); border-bottom: 1px solid var(--hairline); }
+.texte-legal__liste dt { font-weight: 700; }
+.texte-legal__liste dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .texte-legal__liste > div { grid-template-columns: minmax(0, 1fr); } }
+.consentement-videos { display: flex; flex-direction: column; gap: var(--space-3); }
+/* Tableau comparatif sur téléphone : un texte long (« Non applicable — … »)
+   passe à la ligne au lieu d'être coupé. */
+@media (max-width: 420px) {
+  .tableau-comparatif td { white-space: normal; overflow-wrap: anywhere; }
+}

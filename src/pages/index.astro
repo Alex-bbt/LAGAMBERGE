@@ -20,7 +20,7 @@ import Contact from '../components/Contact.astro';
 import VideoInstagram from '../components/VideoInstagram.astro';
 import AudienceGraphiques from '../components/AudienceGraphiques.astro';
 import { Image } from 'astro:assets';
-import { identite, performances, courses, stats, backToRun, offres, references, photos, videoDivertissement, nombre } from '../data/mediakit.js';
+import { identite, performances, courses, stats, backToRun, offres, references, referencesMention, photos, videoDivertissement, nombre } from '../data/mediakit.js';
 import logoBtr from '../assets/back-to-run/btr-logo-mascotte.png';
 
 // Logos officiels fournis par Alex (src/assets/logos/), référencés par nom de fichier dans les données.
@@ -192,14 +192,14 @@ const marques = references.filter((r) => r.publier);
         <Photo photo={photos.personnelle} format="portrait" sizes="(max-width: 720px) 100vw, 440px" />
       </div>
       <div class="compo__contenu" data-apparition>
-        <h2 class="display-l" id="titre-objectifs">Mes deux grands objectifs</h2>
+        <h2 class="display-l" id="titre-objectifs">Prochains objectifs</h2>
         <ul class="rendez-vous-grands" role="list">
           {projets.map((c) => (
             <li class:list={['rendez-vous-grand', { 'rendez-vous-grand--logo': logo(c.logo) }]}>
               {logo(c.logo) && (
                 <Image src={logo(c.logo)} alt={`Logo ${c.nom}`} class="rendez-vous-grand__logo" height={112} format="webp" />
               )}
-              <span class="label texte-muted">{c.dateCourte ?? c.date}</span>
+              <span class="label texte-muted">{c.dateCourte ?? c.date}{c.format && ` · ${c.format}`}</span>
               <h3 class="title">{c.nom}</h3>
               <p class="lead">{c.accrocheAccueil ?? c.accroche}</p>
             </li>
@@ -220,6 +220,7 @@ const marques = references.filter((r) => r.publier);
             <span class="offre-grande__numero label">Offre {i + 1}</span>
             <h3 class="title">{o.titre}</h3>
             <p class="lead">{o.texte}</p>
+            {o.formats && <p class="body offre-grande__formats">{o.formats}</p>}
             <p class="body offre-grande__precision">{o.precision}</p>
           </li>
         ))}
@@ -227,6 +228,7 @@ const marques = references.filter((r) => r.publier);
       {marques.length > 0 && (
         <div class="references" data-apparition>
           <h3 class="label references__titre">Ils m’ont fait confiance</h3>
+          <p class="caption references__mention">{referencesMention}</p>
           <ul class="references__liste" role="list">
             {marques.map((m) => (
               <li class:list={['references__marque', { 'references__marque--logo': logo(m.logo) }]}>

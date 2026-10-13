@@ -37,6 +37,13 @@ src/pages/performances.astro  Mur de cartes stables (aucune ne se déploie) + fe
                               (scroll-margin-top de la carte, :target), aucun script de défilement.
                               Section en overflow: clip (jamais hidden : .lg-ambient en hidden
                               devient un conteneur que le saut d'ancre fait défiler → haut masqué)
+src/pages/mentions-legales.astro, confidentialite.astro
+                       Données : `editeur` / `hebergeur` (mediakit.js). Champ null = non affiché ;
+                       build de PRODUCTION en échec tant qu'un champ obligatoire manque
+                       (src/data/legal.js). Jamais de valeur provisoire ni de TVA inexistante.
+src/styles/polices.css Unbounded 500/800 + Manrope 400/500/700 hébergées (public/fonts/la-gamberge/,
+                       licences OFL) ; l'@import Google de tokens.css est retiré au build par un
+                       plugin PostCSS (astro.config.mjs). Aucune requête vers Google.
 public/favicon.*       Monogramme « LG » (SVG, ICO, PNG 16/32, apple-touch-icon 180)
 src/pages/defi-2026.astro     Suivi du défi, lit /api/streak (dernier bilan affiché tout de suite)
 src/components/        EnTete, CarteChiffre, Barres, Colonnes, AudienceGraphiques (sélecteur
@@ -75,6 +82,11 @@ api/streak.js, lib/    Fonction Strava (identifiants en variables Vercel, jamais
   des spectateurs TikTok (365 jours) sont deux populations : ne jamais les mélanger.
 
 - Pied de page : fond Powder et filet supérieur, distinct de toutes les sections.
+  Liens : pages détaillées (dont /performances), Mentions légales, Confidentialité ;
+  dates de relevé par type de données (abonnés/vues/audience, vidéos).
+- Vidéos : rien de tiers avant action. Lecteur Instagram seulement après accord
+  (« Lire ici » / « Non merci », mémorisé 6 mois, retrait sur /confidentialite#videos) ;
+  `lecture: 'externe'` = miniature locale + lien. Aucun outil de mesure d'audience.
 - Performances : temps réel = référence, temps officiel affiché à part ; aucune
   médaille ni podium inventé ; données issues des diplômes (voir mediakit.js).
 - Tuiles : `.tuile-stat` = information, non cliquable (pas de lien, curseur normal) ;

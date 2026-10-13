@@ -2,7 +2,7 @@
 /* Squelette commun : métadonnées, navigation flottante, pied de page. */
 import '../styles/site.css';
 import Reseaux from '../components/Reseaux.astro';
-import { identite, contact, comptes } from '../data/mediakit.js';
+import { identite, contact, comptes, stats, videosAvant } from '../data/mediakit.js';
 
 // `corps` : classe ajoutée au <body> (ex. 'theme-btr' pour la page Back to Run).
 const { titre, description, corps } = Astro.props;
@@ -36,8 +36,6 @@ const insta = comptes.find((c) => c.id === 'instagram');
     <link rel="shortcut icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="theme-color" content="#162660" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <slot name="head" />
     <!-- Apparitions au défilement : activées seulement si le navigateur les
          permet et si l'utilisateur n'a pas demandé de réduire les animations. -->
@@ -82,13 +80,22 @@ const insta = comptes.find((c) => c.id === 'instagram');
         <nav class="pied__liens" aria-label="Pages détaillées">
           <a href="/histoire">Histoire</a>
           <a href="/statistiques">Statistiques</a>
+          <a href="/performances">Performances</a>
           <a href="/communaute">Communauté</a>
           <a href="/projets">Projets</a>
         </nav>
         <Reseaux />
         <p class="caption texte-muted">
           {identite.personne.nom} · {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a>}
-          · Réseaux : relevés des 10–12 octobre 2026.
+        </p>
+        <!-- Dates de relevé par type de données (chaque date reste celle du relevé réel) -->
+        <p class="caption texte-muted pied__releves">
+          Abonnés, vues et audience : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}.
+          Vues des vidéos d’exemple : relevées le {videosAvant[0].releve}.
+        </p>
+        <p class="caption pied__legal">
+          <a href="/mentions-legales">Mentions légales</a>
+          <a href="/confidentialite">Confidentialité</a>
         </p>
       </div>
     </footer>

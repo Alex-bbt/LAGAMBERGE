@@ -1,17 +1,21 @@
 ---
 /* ==========================================================================
-   VideoInstagram — vidéo mise en avant, chargée seulement au clic.
-   - Avant le clic : couverture (miniature réelle si fournie, sinon couverture
-     neutre aux couleurs du site, sans fausse capture), bouton lecture.
-   - Au clic : le lecteur officiel Instagram (iframe /embed/) remplace la
-     couverture. Aucun chargement ni son automatique.
+   VideoInstagram — vidéo mise en avant, sans aucun chargement tiers d'office.
+   - Avant toute action : miniature LOCALE (ou couverture neutre), bouton
+     lecture. Aucun script, cookie ni requête Instagram.
+   - Trois modes de lecture :
+     1. `fichier` : vidéo hébergée sur le site (public/videos/) → lecteur natif
+        sur place au clic (aucun tiers, pas de consentement nécessaire).
+     2. `lecture: 'externe'` : la miniature est un lien vers la publication
+        Instagram (nouvel onglet). Pour une vidéo dont Instagram refuse la
+        lecture intégrée (ex. musique sous licence).
+     3. par défaut : lecteur Instagram intégré, chargé seulement APRÈS accord.
+        Au premier clic, une information s'affiche dans le cadre avec deux
+        boutons de même poids : « Lire ici » / « Non merci ». L'accord est
+        mémorisé 6 mois dans le navigateur (clé lg-consentement-instagram) et
+        se retire sur /confidentialite (ConsentementVideos).
    - Toujours : lien « Voir sur Instagram ».
-   - `fichier` (facultatif) : vidéo hébergée sur le site (public/videos/).
-     Au clic, lecteur vidéo natif sur place (contrôles, son au choix du
-     visiteur) au lieu du lecteur Instagram : utile quand Instagram refuse la
-     lecture intégrée (ex. musique sous licence) et renvoie vers son appli.
-   - `compact` : cadre seul + lien (ex. bloc Divertissement de l'accueil),
-     sans titre, résumé ni nombre de vues.
+   - `compact` : cadre seul + lien (bloc Divertissement de l'accueil).
    Données : `videosAvant` / `videoDivertissement` dans src/data/mediakit.js.
    ========================================================================== */
 import { Image } from 'astro:assets';
@@ -21,18 +25,41 @@ const { video: v, compact = false, sizes = '(max-width: 720px) 90vw, 380px' } = 
 const miniatures = import.meta.glob('../assets/videos/*.{jpg,jpeg,png,webp}', { eager: true });
 const miniature = v.miniature ? miniatures[`../assets/videos/${v.miniature}`]?.default : null;
 const embed = `${v.url.replace(/\/?$/, '/')}embed/`;
+const externe = !v.fichier && v.lecture === 'externe';
 ---
 
-<figure class:list={['video-avant', { 'video-avant--compact': compact }]} data-video data-embed={embed} data-fichier={v.fichier ? `/videos/${v.fichier}` : undefined} data-titre={v.titre}>
+<figure class:list={['video-avant', { 'video-avant--compact': compact }]} data-video data-embed={externe ? undefined : embed} data-fichier={v.fichier ? `/videos/${v.fichier}` : undefined} data-titre={v.titre}>
   <div class:list={['video-avant__cadre', { 'video-avant__cadre--miniature': miniature }]} data-cadre style={miniature ? `--ratio: ${miniature.width} / ${miniature.height}` : undefined}>
-    <button class="video-avant__lecture" type="button" data-lire aria-label={`Lire la vidéo : ${v.titre}`}>
-      {miniature
-        ? <Image src={miniature} alt="" class="video-avant__miniature" widths={[360, Math.min(640, miniature.width)]} sizes={sizes} format="webp" />
-        : <span class="video-avant__couverture" aria-hidden="true"><span class="dominant video-avant__vues">{nombre(v.vues)}</span><span class="lead">vues</span></span>}
-      <span class="video-avant__bouton" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
-      </span>
-    </button>
+    {externe ? (
+      <a class="video-avant__lecture" href={v.url} target="_blank" rel="noopener noreferrer" aria-label={`Voir la vidéo sur ${v.plateforme} : ${v.titre} (nouvel onglet)`}>
+        {miniature
+          ? <Image src={miniature} alt="" class="video-avant__miniature" widths={[360, Math.min(640, miniature.width)]} sizes={sizes} format="webp" />
+          : <span class="video-avant__couverture" aria-hidden="true"><span class="dominant video-avant__vues">{nombre(v.vues)}</span><span class="lead">vues</span></span>}
+        <span class="video-avant__bouton" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+        </span>
+        <span class="caption video-avant__externe" aria-hidden="true">Lire sur {v.plateforme} ↗</span>
+      </a>
+    ) : (
+      <button class="video-avant__lecture" type="button" data-lire aria-label={`Lire la vidéo : ${v.titre}`}>
+        {miniature
+          ? <Image src={miniature} alt="" class="video-avant__miniature" widths={[360, Math.min(640, miniature.width)]} sizes={sizes} format="webp" />
+          : <span class="video-avant__couverture" aria-hidden="true"><span class="dominant video-avant__vues">{nombre(v.vues)}</span><span class="lead">vues</span></span>}
+        <span class="video-avant__bouton" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+        </span>
+      </button>
+    )}
+    {!externe && !v.fichier && (
+      <div class="video-avant__accord" data-accord hidden role="group" aria-label="Lecture de la vidéo Instagram">
+        <p class="caption">Cette vidéo est hébergée par Instagram (Meta). La lire ici charge son lecteur, qui peut déposer des cookies.</p>
+        <div class="video-avant__choix">
+          <button class="lg-btn btn-accent" type="button" data-accepter>Lire ici</button>
+          <button class="lg-btn video-avant__refus" type="button" data-refuser>Non merci</button>
+        </div>
+        <p class="caption video-avant__accord-note">Choix mémorisé 6 mois, modifiable dans <a href="/confidentialite#videos">Confidentialité</a>.</p>
+      </div>
+    )}
   </div>
   {compact ? (
     <figcaption class="video-avant__texte"><a class="lien-fleche caption" href={v.url} target="_blank" rel="noopener noreferrer">Voir sur {v.plateforme}<span class="sr-only"> (nouvel onglet)</span></a></figcaption>
@@ -48,35 +75,62 @@ const embed = `${v.url.replace(/\/?$/, '/')}embed/`;
 </figure>
 
 <script>
-  // Le lecteur Instagram n'est chargé qu'à la demande (pas de pistage ni de
-  // poids inutile avant le clic, pas de lecture automatique).
+  // Aucun lecteur tiers avant accord explicite (lignes directrices CNIL).
+  const CLE = 'lg-consentement-instagram';
+  const SIX_MOIS = 182 * 24 * 3600 * 1000;
+  const accordValide = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem(CLE) || 'null');
+      return !!(v && v.accord === true && Date.now() - v.date < SIX_MOIS);
+    } catch { return false; }
+  };
+  const memoriser = () => {
+    try { localStorage.setItem(CLE, JSON.stringify({ accord: true, date: Date.now() })); } catch { /* navigation privée : accord pour cette page seulement */ }
+  };
+
+  const chargerInstagram = (bloc) => {
+    const cadre = bloc.querySelector('[data-cadre]');
+    const iframe = document.createElement('iframe');
+    iframe.src = bloc.dataset.embed;
+    iframe.title = `Vidéo Instagram : ${bloc.dataset.titre}`;
+    iframe.allow = 'encrypted-media; picture-in-picture';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.className = 'video-avant__lecteur';
+    cadre.replaceChildren(iframe);
+    cadre.classList.add('est-charge');
+    iframe.focus();
+  };
+  const chargerFichier = (bloc) => {
+    const cadre = bloc.querySelector('[data-cadre]');
+    const video = document.createElement('video');
+    video.src = bloc.dataset.fichier;
+    video.controls = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.setAttribute('aria-label', `Vidéo : ${bloc.dataset.titre}`);
+    video.className = 'video-avant__lecteur video-avant__lecteur--natif';
+    cadre.replaceChildren(video);
+    video.play().catch(() => {});
+    video.focus();
+  };
+
   document.querySelectorAll('[data-video]').forEach((bloc) => {
-    bloc.querySelector('[data-lire]')?.addEventListener('click', () => {
-      const cadre = bloc.querySelector('[data-cadre]');
-      if (bloc.dataset.fichier) {
-        // Vidéo hébergée : lecteur natif, lancé par ce clic (pas d'autoplay sans action).
-        const video = document.createElement('video');
-        video.src = bloc.dataset.fichier;
-        video.controls = true;
-        video.playsInline = true;
-        video.preload = 'auto';
-        video.setAttribute('aria-label', `Vidéo : ${bloc.dataset.titre}`);
-        video.className = 'video-avant__lecteur video-avant__lecteur--natif';
-        cadre.replaceChildren(video);
-        video.play().catch(() => {});
-        video.focus();
-        return;
-      }
-      const iframe = document.createElement('iframe');
-      iframe.src = bloc.dataset.embed;
-      iframe.title = `Vidéo Instagram : ${bloc.dataset.titre}`;
-      iframe.loading = 'lazy';
-      iframe.allow = 'encrypted-media; picture-in-picture';
-      iframe.setAttribute('allowfullscreen', '');
-      iframe.className = 'video-avant__lecteur';
-      cadre.replaceChildren(iframe);
-      cadre.classList.add('est-charge');
-      iframe.focus();
+    const lire = bloc.querySelector('[data-lire]');
+    const accord = bloc.querySelector('[data-accord]');
+    lire?.addEventListener('click', () => {
+      if (bloc.dataset.fichier) return chargerFichier(bloc);
+      if (!bloc.dataset.embed || !accord) return;
+      if (accordValide()) return chargerInstagram(bloc);
+      // Information + choix, dans le cadre de la vidéo
+      accord.hidden = false;
+      lire.inert = true; // la miniature reste visible sous l'information
+      accord.querySelector('[data-accepter]').focus();
+    });
+    accord?.querySelector('[data-accepter]').addEventListener('click', () => { memoriser(); chargerInstagram(bloc); });
+    accord?.querySelector('[data-refuser]').addEventListener('click', () => {
+      accord.hidden = true;
+      lire.inert = false;
+      lire.focus();
     });
   });
 </script>

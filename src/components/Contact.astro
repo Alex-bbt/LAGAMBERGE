@@ -19,6 +19,7 @@ const mailto = contact.email
 <div class="contact" id="contact">
   {contact.email ? (
     <>
+      <p class="title contact__invite">Une idée de collaboration&nbsp;? Écrivez-moi.</p>
       <a class="contact__email lead" href={mailto} data-email>{contact.email.split('@')[0]}@<wbr />{contact.email.split('@')[1]}</a>
       <div class="actions">
         <a class="lg-btn btn-accent" href={mailto}>Discutons de votre projet</a>

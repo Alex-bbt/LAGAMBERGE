@@ -1,0 +1,65 @@
+---
+/* ==========================================================================
+   Mentions légales (LCEN, art. 6-III ; C. com. pour l'immatriculation).
+   Toutes les valeurs viennent de `editeur` / `hebergeur` (src/data/mediakit.js).
+   Un champ absent n'est jamais remplacé par un texte provisoire.
+   ========================================================================== */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import { editeur, hebergeur, miseAJourLegale } from '../data/mediakit.js';
+import { verifierMentions } from '../data/legal.js';
+
+verifierMentions();
+const e = editeur;
+const lignesEditeur = [
+  ['Éditeur', [e.nom, e.statut].filter(Boolean).join(', ') + (e.nomCommercial ? `, sous le nom « ${e.nomCommercial} »` : '')],
+  ['Adresse', e.adresse],
+  ['Téléphone', e.telephone],
+  ['Email', e.email],
+  ['Immatriculation', e.siren && [e.registre, `SIREN ${e.siren}`, e.siret && `SIRET ${e.siret}`].filter(Boolean).join(' · ')],
+  ['TVA intracommunautaire', e.tva],
+  ['Directeur de la publication', e.directeurPublication],
+].filter(([, v]) => v);
+---
+
+<Base titre="Mentions légales" description="Mentions légales du site La Gamberge : éditeur, hébergeur, propriété intellectuelle.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-mentions">
+    <div class="chapitre__inner chapitre__inner--seul texte-legal">
+      <EnTete niveau="h1" id="titre-mentions" repere="Informations légales" titre="Mentions légales" chapeau={`Mise à jour : ${miseAJourLegale}.`} />
+
+      <section aria-labelledby="mentions-editeur">
+        <h2 class="title" id="mentions-editeur">Éditeur du site</h2>
+        <dl class="texte-legal__liste">
+          {lignesEditeur.map(([l, v]) => (
+            <div><dt>{l}</dt><dd>{l === 'Email' ? <a href={`mailto:${v}`}>{v}</a> : v}</dd></div>
+          ))}
+        </dl>
+      </section>
+
+      <section aria-labelledby="mentions-hebergeur">
+        <h2 class="title" id="mentions-hebergeur">Hébergeur</h2>
+        <dl class="texte-legal__liste">
+          <div><dt>Société</dt><dd>{hebergeur.nom}</dd></div>
+          <div><dt>Adresse</dt><dd>{hebergeur.adresse}</dd></div>
+          <div><dt>Contact</dt><dd><a href={hebergeur.contact} target="_blank" rel="noopener noreferrer">{hebergeur.contact.replace('https://', '')}<span class="sr-only"> (nouvel onglet)</span></a></dd></div>
+        </dl>
+      </section>
+
+      <section aria-labelledby="mentions-pi">
+        <h2 class="title" id="mentions-pi">Propriété intellectuelle</h2>
+        <p class="body">Les textes, photos et vidéos de ce site appartiennent à {e.nom}, sauf mention contraire. Toute reproduction sans autorisation est interdite.</p>
+        <p class="body">Les marques et logos cités appartiennent à leurs titulaires respectifs. Ils sont présentés comme références de contenus réalisés pour ces marques ou de collaborations, sans que cela vaille approbation du site par elles.</p>
+      </section>
+
+      <section aria-labelledby="mentions-liens">
+        <h2 class="title" id="mentions-liens">Liens externes</h2>
+        <p class="body">Les liens vers Instagram, TikTok, YouTube, Strava ou d’autres sites ouvrent des services tiers, soumis à leurs propres conditions et règles de confidentialité.</p>
+      </section>
+
+      <section aria-labelledby="mentions-donnees">
+        <h2 class="title" id="mentions-donnees">Données personnelles</h2>
+        <p class="body">La façon dont vos données sont traitées est décrite sur la page <a href="/confidentialite">Confidentialité</a>.</p>
+      </section>
+    </div>
+  </section>
+</Base>
