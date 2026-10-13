@@ -1366,3 +1366,26 @@ main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) +
   .perf-detail__donnees dd { text-align: left; padding-top: var(--space-1); white-space: normal; }
 }
 @media (prefers-reduced-motion: reduce) { .perf-carte { transition: none; } }
+
+/* ==========================================================================
+   AUDIT V1 (13 octobre 2026)
+   ========================================================================== */
+/* Objectifs de l'accueil : colonne de logo de largeur fixe, pour que le texte
+   des deux cartes démarre au même endroit quelle que soit la forme du logo. */
+@media (min-width: 721px) {
+  .rendez-vous-grand--logo { grid-template-columns: calc(var(--space-24) * 1.2) minmax(0, 1fr); }
+  .rendez-vous-grand__logo { justify-self: center; }
+}
+/* Très petits écrans (≤ 380 px) : la colonne « Relevé » du détail par plateforme
+   est masquée (les dates figurent déjà dans la note juste au-dessus) : le
+   tableau tient dans l'écran, sans défilement horizontal. */
+@media (max-width: 380px) {
+  .tableau-plateformes th:nth-child(4), .tableau-plateformes td:nth-child(4) { display: none; }
+}
+/* ≤ 340 px : « GAMBERGE » (40 px) dépassait de 3 px ; légère réduction. */
+@media (max-width: 340px) {
+  .presentation__marque { font-size: calc(var(--space-8) + var(--space-1)); }
+}
+/* Vidéo hébergée sur le site : garde le cadre de la miniature (pas de hauteur d'embed). */
+.video-avant__lecteur--natif { object-fit: contain; background: var(--royal); }
+.video-avant__cadre:has(.video-avant__lecteur--natif) { aspect-ratio: var(--ratio, 4 / 5); height: auto; }

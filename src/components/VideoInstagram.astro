@@ -6,6 +6,10 @@
    - Au clic : le lecteur officiel Instagram (iframe /embed/) remplace la
      couverture. Aucun chargement ni son automatique.
    - Toujours : lien « Voir sur Instagram ».
+   - `fichier` (facultatif) : vidéo hébergée sur le site (public/videos/).
+     Au clic, lecteur vidéo natif sur place (contrôles, son au choix du
+     visiteur) au lieu du lecteur Instagram : utile quand Instagram refuse la
+     lecture intégrée (ex. musique sous licence) et renvoie vers son appli.
    - `compact` : cadre seul + lien (ex. bloc Divertissement de l'accueil),
      sans titre, résumé ni nombre de vues.
    Données : `videosAvant` / `videoDivertissement` dans src/data/mediakit.js.
@@ -19,7 +23,7 @@ const miniature = v.miniature ? miniatures[`../assets/videos/${v.miniature}`]?.d
 const embed = `${v.url.replace(/\/?$/, '/')}embed/`;
 ---
 
-<figure class:list={['video-avant', { 'video-avant--compact': compact }]} data-video data-embed={embed} data-titre={v.titre}>
+<figure class:list={['video-avant', { 'video-avant--compact': compact }]} data-video data-embed={embed} data-fichier={v.fichier ? `/videos/${v.fichier}` : undefined} data-titre={v.titre}>
   <div class:list={['video-avant__cadre', { 'video-avant__cadre--miniature': miniature }]} data-cadre style={miniature ? `--ratio: ${miniature.width} / ${miniature.height}` : undefined}>
     <button class="video-avant__lecture" type="button" data-lire aria-label={`Lire la vidéo : ${v.titre}`}>
       {miniature
@@ -49,6 +53,20 @@ const embed = `${v.url.replace(/\/?$/, '/')}embed/`;
   document.querySelectorAll('[data-video]').forEach((bloc) => {
     bloc.querySelector('[data-lire]')?.addEventListener('click', () => {
       const cadre = bloc.querySelector('[data-cadre]');
+      if (bloc.dataset.fichier) {
+        // Vidéo hébergée : lecteur natif, lancé par ce clic (pas d'autoplay sans action).
+        const video = document.createElement('video');
+        video.src = bloc.dataset.fichier;
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+        video.setAttribute('aria-label', `Vidéo : ${bloc.dataset.titre}`);
+        video.className = 'video-avant__lecteur video-avant__lecteur--natif';
+        cadre.replaceChildren(video);
+        video.play().catch(() => {});
+        video.focus();
+        return;
+      }
       const iframe = document.createElement('iframe');
       iframe.src = bloc.dataset.embed;
       iframe.title = `Vidéo Instagram : ${bloc.dataset.titre}`;

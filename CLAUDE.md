@@ -43,7 +43,9 @@ src/components/        EnTete, CarteChiffre, Barres, Colonnes, AudienceGraphique
                        Instagram/TikTok), Frise (calendrier horizontal de /projets),
                        Reseaux (icônes SVG Simple Icons, CC0), DefiQuotidien, Progression,
                        CarteVideo, Calendrier, Contact, Photo, VideoInstagram (miniature + lecteur
-                       chargé au clic ; `compact` = bloc Divertissement de l'accueil, videoDivertissement)
+                       chargé au clic ; `compact` = bloc Divertissement de l'accueil, videoDivertissement ;
+                       `fichier` = vidéo hébergée dans public/videos/, lue sur place, si Instagram
+                       refuse la lecture intégrée)
 src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
                        Cadrage par photo (position / positionMobile) dans mediakit.js
 ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)
