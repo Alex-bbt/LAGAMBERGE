@@ -49,6 +49,7 @@ const evenements = courses.map((c) => ({ ...c, etat: c.resultat ? 'realise' : c.
         <ul class="frise__infos body" role="list">
           <li><span class="frise__infos-cle">Type</span> {c.type}</li>
           {c.projet && <li><span class="frise__infos-cle">Contenu</span> {c.projet}</li>}
+          {c.formatPrecision && <li><span class="frise__infos-cle">Dénivelé</span> {c.formatPrecision}</li>}
           {c.reserve && <li><span class="frise__infos-cle">À noter</span> {c.reserve}</li>}
         </ul>
       </article>

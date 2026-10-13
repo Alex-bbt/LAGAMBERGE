@@ -11,10 +11,10 @@ const paris = courses.find((c) => c.id === 'paris-2027');
 const sujets = ['Préparation et entraînement', 'Matériel testé en conditions réelles', 'Nutrition de course', 'Récit de la course, avant, pendant et après'];
 ---
 
-<Base titre="Les projets" description="Les prochains objectifs de La Gamberge : SaintéLyon, Marathon de Paris 2027 et calendrier détaillé.">
+<Base titre="Prochains objectifs" description="Les prochains objectifs de La Gamberge : SaintéLyon, Marathon de Paris 2027 et calendrier détaillé.">
   <section class="lg-ambient chapitre" aria-labelledby="titre-projets">
     <div class="chapitre__inner chapitre__inner--seul">
-      <EnTete niveau="h1" id="titre-projets" repere="Les projets" titre="Deux grands objectifs, un calendrier à suivre."
+      <EnTete niveau="h1" id="titre-projets" repere="Prochains objectifs" titre="Deux grands objectifs, un calendrier à suivre."
         chapeau="Chaque course ouvre des sujets à raconter. Voici ce qui arrive, avec le statut de chaque participation." />
       <div class="duo">
         {[saintelyon, paris].filter((c) => c && !c.resultat).map((c, i) => (
