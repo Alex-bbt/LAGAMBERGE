@@ -3,7 +3,8 @@
 import '../styles/site.css';
 import { identite, contact, comptes } from '../data/mediakit.js';
 
-const { titre, description } = Astro.props;
+// `corps` : classe ajoutée au <body> (ex. 'theme-btr' pour la page Back to Run).
+const { titre, description, corps } = Astro.props;
 const titrePage = titre ? `${titre} · La Gamberge` : `La Gamberge · ${identite.positionnement}`;
 const desc = description ?? `${identite.description} Media kit de La Gamberge (Alex Bourbigot).`;
 
@@ -30,8 +31,9 @@ const insta = comptes.find((c) => c.id === 'instagram');
     <link rel="icon" href="data:," />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <slot name="head" />
   </head>
-  <body>
+  <body class={corps}>
     <a class="evitement lg-btn lg-btn--primary" href="#contenu">Aller au contenu</a>
 
     <header class="entete">
