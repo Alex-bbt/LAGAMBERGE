@@ -169,6 +169,10 @@ export const stats = {
     likes: 454877,
     partages: 8572,
     commentaires: 1501,
+    // Interactions = likes + commentaires + partages (les enregistrements ne
+    // sont pas relevés sur TikTok, contrairement à Instagram).
+    interactions: 454877 + 1501 + 8572, // 464 950
+    publicationsPlus10k: 32, // vidéos publiques 2026 (fichier TikTok Studio du 12/10/2026)
     engagement: 'environ 9 %',
     engagementCourt: '≈ 9 %',
     engagementDefinition: '(likes + commentaires + partages) / vues',

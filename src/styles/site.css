@@ -1091,3 +1091,24 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
   .rendez-vous-grand--logo { display: flex; }
   .rendez-vous-grand__logo { height: var(--space-12); align-self: flex-start; margin-bottom: var(--space-2); }
 }
+
+/* Page /statistiques : un seul tableau Instagram | TikTok, audience en miroir */
+.tableau-comparatif-cadre { padding: var(--space-6) var(--space-8); border-radius: var(--radius-lg); background: var(--glass-fill-strong); border: 1px solid var(--glass-stroke); }
+.tableau-comparatif { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tableau-comparatif th, .tableau-comparatif td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--hairline); text-align: right; vertical-align: baseline; }
+.tableau-comparatif th:first-child { text-align: left; padding-left: 0; font-weight: 500; color: var(--royal-muted); }
+.tableau-comparatif td { font-weight: 700; white-space: nowrap; width: 24%; }
+.tableau-comparatif thead th { border-bottom: 2px solid var(--royal); vertical-align: bottom; }
+.tableau-comparatif thead th span { display: block; }
+.tableau-comparatif tbody tr:last-child > * { border-bottom: 0; }
+.notes-tableau { display: flex; flex-direction: column; gap: var(--space-1); max-width: calc(var(--space-24) * 9); }
+.audience-miroir { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espace-interne); align-items: stretch; }
+.audience-miroir > .carte-plate { justify-content: flex-start; }
+.audience-miroir__titre { padding-top: var(--space-4); border-top: 1px solid var(--hairline); }
+@media (max-width: 720px) {
+  .tableau-comparatif-cadre { padding: var(--space-4); }
+  .tableau-comparatif th, .tableau-comparatif td { padding: var(--space-3) var(--space-1); font-size: calc(var(--space-3) + var(--space-1) / 2); }
+  .tableau-comparatif thead .title { font-size: var(--space-4); }
+  .tableau-comparatif td { width: auto; }
+  .audience-miroir { grid-template-columns: minmax(0, 1fr); }
+}
