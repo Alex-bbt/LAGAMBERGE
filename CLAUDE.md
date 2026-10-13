@@ -12,22 +12,29 @@ Objectif du site : obtenir un email de prise de contact qualifié.
 - Aucune couleur, taille, ombre ou police en dur : uniquement `var(--…)` et `lg-*`
   (seule exception : `--bone: #F1E4D1`, défini dans site.css).
 - Palette : Royal Blue #162660, Powder Blue #D0E6FD, Bone #F1E4D1.
-- Accueil (version courte) : fonds nets qui changent d'une section à l'autre —
+- Accueil : fonds nets qui changent d'une section à l'autre —
   `.fond-clair`, `.fond-poudre`, `.fond-accent` (Bone), `.fond-blanc`, `.fond-roi`.
   Bone sert à une section et aux CTA (`.btn-accent`).
+- Échelle : `.section--ample` = au moins 100svh sur grand écran (≥ 1081 × 720 px),
+  hauteur naturelle sur mobile et en paysage bas ; jamais de contenu coupé,
+  pas de scroll-snap. Apparitions `[data-apparition]` discrètes, désactivées
+  avec prefers-reduced-motion (classe `apparitions` posée par Base.astro).
 
 ## Arborescence
 ```
 src/data/mediakit.js   ⭐ TOUTES les données (identité, stats, audience, courses,
                        défi, vidéos, Back to Run, offres, contact). null = non affiché.
-src/pages/index.astro  Cinq sections : #profil (clair) #coureur (poudre) #createur (Bone, contenus
-                       + Back to Run) #objectifs (blanc) #collaborer (bleu roi, #contact).
-                       Nav : Profil, Projets, Collaborer. Pied : pages détaillées, réseaux,
-                       note unique des dates de relevé.
+src/pages/index.astro  Six étapes : #profil (clair) → #statistiques (poudre, 2 chiffres
+                       dominants + graphiques Instagram/TikTok) → #pourquoi (blanc, crédibilité
+                       sportive + divertissement) → #back-to-run (Bone) → #objectifs (clair)
+                       → #collaborer (bleu roi, 3 offres + #contact).
+                       Nav : Profil, Audience, Projets, Collaborer. Pied : pages détaillées,
+                       réseaux, note unique des dates de relevé.
 src/pages/histoire.astro, communaute.astro, projets.astro, statistiques.astro
                        Pages d'approfondissement (les détails quittent l'accueil pour y vivre)
-src/components/        EnTete, CarteChiffre, Barres, Colonnes, DefiQuotidien, Progression,
-                       CarteVideo, Calendrier, Contact, Photo
+src/components/        EnTete, CarteChiffre, Barres, Colonnes, AudienceGraphiques (sélecteur
+                       Instagram/TikTok), Frise (calendrier horizontal de /projets),
+                       DefiQuotidien, Progression, CarteVideo, Calendrier, Contact, Photo
 src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
                        Cadrage par photo (position / positionMobile) dans mediakit.js
 ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)
@@ -48,8 +55,9 @@ api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les p
   styles `src/styles/back-to-run.css` rangés sous `.theme-btr` (tokens `--btr-*`),
   Figtree + Caprasimo (chiffres seulement) dans `public/fonts/back-to-run/`,
   poses de la mascotte dans `src/assets/back-to-run/`. Nav et pied restent La Gamberge.
-- Accueil : 200 mots maximum, 8 chiffres de preuve, aucun chiffre répété,
-  aucun graphique. Le reste vit dans les pages détaillées.
+- Accueil : statistiques (faits) et « Pourquoi moi ? » (arguments) toujours séparés.
+  Totaux cumulés = non dédupliqués, avec leur note. Âge TikTok des abonnés non
+  fourni : ne jamais le remplacer par l'âge des spectateurs.
 
 ## Règles éditoriales (non négociables)
 - N'inventer aucun chiffre, lien, texte personnel, logo ou témoignage.

@@ -1,0 +1,81 @@
+---
+/* ==========================================================================
+   AudienceGraphiques — abonnés Instagram / TikTok, une plateforme à la fois.
+   - Sélecteur accessible (rôle tablist, flèches gauche/droite, Début/Fin).
+   - Sans JavaScript, les deux panneaux restent visibles l'un sous l'autre.
+   - Une seule série par graphique, chaque valeur écrite en texte.
+   - Uniquement les ABONNÉS de chaque plateforme : l'âge des spectateurs
+     TikTok (autre population) n'est jamais utilisé à la place.
+   ========================================================================== */
+import Barres from './Barres.astro';
+import Colonnes from './Colonnes.astro';
+import { audience } from '../data/mediakit.js';
+
+const arrondi = (v) => Math.round(v * 10) / 10;
+const pays = (d) => {
+  const france = d.pays.find((p) => p.libelle === 'France').valeur;
+  return [
+    { libelle: 'France', valeur: france },
+    { libelle: 'Autres pays', valeur: arrondi(100 - france) },
+  ];
+};
+const plateformes = [
+  { id: 'instagram', nom: 'Instagram', d: audience.instagram, ages: audience.instagram.ages },
+  { id: 'tiktok', nom: 'TikTok', d: audience.tiktok, ages: null },
+];
+---
+
+<div class="audience-graphiques" data-onglets>
+  <div class="selecteur" role="tablist" aria-label="Plateforme" hidden data-onglets-liste>
+    {plateformes.map((p, i) => (
+      <button class="selecteur__bouton button" role="tab" type="button" id={`onglet-${p.id}`} aria-controls={`panneau-${p.id}`}
+        aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? '0' : '-1'}>{p.nom}</button>
+    ))}
+  </div>
+
+  {plateformes.map((p) => (
+    <section class="graphiques" id={`panneau-${p.id}`} role="tabpanel" aria-labelledby={`onglet-${p.id}`} data-panneau>
+      <h3 class="label graphiques__population">{p.d.population} <span class="texte-muted">· relevé du {p.d.releve}</span></h3>
+      <div class="graphiques__grille">
+        <div class="graphiques__barres">
+          <Barres titre="Pays" donnees={pays(p.d)} />
+          <Barres titre="Genre" donnees={p.d.genre} />
+        </div>
+        {p.ages
+          ? <Colonnes titre="Âge" donnees={p.ages} />
+          : <p class="caption texte-muted graphiques__absent">Âge des abonnés : non fourni par TikTok.</p>}
+      </div>
+    </section>
+  ))}
+</div>
+
+<script>
+  // Active le sélecteur (sans JavaScript, les panneaux restent tous visibles).
+  document.querySelectorAll('[data-onglets]').forEach((bloc) => {
+    const liste = bloc.querySelector('[data-onglets-liste]');
+    const onglets = [...bloc.querySelectorAll('[role="tab"]')];
+    const panneaux = [...bloc.querySelectorAll('[data-panneau]')];
+    liste.hidden = false;
+    const choisir = (i, focus) => {
+      onglets.forEach((o, j) => {
+        o.setAttribute('aria-selected', String(i === j));
+        o.tabIndex = i === j ? 0 : -1;
+        panneaux[j].hidden = i !== j;
+      });
+      if (focus) onglets[i].focus();
+    };
+    onglets.forEach((o, i) => {
+      o.addEventListener('click', () => choisir(i, false));
+      o.addEventListener('keydown', (e) => {
+        const n = onglets.length;
+        if (e.key === 'ArrowRight') choisir((i + 1) % n, true);
+        else if (e.key === 'ArrowLeft') choisir((i - 1 + n) % n, true);
+        else if (e.key === 'Home') choisir(0, true);
+        else if (e.key === 'End') choisir(n - 1, true);
+        else return;
+        e.preventDefault();
+      });
+    });
+    choisir(0, false);
+  });
+</script>
