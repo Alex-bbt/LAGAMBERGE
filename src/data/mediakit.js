@@ -30,7 +30,8 @@ export const identite = {
     nom: 'Alex Bourbigot',
     age: 23,
     // Contexte affiché sur l'accueil (l'âge figure sur la page Histoire).
-    contexte: ['IÉSEG', 'Étudiant-entrepreneur'],
+    // Contexte affiché sur l'accueil ; les études (IÉSEG) sont sur /histoire.
+    contexte: ['Étudiant-entrepreneur'],
   },
   // Photo principale (originaux dans src/assets/photos/, jamais modifiés).
   // position / positionMobile : zone gardée au recadrage (x% y%), visage inclus.
@@ -60,20 +61,89 @@ export const comptes = [
 ];
 
 // -- Performances -------------------------------------------------------------
-// Références chiffrées affichées dans le bandeau « Le coureur ».
+// Données vérifiées sur les diplômes et captures de résultats (relevé du
+// 13 octobre 2026), sauf mention « communiqué(e) par Alex ».
+// - `resultat` : valeur affichée sur la tuile (temps réel, ou classement si
+//   aucun temps n'est documenté). Le temps RÉEL est la référence ; le temps
+//   officiel est affiché à part quand il existe.
+// - `accueil` : un des trois chronos de l'accueil (ancre /performances#id).
+// - `recompense` : uniquement une récompense réellement obtenue ; null sinon.
+// - Aucune donnée sur d'autres participants n'est recopiée.
 export const performances = [
-  // `court` : libellé de la rangée route ; `type` : 'route' | 'trail'.
-  // `id` : ancre sur /performances. `date` / `course` : null tant qu'ils ne
-  // sont pas documentés (À FOURNIR). `recompense` : uniquement une récompense
-  // réellement obtenue (podium, titre…) ; null = aucune affichée.
-  { id: 'marathon', epreuve: 'Marathon de Paris 2026', court: 'Marathon', contexte: 'Paris 2026', resultat: '2 h 38 min 21 s', type: 'route', forte: true,
-    course: 'Marathon de Paris', date: null, recompense: null, photo: 'performance' },
-  { id: '10-km', epreuve: '10 km', court: '10 km', resultat: '33 min 01 s', type: 'route', course: null, date: null, recompense: null },
-  { id: '5-km', epreuve: '5 km', court: '5 km', resultat: '15 min 59 s', type: 'route', course: null, date: null, recompense: null },
-  // « 50K » est le nom du format, pas une distance exacte.
-  { id: 'nice-utmb', epreuve: 'Nice Côte d’Azur by UTMB, format 50K', resultat: '26e en 4 h 02', type: 'trail',
-    course: 'Nice Côte d’Azur by UTMB', date: null, recompense: null,
-    classement: '26e', temps: '4 h 02', libelle: 'Nice Côte d’Azur by UTMB · format 50K', libelleCourt: 'Nice by UTMB, format 50K' },
+  {
+    id: 'marathon', accueil: true, forte: true, type: 'route', photo: 'performance',
+    course: 'Marathon de Paris 2026', epreuve: 'Marathon de Paris 2026', court: 'Marathon', distance: 'Marathon',
+    date: '12 avril 2026', resultat: '2 h 38 min 21 s', tempsReel: '2 h 38 min 21 s', tempsOfficiel: null,
+    classements: [
+      { libelle: 'Classement général (temps réel)', valeur: '234e / 57 516' },
+      { libelle: 'Classement hommes', valeur: '223e / 39 253' },
+      { libelle: 'Catégorie SH', valeur: '145e / 15 233' },
+    ],
+    details: [], recompense: null,
+  },
+  {
+    id: '10-km', accueil: true, type: 'route',
+    course: 'Les Foulées de Vincennes', epreuve: '10 km · Les Foulées de Vincennes', court: '10 km', distance: '10 km',
+    date: '8 février 2026', resultat: '33 min 01 s', tempsReel: '33 min 01 s', tempsOfficiel: '33 min 09 s',
+    classements: [
+      { libelle: 'Classement général', valeur: '71e / 2 975' },
+      { libelle: 'Catégorie SEM', valeur: '57e / 1 214' },
+    ],
+    details: [], recompense: null,
+  },
+  {
+    id: '5-km', accueil: true, type: 'route',
+    course: 'Les Foulées du 12ème', epreuve: '5 km · Les Foulées du 12ème', court: '5 km', distance: '5 km',
+    date: '14 juin 2026', resultat: '15 min 59 s', tempsReel: '15 min 59 s', tempsOfficiel: '16 min 00 s',
+    classements: [
+      { libelle: 'Classement général', valeur: '9e / 315' },
+      { libelle: 'Catégorie SEM', valeur: '7e / 69' },
+    ],
+    details: ['Club : AC Vélizy-Villacoublay'], recompense: null,
+  },
+  {
+    id: 'semi', type: 'route',
+    course: 'Semi-marathon de Saint-Gilles', epreuve: 'Semi-marathon de Saint-Gilles', court: 'Semi-marathon', distance: 'Semi-marathon',
+    date: '28 février 2026', dateCommuniquee: true, resultat: '1 h 16 min 04 s', tempsReel: '1 h 16 min 04 s', tempsOfficiel: null,
+    classements: [
+      { libelle: 'Classement général', valeur: '10e / 1 154' },
+      { libelle: 'Classement hommes', valeur: '10e / 827' },
+      { libelle: 'Classement catégorie', valeur: '5e / 249' },
+    ],
+    details: [], recompense: null,
+  },
+  {
+    id: 'marathon-2025', type: 'route',
+    course: 'Marathon de Paris 2025', epreuve: 'Marathon de Paris 2025', court: 'Marathon', distance: 'Marathon',
+    date: '13 avril 2025', resultat: '2 h 59 min 37 s', tempsReel: '2 h 59 min 37 s', tempsOfficiel: null,
+    classements: [
+      { libelle: 'Classement général (temps réel)', valeur: '1 944e / 54 934' },
+      { libelle: 'Classement hommes', valeur: '1 901e / 38 589' },
+      { libelle: 'Catégorie SEH', valeur: '1 011e / 15 599' },
+    ],
+    details: ['Premier marathon'], recompense: null,
+  },
+  {
+    // « 50K » est le nom du format, pas une distance exacte.
+    id: 'nice-utmb', type: 'trail',
+    course: 'Nice Côte d’Azur by UTMB — Levens–Nice', epreuve: 'Nice Côte d’Azur by UTMB, format 50K', court: 'Trail', distance: null,
+    date: '25 septembre 2026', resultat: '4 h 02 min 39 s', tempsReel: null, tempsCourse: '4 h 02 min 39 s', tempsOfficiel: null,
+    classements: [
+      { libelle: 'Rang général', valeur: '26e / 666' },
+      { libelle: 'Rang hommes', valeur: '26e / 546' },
+    ],
+    details: ['Distance affichée dans le résultat : 39 km', 'Dénivelé positif affiché : 1 388 m', 'Score de course UTMB : 637', '« 50K » désigne le format, pas la distance exacte'],
+    recompense: null,
+    classement: '26e', temps: '4 h 02', libelle: 'Nice Côte d’Azur by UTMB · format 50K', libelleCourt: 'Nice by UTMB, format 50K',
+  },
+  {
+    // Justificatif non identifié : seules les informations communiquées sont affichées.
+    id: 'viroflay', type: 'trail',
+    course: 'Trail de Viroflay', epreuve: 'Trail de Viroflay', court: 'Trail', distance: null,
+    date: '30 août 2026', dateCommuniquee: true, resultat: '2e', tempsReel: null, tempsOfficiel: null,
+    classements: [{ libelle: 'Classement', valeur: '2e' }],
+    details: [], recompense: null, justificatif: null, // À FOURNIR
+  },
 ];
 
 // Progression marathon : `atteint: false` = objectif (affiché différemment).
@@ -195,8 +265,14 @@ stats.cumul = {
   vues: stats.instagram.vues + stats.tiktok.vues, // 17 493 811
   vuesAffichage: '17,5 M',
   vuesLegende: 'Vues cumulées sur Instagram et TikTok en 2026',
-  note: 'Totaux non dédupliqués. Instagram au 12 octobre 2026 ; TikTok au 10 octobre 2026. Vues depuis le 1er janvier.',
+  note: 'Abonnements et vues additionnés sur les deux plateformes, pas des personnes uniques.',
+  periodes: 'Vues depuis le 1er janvier 2026. Instagram au 12 octobre ; TikTok au 10 octobre.',
+  // Prochain rafraîchissement global envisagé au passage des 20 000 abonnements cumulés.
 };
+// Vues médianes des stories TikTok (30 derniers jours) : À FOURNIR, avec la
+// période du relevé. null = « Non renseigné ».
+stats.tiktok.vuesMedianesStory = null;
+stats.tiktok.vuesMedianesStoryPeriode = null;
 stats.instagram.engagementLegende = 'Engagement rapporté à la couverture';
 stats.tiktok.engagementLegende = 'Engagement rapporté aux vues';
 stats.tiktok.engagementDetail = '(Likes + commentaires + partages) / vues. Vidéos de 2026, du 1er janvier au 10 octobre.';
@@ -319,9 +395,9 @@ export const videos = [
 export const videosAvant = [
   {
     id: 'depart-10k',
-    format: 'Contenu viral',
-    titre: 'Départ du 10 km adidas, déguisé en vert dans le SAS élite',
-    resume: 'Dans le SAS élite, des coureurs concentrés… et moi, déguisé en vert au milieu d’eux, avec un dossard mérité.',
+    format: 'Formats courts',
+    titre: 'Départ du 10 km adidas, déguisé en vert dans le sas élite',
+    resume: 'Des formats courts et spontanés, pensés pour amuser et capter rapidement l’attention.',
     plateforme: 'Instagram',
     url: 'https://www.instagram.com/p/DZaWXEPI757/',
     vues: 2958127,
@@ -330,9 +406,9 @@ export const videosAvant = [
   },
   {
     id: 'grosse-echeance',
-    format: 'Format long',
+    format: 'Récits d’objectifs',
     titre: 'Le récit de mon Marathon de Paris',
-    resume: 'Une vidéo plus longue : le format que je réalise lors des grosses échéances.',
+    resume: 'Des récits plus longs qui clôturent plusieurs mois de préparation et une série de contenus autour d’un objectif sportif.',
     plateforme: 'Instagram',
     url: 'https://www.instagram.com/reel/DXXAo85iP85/',
     vues: 52838,
@@ -341,9 +417,9 @@ export const videosAvant = [
   },
   {
     id: 'sketch',
-    format: 'Sketch',
+    format: 'Vidéos indépendantes',
     titre: 'Un sketch d’humour tourné sur une course',
-    resume: 'Un contenu plus ponctuel : un sketch d’humour réalisé lors d’une course.',
+    resume: 'Une idée, une expérience, une vidéo : des contenus autonomes, sans série à suivre avant ou après.',
     plateforme: 'Instagram',
     url: 'https://www.instagram.com/reel/DT-6y1HiCuf/',
     vues: 532531,
@@ -381,8 +457,9 @@ export const backToRun = {
     // Original vertical (3:4) : format 4:3 sur toute la largeur, pour garder
     // les personnes aux deux extrémités ; on retire surtout du ciel.
     alt: 'Des membres de la communauté Back to Run réunis à Paris, sourire aux lèvres.',
-    position: '50% 78%',
-    positionMobile: '50% 78%',
+    // Cadrage descendu pour garder les têtes ET les pieds de la rangée avant.
+    position: '50% 93%',
+    positionMobile: '50% 93%',
   },
   // À FOURNIR : capture du défi, logo / mascotte.
 };
@@ -399,7 +476,7 @@ export const courses = [
     date: '17 octobre 2026',
     type: 'Trail',
     statut: 'prevu',
-    sujet: 'Premier rendez-vous trail de l’automne.',
+    sujet: 'Prochaine étape de ma découverte du trail.',
     accueil: true,
     resultat: null,
   },
@@ -474,22 +551,22 @@ export const courses = [
 
 // -- Collaborations -----------------------------------------------------------
 export const offres = [
-  // Ordre d'affichage. `secondaire` : moins d'accent (la dotation reste visible).
+  // Ordre d'affichage validé ; mêmes tailles de titres pour les trois offres.
   {
     titre: 'Création de contenu rémunérée',
-    texte: 'Vidéos, photos et stories pour mon audience ou vos propres supports.',
+    texte: 'Vidéos, photos et stories pour mes réseaux ou vos propres supports.',
     precision: 'Formats, calendrier, rémunération et droits d’utilisation définis ensemble.',
   },
   {
     titre: 'Accompagnement dans la durée',
-    texte: 'Un partenariat construit autour de plusieurs courses, contenus ou initiatives communautaires.',
-    precision: 'Accompagnement matériel, rémunération et engagements adaptés au projet.',
+    texte: 'Un partenariat autour de plusieurs courses, contenus ou initiatives communautaires.',
+    precision: 'Accompagnement matériel et/ou rémunération, avec des engagements adaptés au projet.',
   },
   {
     titre: 'Dotation de produits',
-    texte: 'Vous m’équipez avec des produits adaptés à ma pratique, sans publication ni mention dédiée obligatoire.',
-    precision: 'Leur utilisation peut les rendre visibles dans mes entraînements ou contenus, sans exposition garantie.',
-    secondaire: true,
+    texte: 'Des produits adaptés à ma pratique, sans contenu dédié obligatoire.',
+    precision: 'Une utilisation possible dans mes entraînements et vidéos, sans exposition garantie.',
+
   },
 ];
 

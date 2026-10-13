@@ -39,7 +39,7 @@ const statutObjectif = { atteint: 'Atteint', manque: 'Manqué', en_cours: 'En co
       <EnTete repere="La route" id="titre-route" titre="Du premier marathon à 2 h 38."
         chapeau="Premier marathon en 2 h 59, puis 2 h 38 min 21 s au Marathon de Paris 2026. Sur la route, mes références actuelles :" />
       <ul class="bandeau-perfs" role="list">
-        {performances.filter((x) => x !== trail).map((x) => (
+        {performances.filter((x) => x.accueil).map((x) => (
           <li class:list={['lg-glass', 'perf', { 'lg-glass--royal': x.forte }]}>
             <span class="perf__resultat title">{x.resultat}</span>
             <span class="perf__epreuve">{x.epreuve}</span>

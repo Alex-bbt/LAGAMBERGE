@@ -1,48 +1,65 @@
 ---
 /* ==========================================================================
-   Page « Mes performances » : vitrine des meilleures performances réalisées.
-   - Temps, classement et récompense sont distingués : un chrono n'est pas
-     une victoire. Une récompense ne s'affiche que si elle est renseignée.
-   - Date, course et photo : affichées seulement si documentées
-     (src/data/mediakit.js, `performances`).
-   - Les objectifs à venir restent sur /projets, dans un bloc séparé.
+   Page « Mes performances » : mur de performances.
+   - Chaque tuile montre le résultat et le nom de la course.
+   - Date et détails : au clic, au toucher, au clavier (Entrée/Espace), et
+     au survol sur ordinateur. Basé sur <details> : tout reste accessible
+     sans JavaScript et sans survol.
+   - Temps réel = référence ; temps officiel affiché à part s'il existe.
+   - Aucune médaille ni podium : classements tels qu'ils figurent sur les
+     justificatifs. Les objectifs à venir restent dans un bloc séparé.
+   Données : `performances` dans src/data/mediakit.js.
    ========================================================================== */
 import Base from '../layouts/Base.astro';
 import EnTete from '../components/EnTete.astro';
-import Photo from '../components/Photo.astro';
-import { performances, photos, courses } from '../data/mediakit.js';
+import { performances, courses } from '../data/mediakit.js';
 
-const temps = (p) => p.temps ?? p.resultat;
 const objectifs = courses.filter((c) => !c.resultat && c.principal);
+const groupes = [
+  { titre: 'Sur route', items: performances.filter((p) => p.type === 'route') },
+  { titre: 'En trail', items: performances.filter((p) => p.type === 'trail') },
+];
+const libelleTemps = (p) => (p.tempsReel ? 'Temps réel' : p.tempsCourse ? 'Temps' : null);
 ---
 
-<Base titre="Mes performances" description="Les meilleures performances de La Gamberge : marathon, 10 km, 5 km et trail.">
+<Base titre="Mes performances" description="Les références de La Gamberge sur route et en trail : temps réels, classements et dates.">
   <section class="lg-ambient chapitre" aria-labelledby="titre-performances">
     <div class="chapitre__inner chapitre__inner--seul">
-      <EnTete niveau="h1" id="titre-performances" repere="Performances réalisées" titre="Mes performances."
-        chapeau="Mes meilleurs temps, sur route et en trail. Un chrono n’est pas une victoire : le temps, le classement et une éventuelle récompense sont indiqués séparément." />
+      <EnTete niveau="h1" id="titre-performances" repere="Performances réalisées" titre="Mes performances"
+        chapeau="Mes références sur route et en trail." />
 
-      <ul class="vitrine" role="list">
-        {performances.map((p) => (
-          <li class="vitrine__carte" id={p.id}>
-            {p.photo && photos[p.photo] && (
-              <div class="vitrine__photo">
-                <Photo photo={photos[p.photo]} format="naturel" sizes="(max-width: 720px) 100vw, 320px" />
-              </div>
-            )}
-            <div class="vitrine__texte">
-              <h2 class="title">{p.epreuve}</h2>
-              <dl class="vitrine__faits">
-                <div><dt class="label texte-muted">Temps</dt><dd class="chiffre title">{temps(p)}</dd></div>
-                {p.classement && <div><dt class="label texte-muted">Classement</dt><dd class="lead">{p.classement}</dd></div>}
-                {p.recompense && <div><dt class="label texte-muted">Récompense</dt><dd class="lead">{p.recompense}</dd></div>}
-                {p.date && <div><dt class="label texte-muted">Date</dt><dd class="lead">{p.date}</dd></div>}
-              </dl>
-              {p.type === 'trail' && <p class="caption texte-muted">« 50K » est le nom du format de course, pas une distance exacte.</p>}
-            </div>
-          </li>
-        ))}
-      </ul>
+      {groupes.map((g) => (
+        <div class="mur">
+          <h2 class="label mur__titre">{g.titre}</h2>
+          <ul class="mur__grille" role="list">
+            {g.items.map((p) => (
+              <li class="mur__case" id={p.id}>
+                <details class="perf-tuile" data-perf>
+                  <summary class="perf-tuile__resume">
+                    <span class="chiffre title perf-tuile__resultat">{p.resultat}</span>
+                    <span class="lead perf-tuile__course">{p.course}</span>
+                    <span class="caption perf-tuile__ouvrir">Date et détails</span>
+                  </summary>
+                  <dl class="perf-tuile__details">
+                    <div><dt>Date</dt><dd>{p.date}{p.dateCommuniquee && <span class="texte-muted perf-tuile__mention">communiquée</span>}</dd></div>
+                    {p.distance && <div><dt>Distance</dt><dd>{p.distance}</dd></div>}
+                    {libelleTemps(p) && <div><dt>{libelleTemps(p)}</dt><dd>{p.tempsReel ?? p.tempsCourse}</dd></div>}
+                    {p.tempsOfficiel && <div><dt>Temps officiel</dt><dd>{p.tempsOfficiel}</dd></div>}
+                    {p.classements.map((c) => <div><dt>{c.libelle}</dt><dd>{c.valeur}</dd></div>)}
+                    {p.recompense && <div><dt>Récompense</dt><dd>{p.recompense}</dd></div>}
+                  </dl>
+                  {p.details.length > 0 && (
+                    <ul class="perf-tuile__notes caption texte-muted" role="list">
+                      {p.details.map((d) => <li>{d}</li>)}
+                    </ul>
+                  )}
+                </details>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <p class="caption texte-muted">Temps réel : du passage sur la ligne de départ à l’arrivée. Temps officiel : depuis le coup de pistolet, quand il est indiqué.</p>
     </div>
   </section>
 
@@ -59,3 +76,30 @@ const objectifs = courses.filter((c) => !c.resultat && c.principal);
     </div>
   </section>
 </Base>
+
+<script>
+  // Date et détails : ouverture au clic/toucher et au clavier (natif <details>),
+  // au focus, au survol sur ordinateur, et à l'arrivée par une ancre (#marathon…).
+  // Un clic garde ouverte une tuile ouverte par le focus ou le survol.
+  const tuiles = [...document.querySelectorAll('[data-perf]')];
+  const survol = matchMedia('(hover: hover) and (pointer: fine)');
+  tuiles.forEach((t) => {
+    let ouvertPar = null; // 'clic' | 'focus' | 'survol' | null
+    const ouvrir = (par) => { if (!t.open) { t.open = true; ouvertPar = par; } };
+    t.querySelector('summary').addEventListener('click', (e) => {
+      if (t.open && (ouvertPar === 'focus' || ouvertPar === 'survol')) { e.preventDefault(); ouvertPar = 'clic'; return; }
+      ouvertPar = t.open ? null : 'clic';
+    });
+    t.addEventListener('focusin', () => ouvrir('focus'));
+    t.addEventListener('focusout', (e) => { if (ouvertPar === 'focus' && !t.contains(e.relatedTarget)) { t.open = false; ouvertPar = null; } });
+    t.addEventListener('mouseenter', () => { if (survol.matches) ouvrir('survol'); });
+    t.addEventListener('mouseleave', () => { if (survol.matches && ouvertPar === 'survol') { t.open = false; ouvertPar = null; } });
+  });
+  const ouvrirCible = () => {
+    const cible = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    const d = cible?.querySelector('[data-perf]');
+    if (d) d.open = true;
+  };
+  ouvrirCible();
+  addEventListener('hashchange', ouvrirCible);
+</script>

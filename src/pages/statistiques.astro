@@ -32,7 +32,7 @@ const lignes = [
   ['Publications à plus de 100 000 vues', nombre(ig.publicationsPlus100k), nombre(tt.videosPlus100k)],
   ['Interactions', nombre(ig.interactions), nombre(tt.interactions)],
   ['Engagement', ig.engagement, tt.engagementCourt],
-  ['Vues médianes par story (30 derniers jours)', `≈ ${nombre(ig.vuesMedianesStory)}`, '—'],
+  ['Vues médianes par story (30 derniers jours)', `≈ ${nombre(ig.vuesMedianesStory)}`, tt.vuesMedianesStory ? `≈ ${nombre(tt.vuesMedianesStory)}` : 'Non renseigné'],
 ];
 const plateformes = [
   { nom: 'Instagram', d: audience.instagram },
@@ -62,12 +62,17 @@ const plateformes = [
           </tbody>
         </table>
       </div>
-      <ul class="notes-tableau caption texte-muted" role="list">
-        <li>Vues et publications : du 1er janvier à la date de relevé de chaque plateforme. Instagram exclut les Reels d’essai ; TikTok compte les vidéos publiques.</li>
-        <li>Interactions : Instagram = likes + commentaires + partages + enregistrements ; TikTok = likes + commentaires + partages (enregistrements non relevés).</li>
-        <li>Engagement : Instagram = interactions / couverture ; TikTok = interactions / vues. Les dénominateurs diffèrent : les deux taux ne se comparent pas directement.</li>
-        <li>Stories : TikTok n’a pas de format équivalent.</li>
-      </ul>
+      <details class="details-sobre comprendre">
+        <summary class="body">Comprendre les données</summary>
+        <ul class="details-sobre__corps notes-tableau caption texte-muted" role="list">
+          <li>Périodes : vues et publications du 1er janvier 2026 à la date de relevé de chaque plateforme (Instagram au {ig.releve}, TikTok au {tt.releve}).</li>
+          <li>Publications : Instagram exclut les Reels d’essai ; TikTok compte les vidéos publiques.</li>
+          <li>Interactions : Instagram = likes + commentaires + partages + enregistrements ; TikTok = likes + commentaires + partages (enregistrements non relevés).</li>
+          <li>Engagement : Instagram = interactions / couverture ; TikTok = interactions / vues. Les dénominateurs diffèrent : les deux taux ne se comparent pas directement.</li>
+          <li>Stories : vues médianes sur les 30 derniers jours{tt.vuesMedianesStoryPeriode ? ` (TikTok : ${tt.vuesMedianesStoryPeriode})` : ' ; valeur TikTok non renseignée pour le moment'}.</li>
+          <li>Totaux cumulés de l’accueil : abonnements et vues additionnés sur les deux plateformes, pas des personnes uniques.</li>
+        </ul>
+      </details>
     </div>
   </section>
 

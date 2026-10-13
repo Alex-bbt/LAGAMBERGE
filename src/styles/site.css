@@ -933,8 +933,6 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 }
 .offre-grande__numero { color: var(--royal-muted); }
 .offre-grande__precision { color: var(--royal-muted); border-top-color: var(--hairline); }
-.offre-grande--secondaire .title { font-size: calc(var(--space-4) + var(--space-1)); }
-.offre-grande--secondaire .lead { font-size: var(--space-4); }
 .fond-roi .offre-grande :focus-visible { outline-color: var(--royal); }
 
 /* 10. Références */
@@ -1088,7 +1086,7 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 720px) {
   .references__liste { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .references__marque--logo { min-width: 0; }
-  .rendez-vous-grand--logo { display: flex; }
+  .rendez-vous-grand--logo { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
   .rendez-vous-grand__logo { height: var(--space-12); align-self: flex-start; margin-bottom: var(--space-2); }
 }
 
@@ -1152,3 +1150,119 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 .video-avant__cadre--miniature { aspect-ratio: var(--ratio); background: var(--royal); }
 .video-avant__cadre--miniature .video-avant__bouton { transform: translate(-50%, -50%); }
 .video-avant__cadre--miniature .video-avant__lecture:hover .video-avant__bouton { transform: translate(-50%, -50%) scale(1.06); }
+
+/* ==========================================================================
+   V1 — FINITIONS
+   ========================================================================== */
+
+/* Statistiques : chiffres dominants ~12 % plus petits sur ordinateur
+   (téléphone inchangé : le minimum reste 48 px) */
+:root { --taille-dominant: clamp(var(--space-12), 6.2vw, calc(var(--space-24) - var(--space-1))); }
+
+/* Onglets d'audience : même position pour Instagram et TikTok */
+.onglets-actifs .graphiques + .graphiques { margin-top: 0; }
+.onglets-actifs .graphiques__population { min-height: var(--space-6); }
+@media (min-width: 721px) {
+  .onglets-actifs .graphiques { min-height: calc(var(--space-24) * 3.6); }
+}
+
+/* Back to Run : logo + mascotte rattachés au titre */
+.btr-titre { display: flex; align-items: center; gap: var(--space-6); }
+.btr-titre .logo-btr { flex: none; width: calc(var(--space-24) * 1.7); }
+.chiffre__prefixe { font-family: var(--font-text); font-weight: 700; font-size: var(--space-4); }
+
+
+/* Contact : adresse ~12 % plus petite sur ordinateur */
+.fond-roi .contact__email { font-size: clamp(calc(var(--space-4) + var(--space-1) / 2), 3.9vw, calc(var(--space-12) + var(--space-2))); }
+
+/* Pied de page : nettement séparé du contenu, sur toutes les pages */
+.pied-page {
+  margin-top: 0;
+  padding: var(--space-12) var(--space-4) var(--space-12);
+  background: var(--powder);
+  border-top: 1px solid var(--royal-muted);
+}
+.pied-page .reseaux-icones__lien { border-color: var(--royal-muted); }
+.pied-page .reseaux-icones__lien:hover { background: var(--white); }
+
+
+/* Statistiques : dépliant méthodologique */
+.comprendre summary { font-weight: 700; }
+
+/* Mur de performances */
+.mur { display: flex; flex-direction: column; gap: var(--space-4); }
+.mur__titre { padding-top: var(--space-4); border-top: 1px solid var(--hairline); }
+.mur__grille { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
+.perf-tuile {
+  border-radius: var(--radius-lg);
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: var(--shadow-glass);
+}
+.perf-tuile[open] { background: var(--white); border-color: var(--hairline); }
+.perf-tuile__resume {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-6);
+  min-height: calc(var(--space-24) * 1.5);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-lg);
+}
+.perf-tuile__resume::-webkit-details-marker { display: none; }
+.perf-tuile__resume:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
+.perf-tuile__resultat { white-space: nowrap; }
+.perf-tuile__ouvrir { margin-top: auto; padding-top: var(--space-2); font-weight: 700; color: var(--royal-muted); }
+.perf-tuile__ouvrir::after { content: " +"; }
+.perf-tuile[open] .perf-tuile__ouvrir::after { content: " −"; }
+.perf-tuile__details { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-1) var(--space-4); padding: 0 var(--space-6) var(--space-4); margin: 0; }
+.perf-tuile__details > div { display: contents; }
+.perf-tuile__details dt { color: var(--royal-muted); }
+.perf-tuile__details dd { margin: 0; font-weight: 700; text-align: right; }
+.perf-tuile__notes { display: flex; flex-direction: column; gap: var(--space-1); padding: 0 var(--space-6) var(--space-6); }
+.mur__case:target .perf-tuile { box-shadow: 0 0 0 3px var(--royal); }
+
+@media (max-width: 1080px) {
+  .mur__grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .btr-titre { flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+  .btr-titre .logo-btr { width: calc(var(--space-24) * 1.5); }
+  .mur__grille { grid-template-columns: minmax(0, 1fr); }
+  .perf-tuile__resume { min-height: 0; padding: var(--space-4); }
+  .perf-tuile__details { padding: 0 var(--space-4) var(--space-4); }
+  .perf-tuile__notes { padding: 0 var(--space-4) var(--space-4); }
+}
+.chiffre__prefixe { display: block; }
+.offre-grande .title { min-height: calc(2 * 1.12em); }
+.btr-titre .display-l { max-width: 18ch; }
+/* Pages : un peu plus d'air sous la navigation fixe sur téléphone */
+@media (max-width: 720px) {
+  main > :is(.section, .chapitre):first-child { padding-top: calc(var(--space-16) * 2); }
+}
+.perf-tuile__details dd { overflow-wrap: anywhere; }
+.perf-tuile__mention { display: block; font-weight: 500; font-size: var(--space-3); }
+/* Très petits écrans (≤ 420 px) */
+.fond-roi .contact__email { overflow-wrap: normal; word-break: normal; } /* coupure propre après « @ » si besoin */
+@media (max-width: 420px) {
+  .offre-grande .title { font-size: calc(var(--space-4) + var(--space-1)); }
+  .colonnes__libelle { font-size: var(--space-3); white-space: nowrap; }
+  .colonnes__grille { gap: var(--space-2); }
+}
+@media (max-width: 420px) { .offre-grande { padding: var(--space-6) var(--space-4); } }
+/* Tableau Instagram | TikTok sur très petit écran : indicateur au-dessus, deux valeurs dessous */
+@media (max-width: 420px) {
+  .tableau-comparatif-cadre { padding: var(--space-4) var(--space-3); }
+  .tableau-comparatif thead tr, .tableau-comparatif tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tableau-comparatif thead th:first-child { display: none; }
+  .tableau-comparatif tbody th[scope="row"] { grid-column: 1 / -1; padding: var(--space-3) 0 0; border-bottom: 0; }
+  .tableau-comparatif th, .tableau-comparatif td { text-align: left; }
+  .tableau-comparatif td { padding: var(--space-1) var(--space-1) var(--space-3) 0; white-space: nowrap; }
+  .tableau-comparatif thead th { padding-left: 0; }
+  .tableau-comparatif tbody tr { border-bottom: 1px solid var(--hairline); }
+  .tableau-comparatif tbody tr > * { border-bottom: 0; }
+}
+/* /performances : la marge générale (scroll-padding) ne s'applique pas au
+   saut vers une ancre au chargement ; les tuiles portent leur propre marge. */
+.mur__case { scroll-margin-top: var(--decalage-ancre); }
