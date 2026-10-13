@@ -169,6 +169,10 @@ export const stats = {
     likes: 454877,
     partages: 8572,
     commentaires: 1501,
+    // Interactions = likes + commentaires + partages (les enregistrements ne
+    // sont pas relevés sur TikTok, contrairement à Instagram).
+    interactions: 454877 + 1501 + 8572, // 464 950
+    publicationsPlus10k: 32, // vidéos publiques 2026 (fichier TikTok Studio du 12/10/2026)
     engagement: 'environ 9 %',
     engagementCourt: '≈ 9 %',
     engagementDefinition: '(likes + commentaires + partages) / vues',
@@ -305,6 +309,47 @@ export const videos = [
   // À FOURNIR : la vidéo performance (section 'coureur') et la vidéo
   // d'annonce Back to Run (section 'backtorun', vues cumulées à réconcilier,
   // en précisant les plateformes additionnées).
+];
+
+// -- Vidéos mises en avant (page /statistiques) ------------------------------
+// Trois formats typiques, choisis par Alex. Vues communiquées par Alex le
+// 13 octobre 2026. `miniature` : couverture réelle fournie par Alex
+// (src/assets/videos/) ; sans elle, une couverture neutre s'affiche.
+// La vidéo n'est chargée (lecteur officiel Instagram) qu'au clic.
+export const videosAvant = [
+  {
+    id: 'depart-10k',
+    format: 'Contenu viral',
+    titre: 'Départ du 10 km adidas, déguisé en vert dans le SAS élite',
+    resume: 'Dans le SAS élite, des coureurs concentrés… et moi, déguisé en vert au milieu d’eux, avec un dossard mérité.',
+    plateforme: 'Instagram',
+    url: 'https://www.instagram.com/p/DZaWXEPI757/',
+    vues: 2958127,
+    releve: '13 octobre 2026',
+    miniature: 'depart-10k.webp',
+  },
+  {
+    id: 'grosse-echeance',
+    format: 'Format long',
+    titre: 'Le récit de mon Marathon de Paris',
+    resume: 'Une vidéo plus longue : le format que je réalise lors des grosses échéances.',
+    plateforme: 'Instagram',
+    url: 'https://www.instagram.com/reel/DXXAo85iP85/',
+    vues: 52838,
+    releve: '13 octobre 2026',
+    miniature: 'marathon-paris.webp',
+  },
+  {
+    id: 'sketch',
+    format: 'Sketch',
+    titre: 'Un sketch d’humour tourné sur une course',
+    resume: 'Un contenu plus ponctuel : un sketch d’humour réalisé lors d’une course.',
+    plateforme: 'Instagram',
+    url: 'https://www.instagram.com/reel/DT-6y1HiCuf/',
+    vues: 532531,
+    releve: '13 octobre 2026',
+    miniature: 'sketch.webp',
+  },
 ];
 
 // -- Back to Run --------------------------------------------------------------
