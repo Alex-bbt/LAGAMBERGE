@@ -11,6 +11,7 @@ const desc = description ?? `${identite.description} Media kit de La Gamberge (A
 // Navigation : ancres de la page principale + pages complémentaires.
 const liens = [
   { libelle: 'Profil', lien: '/#profil' },
+  { libelle: 'Audience', lien: '/#statistiques' },
   { libelle: 'Projets', lien: '/#objectifs' },
 ];
 const chemin = Astro.url.pathname.replace(/\/$/, '') || '/';
@@ -32,6 +33,13 @@ const insta = comptes.find((c) => c.id === 'instagram');
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <slot name="head" />
+    <!-- Apparitions au défilement : activées seulement si le navigateur les
+         permet et si l'utilisateur n'a pas demandé de réduire les animations. -->
+    <script is:inline>
+      if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('apparitions');
+      }
+    </script>
   </head>
   <body class={corps}>
     <a class="evitement lg-btn lg-btn--primary" href="#contenu">Aller au contenu</a>
@@ -84,6 +92,16 @@ const insta = comptes.find((c) => c.id === 'instagram');
     </footer>
 
     <script>
+      // Apparitions : discrètes, une seule fois, jamais bloquantes.
+      if (document.documentElement.classList.contains('apparitions')) {
+        const obs = new IntersectionObserver((entrees) => {
+          entrees.forEach((e) => {
+            if (e.isIntersecting) { e.target.classList.add('est-visible'); obs.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+        document.querySelectorAll('[data-apparition]').forEach((el) => obs.observe(el));
+      }
+
       // Menu mobile : se ferme après un clic sur un lien, ou avec la touche Échap.
       const menu = document.querySelector('.menu-mobile');
       menu?.querySelectorAll('a').forEach((a) =>

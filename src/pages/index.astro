@@ -1,160 +1,189 @@
 ---
 /* ==========================================================================
-   LA GAMBERGE — MEDIA KIT (page principale, version courte)
+   LA GAMBERGE — MEDIA KIT (page principale)
    --------------------------------------------------------------------------
-   Cinq sections, une question chacune :
-   1. La Gamberge (#profil)               qui je suis            — fond clair
-   2. La performance (#coureur)           crédibilité sportive   — fond poudre
-   3. Contenus et communauté (#createur)  ce que je crée, qui participe — fond Bone
-   4. Les projets (#objectifs)            où une marque prend place — fond blanc
-   5. Collaborer (#collaborer, #contact)  comment collaborer     — fond bleu roi
+   Six étapes, dans l'ordre du raisonnement d'une marque :
+   1. Présentation (#profil)                 Qui est-ce ?                 — fond clair
+   2. Statistiques et audience (#statistiques) Son audience m'intéresse-t-elle ? — fond poudre
+   3. Pourquoi moi ? (#pourquoi)             Pourquoi le choisir ?        — fond blanc
+   4. Back to Run (#back-to-run)             A-t-il mobilisé une communauté ? — fond Bone
+   5. Prochains objectifs (#objectifs)       Quels projets accompagner ?  — fond clair
+   6. Comment collaborer ? (#collaborer, #contact) Comment collaborer ?   — fond bleu roi
 
-   Tout le reste (Nice, progression, vues, audience, finishers, calendrier,
-   conditions…) vit dans /histoire, /statistiques, /communaute et /projets.
-   Données : src/data/mediakit.js.
+   Sur grand écran, chaque section occupe au moins un écran (.section--ample) ;
+   sur mobile, hauteur naturelle. Détails : /statistiques, /communaute,
+   /projets, /histoire. Données : src/data/mediakit.js.
    ========================================================================== */
 import Base from '../layouts/Base.astro';
 import Photo from '../components/Photo.astro';
 import Contact from '../components/Contact.astro';
+import AudienceGraphiques from '../components/AudienceGraphiques.astro';
 import { identite, performances, courses, stats, backToRun, offres, photos, nombre } from '../data/mediakit.js';
 
 const ig = stats.instagram;
 const tt = stats.tiktok;
-// Les trois chronos sur route (Nice reste sur /histoire).
+const cumul = stats.cumul;
 const chronos = performances.filter((p) => p.type === 'route');
-// Les deux grands rendez-vous (toutes les échéances restent dans les données et sur /projets).
 const projets = courses.filter((c) => !c.resultat && c.principal);
-const inscrits = backToRun.principaux.find((c) => c.legende === 'inscrits');
-const km = backToRun.principaux.find((c) => c.legende === 'km enregistrés');
+const preuves = ['inscrits', 'participants', 'km enregistrés'].map((l) => backToRun.principaux.find((c) => c.legende === l));
+const legendePreuve = (c) => (c.legende === 'participants' ? 'participants ayant enregistré au moins une course' : c.legende);
 ---
 
 <Base>
-  <!-- ======================= 1. LA GAMBERGE ======================= -->
-  <section id="profil" class="section fond-clair" aria-labelledby="titre-profil">
+  <!-- ======================= 1. PRÉSENTATION ======================= -->
+  <section id="profil" class="section section--ample fond-clair" aria-labelledby="titre-profil">
     <div class="conteneur compo compo--texte-photo compo--centre">
-      <div class="compo__contenu">
-        <h1 class="display-xl identite__marque" id="titre-profil">{identite.marque}</h1>
+      <div class="compo__contenu presentation" data-apparition>
+        <h1 class="display-xl identite__marque presentation__marque" id="titre-profil">{identite.marque}</h1>
         <p class="title">{identite.positionnement}</p>
         <p class="lead">{identite.description}</p>
         <div class="actions">
-          <a href="#contact" class="lg-btn btn-accent">Parlons partenariat</a>
-          <a href="#coureur" class="lg-btn lg-btn--glass">Découvrir</a>
+          <a href="#statistiques" class="lg-btn lg-btn--primary">Découvrir le media kit</a>
+          <a href="#collaborer" class="lg-btn btn-accent">Collaborer</a>
         </div>
         <p class="caption texte-muted">{identite.personne.nom} · {identite.personne.contexte.join(' · ')}</p>
       </div>
-      <div class="compo__media compo__media--photo-naturelle">
-        <Photo photo={identite.photo} format="naturel" prioritaire sizes="(max-width: 720px) 75vw, 420px" />
+      <div class="compo__media media-presentation">
+        <Photo photo={identite.photo} format="naturel" prioritaire sizes="(max-width: 720px) 80vw, 460px" />
       </div>
     </div>
   </section>
 
-  <!-- ======================= 2. LA PERFORMANCE ======================= -->
-  <section id="coureur" class="section fond-poudre" aria-labelledby="titre-coureur">
-    <div class="conteneur pile">
-    <div class="compo compo--photo-texte compo--large-texte">
-      <div class="compo__media compo__media--photo-naturelle">
-        <Photo photo={photos.performance} format="naturel" sizes="(max-width: 720px) 75vw, 380px" />
-      </div>
-      <div class="compo__contenu">
-        <h2 class="titre-avec-repere" id="titre-coureur"><span class="repere caption">Le coureur</span><span class="display-l">Progresser. Et le partager.</span></h2>
-        <p class="body intro">Je cours au moins 5 km chaque jour en 2026, entre objectifs sur route et découverte du trail.</p>
-        <ul class="chiffres" role="list" aria-label="Références sur route">
-          {chronos.map((p) => (
-            <li><span class="chiffre title">{p.resultat}</span><span class="body">{p.court}</span></li>
-          ))}
+  <!-- ================== 2. STATISTIQUES ET AUDIENCE ================== -->
+  <section id="statistiques" class="section section--ample fond-poudre" aria-labelledby="titre-statistiques">
+    <div class="conteneur pile-ample">
+      <h2 class="display-l" id="titre-statistiques" data-apparition>Statistiques et audience</h2>
+
+      <div class="dominants" data-apparition>
+        <ul class="dominants__liste" role="list">
+          <li><span class="dominant">{nombre(cumul.abonnes)}</span><span class="lead">{cumul.abonnesLegende}</span></li>
+          <li><span class="dominant">{cumul.vuesAffichage}</span><span class="lead">{cumul.vuesLegende}</span></li>
         </ul>
-        <a class="lien-fleche" href="/histoire">Mon parcours</a>
-      </div>
-    </div>
-    <!-- Transition vers la section suivante -->
-    <p class="transition body">La progression nourrit les contenus. L’autodérision leur donne le ton.</p>
-    </div>
-  </section>
-
-  <!-- ================== 3. CONTENUS ET COMMUNAUTÉ ================== -->
-  <section id="createur" class="section fond-accent" aria-labelledby="titre-createur">
-    <div class="conteneur pile">
-      <div class="entete-section">
-        <h2 class="titre-avec-repere" id="titre-createur"><span class="repere caption">Le créateur</span><span class="display-l">À regarder. Et à vivre.</span></h2>
-      </div>
-
-      <!-- A. Les contenus -->
-      <div class="compo compo--photo-texte compo--large-texte compo--centre">
-        <div class="compo__media compo__media--photo-naturelle compo__media--reduite">
-          <Photo photo={photos.divertissement} format="portrait" sizes="(max-width: 720px) 75vw, 320px" />
-        </div>
-        <div class="compo__contenu">
-          <p class="body intro">Des entraînements, des courses et des imprévus, racontés avec autodérision.</p>
-          <ul class="chiffres chiffres--deux" role="list" aria-label="Abonnés">
-            <li><span class="chiffre title">{ig.abonnesAffichage}</span><span class="body">abonnés Instagram</span></li>
-            <li><span class="chiffre title">{tt.abonnesAffichage}</span><span class="body">abonnés TikTok</span></li>
-          </ul>
-          <p class="body">Instagram : environ {nombre(ig.vuesMedianesPublication)} vues médianes par publication en 2026.</p>
-          <a class="lien-fleche" href="/statistiques">Contenus et audience</a>
-        </div>
-      </div>
-
-      <!-- B. Back to Run (même section, séparée par un filet) -->
-      <div class="compo compo--texte-photo sous-partie">
-        <div class="compo__contenu">
-          <h3 class="titre-bloc title">Une communauté qui se met en mouvement.</h3>
-          <p class="body intro">Avec Back to Run, j’ai lancé un défi collectif : courir au moins 5 km par jour pendant 30 jours.</p>
-          <ul class="chiffres chiffres--deux" role="list" aria-label="Back to Run, première édition">
-            <li><span class="chiffre title">{nombre(inscrits.valeur)}</span><span class="body">inscrits</span></li>
-            <li><span class="chiffre title">{nombre(km.valeur)}</span><span class="body">km enregistrés</span></li>
-          </ul>
-          <a class="lien-fleche" href="/communaute">Découvrir Back to Run</a>
-        </div>
-        <div class="compo__media">
-          <Photo photo={backToRun.photo} format="quatre-tiers" sizes="(max-width: 720px) 100vw, 560px" />
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================= 4. LES PROJETS ======================= -->
-  <section id="objectifs" class="section fond-blanc" aria-labelledby="titre-objectifs">
-    <div class="conteneur pile">
-    <div class="compo compo--photo-texte compo--centre">
-      <div class="compo__media compo__media--projets">
-        <!-- Photo personnelle (course sur route) : illustration, pas une image de trail ni de la SaintéLyon -->
-        <Photo photo={photos.personnelle} format="carre" sizes="(max-width: 720px) 100vw, 380px" />
-      </div>
-      <div class="compo__contenu">
-        <h2 class="titre-avec-repere" id="titre-objectifs"><span class="repere caption">La suite</span><span class="display-l">Deux grands rendez-vous.</span></h2>
-        <ul class="projets" role="list">
-          {projets.map((c) => (
-            <li class="projet-ligne">
-              <h3 class="titre-bloc lead">{c.nom}</h3>
-              <p class="body"><span class="projet-ligne__date">{c.dateCourte ?? c.date}</span> {c.accrocheAccueil ?? c.accroche}</p>
-            </li>
-          ))}
-        </ul>
-        <a class="lien-fleche" href="/projets">Tout le calendrier</a>
-      </div>
-    </div>
-    <!-- Transition vers la section suivante -->
-    <p class="transition body">Des projets à accompagner, des contenus à construire ensemble.</p>
-    </div>
-  </section>
-
-  <!-- ======================= 5. COLLABORER ======================= -->
-  <section id="collaborer" class="section fond-roi" aria-labelledby="titre-collaborer">
-    <div class="conteneur compo compo--collaborer">
-      <div class="compo__contenu">
-        <h2 class="display-l" id="titre-collaborer">Écrivons la suite ensemble.</h2>
-        <p class="body intro">Dotation, création de contenu rémunérée ou partenariat durable : échangeons sur votre projet.</p>
-        <p class="libelles body">{offres.map((o) => o.libelleCourt ?? o.titre).join(' · ')}</p>
+        <p class="caption texte-muted">{cumul.note}</p>
         <details class="details-sobre">
-          <summary class="body">Formats, droits et affiliation</summary>
+          <summary class="body">Détail par plateforme</summary>
           <div class="details-sobre__corps">
-            {offres.map((o) => (
-              <p class="body"><strong>{o.titre}.</strong> {o.resume} {o.note ?? ''}</p>
-            ))}
-            <p class="body"><strong>Affiliation.</strong> Une affiliation rémunérée peut compléter la collaboration, avec des commissions et des conditions définies ensemble.</p>
+            <table class="tableau-plateformes body">
+              <thead><tr><th scope="col">Plateforme</th><th scope="col">Abonnés</th><th scope="col">Vues 2026</th><th scope="col">Relevé</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Instagram</th><td>{nombre(ig.abonnes)}</td><td>{nombre(ig.vues)}</td><td>{ig.releve}</td></tr>
+                <tr><th scope="row">TikTok</th><td>{nombre(tt.abonnes)}</td><td>{nombre(tt.vues)}</td><td>{tt.releve}</td></tr>
+              </tbody>
+            </table>
           </div>
         </details>
       </div>
+
+      <div class="panneau-graphiques" data-apparition>
+        <AudienceGraphiques />
+      </div>
+      <a class="lg-btn lg-btn--glass" href="/statistiques">Contenus et audience</a>
+    </div>
+  </section>
+
+  <!-- ======================= 3. POURQUOI MOI ? ======================= -->
+  <section id="pourquoi" class="section section--ample fond-blanc" aria-labelledby="titre-pourquoi">
+    <div class="conteneur pile-ample">
+      <h2 class="display-l" id="titre-pourquoi" data-apparition>Pourquoi moi ?</h2>
+
+      <!-- A. Crédibilité sportive -->
+      <article class="argument" aria-labelledby="titre-credibilite" data-apparition>
+        <div class="argument__media">
+          <Photo photo={photos.performance} format="naturel" sizes="(max-width: 720px) 80vw, 360px" />
+        </div>
+        <div class="argument__texte">
+          <p class="repere caption">01 · Crédibilité sportive</p>
+          <h3 class="title" id="titre-credibilite">Une pratique qui donne du poids à mes retours d’expérience</h3>
+          <p class="lead intro">Je m’investis dans des objectifs exigeants, préparés sur plusieurs mois. La course fait partie de mon quotidien : au moins 5 km chaque jour en 2026.</p>
+          <ul class="chiffres chronos" role="list" aria-label="Références sur route">
+            {chronos.map((p) => (
+              <li><span class="chiffre title">{p.resultat}</span><span class="body">{p.court}</span></li>
+            ))}
+          </ul>
+        </div>
+      </article>
+
+      <!-- B. Une aventure suivie -->
+      <article class="argument argument--inverse" aria-labelledby="titre-aventure" data-apparition>
+        <div class="argument__media">
+          <Photo photo={photos.divertissement} format="portrait" sizes="(max-width: 720px) 80vw, 360px" />
+        </div>
+        <div class="argument__texte">
+          <p class="repere caption">02 · Divertissement</p>
+          <h3 class="title" id="titre-aventure">La performance, avec du divertissement</h3>
+          <p class="lead intro">Je raconte la préparation, les progrès et les imprévus avec autodérision. Un objectif devient une aventure à suivre dans la durée.</p>
+          <div class="engagement">
+            <span class="chiffre title">{ig.engagement}</span>
+            <span class="body">{ig.engagementLegende}</span>
+            <details class="details-sobre">
+              <summary class="caption">Définition</summary>
+              <p class="caption texte-muted details-sobre__corps">{ig.engagementDetail}</p>
+            </details>
+          </div>
+        </div>
+      </article>
+
+      <p class="transition lead">Cette participation existe aussi au-delà des vidéos.</p>
+    </div>
+  </section>
+
+  <!-- ======================= 4. BACK TO RUN ======================= -->
+  <section id="back-to-run" class="section section--ample fond-accent" aria-labelledby="titre-btr">
+    <div class="conteneur compo compo--texte-photo compo--centre compo--egal">
+      <div class="compo__contenu" data-apparition>
+        <h2 class="display-l" id="titre-btr">Back to Run : faire participer la communauté</h2>
+        <p class="lead intro">J’ai créé un défi collectif : courir au moins 5 km par jour pendant 30 jours. Une initiative pour passer de l’envie à la pratique.</p>
+        <ul class="preuves-btr" role="list" aria-label="Back to Run, première édition">
+          {preuves.map((c) => (
+            <li><span class="chiffre title">{nombre(c.valeur)}</span><span class="body">{legendePreuve(c)}</span></li>
+          ))}
+        </ul>
+        <p class="caption texte-muted">Première édition : septembre 2026. Prochaine édition : septembre 2027.</p>
+        <a class="lg-btn lg-btn--primary" href="/communaute">Découvrir Back to Run</a>
+      </div>
+      <div class="compo__media" data-apparition>
+        <Photo photo={backToRun.photo} format="quatre-tiers" sizes="(max-width: 1080px) 100vw, 580px" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 5. PROCHAINS OBJECTIFS ======================= -->
+  <section id="objectifs" class="section section--ample fond-clair" aria-labelledby="titre-objectifs">
+    <div class="conteneur compo compo--photo-texte compo--centre compo--egal">
+      <div class="compo__media media-objectifs" data-apparition>
+        <!-- Photo personnelle (course sur route) : illustration, pas une image de trail ni de la SaintéLyon -->
+        <Photo photo={photos.personnelle} format="portrait" sizes="(max-width: 720px) 100vw, 440px" />
+      </div>
+      <div class="compo__contenu" data-apparition>
+        <h2 class="display-l" id="titre-objectifs">Prochains objectifs</h2>
+        <ul class="rendez-vous-grands" role="list">
+          {projets.map((c) => (
+            <li class="rendez-vous-grand">
+              <span class="label texte-muted">{c.dateCourte ?? c.date}</span>
+              <h3 class="title">{c.nom}</h3>
+              <p class="lead">{c.accrocheAccueil ?? c.accroche}</p>
+            </li>
+          ))}
+        </ul>
+        <a class="lg-btn lg-btn--glass" href="/projets">Tout le calendrier</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 6. COMMENT COLLABORER ? ======================= -->
+  <section id="collaborer" class="section section--ample fond-roi" aria-labelledby="titre-collaborer">
+    <div class="conteneur pile-ample">
+      <h2 class="display-l" id="titre-collaborer" data-apparition>Comment collaborer ?</h2>
+      <ul class="offres-grandes" role="list" data-apparition>
+        {offres.map((o, i) => (
+          <li class="offre-grande">
+            <span class="offre-grande__numero label">Offre {i + 1}</span>
+            <h3 class="title">{o.titre}</h3>
+            <p class="lead">{o.texte}</p>
+            <p class="body offre-grande__precision">{o.precision}</p>
+          </li>
+        ))}
+      </ul>
       <Contact />
     </div>
   </section>

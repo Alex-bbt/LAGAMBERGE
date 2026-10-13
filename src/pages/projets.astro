@@ -2,7 +2,7 @@
 /* Page « Les projets » : calendrier détaillé, statuts et sujets de contenu. */
 import Base from '../layouts/Base.astro';
 import EnTete from '../components/EnTete.astro';
-import Calendrier from '../components/Calendrier.astro';
+import Frise from '../components/Frise.astro';
 import { courses } from '../data/mediakit.js';
 
 const saintelyon = courses.find((c) => c.id === 'saintelyon');
@@ -31,8 +31,9 @@ const sujets = ['Préparation et entraînement', 'Matériel testé en conditions
 
   <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-calendrier">
     <div class="chapitre__inner chapitre__inner--seul">
-      <EnTete repere="Calendrier" id="titre-calendrier" titre="Toutes les échéances." />
-      <Calendrier detail />
+      <EnTete repere="Calendrier" id="titre-calendrier" titre="Toutes les échéances."
+        chapeau="Survolez, sélectionnez ou touchez un événement pour afficher ses détails." />
+      <Frise />
       <p class="caption texte-muted">
         Calendrier communiqué par Alex et recoupé avec les annonces publiques au 12 octobre 2026. La date
         exacte du Marathon de Paris 2027 reste à confirmer. Les noms des courses n’impliquent aucun

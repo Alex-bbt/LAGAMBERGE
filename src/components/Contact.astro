@@ -2,7 +2,7 @@
 /* ==========================================================================
    Contact — posé directement sur le fond bleu roi de la section Collaborer.
    - Email renseigné : adresse très visible et cliquable, bouton principal
-     « Parlons de votre projet » (couleur d'accent, objet prérempli), copie.
+     « Discutons de votre projet » (couleur d'accent, objet prérempli), copie.
    - Email absent : AUCUN bouton email ; Instagram devient le contact.
    - Instagram en alternative discrète ; les autres réseaux sont dans le pied de page.
    ========================================================================== */
@@ -19,8 +19,8 @@ const mailto = contact.email
     <>
       <a class="contact__email lead" href={mailto} data-email>{contact.email}</a>
       <div class="actions">
-        <a class="lg-btn btn-accent" href={mailto}>Parlons de votre projet</a>
-        <button class="contact__copier body" type="button" data-copier={contact.email}>Copier l’adresse</button>
+        <a class="lg-btn btn-accent" href={mailto}>Discutons de votre projet</a>
+        <button class="lg-btn contact__copier" type="button" data-copier={contact.email}>Copier l’adresse</button>
         <span class="caption contact__retour" role="status" data-retour></span>
       </div>
       <p class="caption">Ou sur Instagram : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}<span class="sr-only"> (nouvel onglet)</span></a></p>

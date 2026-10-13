@@ -12,7 +12,7 @@ const pct = (v) => v.toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %
 <figure class="barres">
   <figcaption class="barres__titre">
     <span class="label">{titre}</span>
-    <span class="caption texte-muted">{population}{releve && `, relevé du ${releve}`}</span>
+    {population && <span class="caption texte-muted">{population}{releve && `, relevé du ${releve}`}</span>}
   </figcaption>
   <ul class="barres__liste" role="list">
     {donnees.map((d) => (

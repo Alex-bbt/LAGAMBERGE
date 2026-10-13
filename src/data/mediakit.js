@@ -163,6 +163,21 @@ export const stats = {
   },
 };
 
+// Totaux cumulés Instagram + TikTok (accueil). Calculés à partir des relevés
+// ci-dessus : ce ne sont PAS des audiences dédupliquées, et les vues ne sont
+// pas des personnes uniques.
+stats.cumul = {
+  abonnes: stats.instagram.abonnes + stats.tiktok.abonnes, // 19 488
+  abonnesLegende: 'Abonnements cumulés sur Instagram et TikTok',
+  vues: stats.instagram.vues + stats.tiktok.vues, // 17 493 811
+  vuesAffichage: '17,5 M',
+  vuesLegende: 'Vues cumulées sur Instagram et TikTok en 2026',
+  note: 'Totaux non dédupliqués. Instagram au 12 octobre 2026 ; TikTok au 10 octobre 2026. Vues depuis le 1er janvier.',
+};
+stats.instagram.engagementLegende = 'Engagement Instagram rapporté à la couverture';
+stats.instagram.engagementDetail =
+  '(Likes + commentaires + partages + enregistrements) / couverture. Publications retenues de 2026, relevé du 12 octobre.';
+
 // -- Audience -----------------------------------------------------------------
 // Pourcentages des plateformes, sans redistribution des catégories manquantes.
 export const audience = {
@@ -334,7 +349,8 @@ export const courses = [
     sujet: 'Le grand objectif trail de fin 2026, de nuit, entre Saint-Étienne et Lyon.',
     accroche: 'Grand objectif trail de fin 2026',
     dateCourte: 'Novembre 2026',
-    accrocheAccueil: 'Grand objectif trail et projet de récit YouTube.',
+    accrocheAccueil: 'Grand objectif trail · Projet de récit YouTube',
+    reserve: 'Format (distance) à confirmer.',
     accueil: true,
     projet: 'Projet de récit YouTube',
     resultat: null,
@@ -347,6 +363,7 @@ export const courses = [
     type: 'Route',
     statut: 'eventuel',
     sujet: 'Participation éventuelle, sans objectif chronométrique : la SaintéLyon passe avant.',
+    reserve: 'Participation non confirmée.',
     accueil: true,
     resultat: null,
   },
@@ -360,7 +377,8 @@ export const courses = [
     principal: true,
     sujet: 'Objectif annoncé : moins de 2 h 30.',
     accroche: 'Objectif : moins de 2 h 30',
-    accrocheAccueil: 'Objectif : moins de 2 h 30.',
+    accrocheAccueil: 'Objectif : moins de 2 h 30',
+    reserve: 'Date exacte à confirmer (début avril selon les sources).',
     accueil: true,
     resultat: null,
   },
@@ -371,6 +389,7 @@ export const courses = [
     type: 'Communauté',
     statut: 'prevu',
     sujet: 'Deuxième édition du défi collectif.',
+    reserve: 'Dates précises à annoncer.',
     resultat: null,
   },
 ];
@@ -378,26 +397,19 @@ export const courses = [
 // -- Collaborations -----------------------------------------------------------
 export const offres = [
   {
-    titre: 'Accompagnement matériel',
-    courte: 'Des produits adaptés à ma pratique, utilisés et présentés selon un accord défini ensemble.',
-    resume: 'Dotation ponctuelle ou soutien sur plusieurs courses.',
-    points: ['Chaussures', 'Vêtements', 'Accessoires running et trail', 'Nutrition de course', 'Matériel de création'],
-    note: 'Les publications et autres contreparties sont convenues ensemble, au cas par cas.',
+    titre: 'Dotation de produits',
+    texte: 'Vous m’équipez avec des produits adaptés à ma pratique, sans publication ni mention dédiée obligatoire.',
+    precision: 'Leur utilisation peut les rendre visibles dans mes entraînements ou contenus, sans exposition garantie.',
   },
   {
     titre: 'Création de contenu rémunérée',
-    libelleCourt: 'Contenus rémunérés',
-    courte: 'Vidéos, photos et stories pour mon audience ou vos propres supports.',
-    resume: 'Proposition sur mesure selon les formats, la diffusion et les droits d’utilisation.',
-    points: ['Vidéos verticales', 'Photos', 'Stories', 'Récits ou intégrations adaptés au projet', 'Contenus pour mes comptes ou pour vos supports'],
-    note: 'Production et diffusion sont distinctes. Droits, diffusion publicitaire et exclusivité se définissent dans l’accord.',
-    forte: true,
+    texte: 'Vidéos, photos et stories pour mon audience ou vos propres supports.',
+    precision: 'Formats, calendrier, rémunération et droits d’utilisation définis ensemble.',
   },
   {
-    titre: 'Partenariat durable',
-    courte: 'Une collaboration construite autour de plusieurs contenus, courses ou projets communautaires.',
-    resume: 'Accompagner un objectif ou plusieurs échéances.',
-    points: ['Série de contenus', 'Calendrier convenu', 'Bilan des contenus réalisés', 'Possibilités autour de Back to Run selon le projet'],
+    titre: 'Accompagnement dans la durée',
+    texte: 'Un partenariat construit autour de plusieurs courses, contenus ou initiatives communautaires.',
+    precision: 'Accompagnement matériel, rémunération et engagements adaptés au projet.',
   },
 ];
 
