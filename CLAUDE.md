@@ -56,8 +56,8 @@ api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les p
   Figtree + Caprasimo (chiffres seulement) dans `public/fonts/back-to-run/`,
   poses de la mascotte dans `src/assets/back-to-run/`. Nav et pied restent La Gamberge.
 - Accueil : statistiques (faits) et « Pourquoi moi ? » (arguments) toujours séparés.
-  Totaux cumulés = non dédupliqués, avec leur note. Âge TikTok des abonnés non
-  fourni : ne jamais le remplacer par l'âge des spectateurs.
+  Totaux cumulés = non dédupliqués, avec leur note. Âge des abonnés TikTok et âge
+  des spectateurs TikTok (365 jours) sont deux populations : ne jamais les mélanger.
 
 ## Règles éditoriales (non négociables)
 - N'inventer aucun chiffre, lien, texte personnel, logo ou témoignage.

@@ -216,6 +216,16 @@ export const audience = {
       { libelle: 'Canada', valeur: 2.5 },
       { libelle: 'Suisse', valeur: 1.2 },
     ],
+    // Âge des ABONNÉS TikTok (capture fournie par Alex le 13 octobre 2026,
+    // rattachée au relevé TikTok ci-dessus).
+    ages: [
+      { libelle: '18–24', valeur: 42.8 },
+      { libelle: '25–34', valeur: 42.3 },
+      { libelle: '35–44', valeur: 8.3 },
+      { libelle: '45–54', valeur: 5.7 },
+      { libelle: '55+', valeur: 0.9 },
+    ],
+    repereAge: '85,1 % des abonnés TikTok ont entre 18 et 34 ans.',
   },
   // Population différente des abonnés : ne jamais mélanger.
   tiktokSpectateurs: {
