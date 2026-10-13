@@ -32,13 +32,17 @@ src/pages/index.astro  Six étapes : #profil (clair) → #statistiques (poudre, 
                        réseaux, note unique des dates de relevé.
 src/pages/histoire.astro, communaute.astro, projets.astro, statistiques.astro
                        Pages d'approfondissement (les détails quittent l'accueil pour y vivre)
+src/pages/performances.astro  Vitrine des performances (tuiles chrono de l'accueil → #id)
+src/pages/defi-2026.astro     Suivi du défi, lit /api/streak (Strava, côté serveur)
 src/components/        EnTete, CarteChiffre, Barres, Colonnes, AudienceGraphiques (sélecteur
                        Instagram/TikTok), Frise (calendrier horizontal de /projets),
-                       DefiQuotidien, Progression, CarteVideo, Calendrier, Contact, Photo
+                       Reseaux (icônes SVG Simple Icons, CC0), DefiQuotidien, Progression,
+                       CarteVideo, Calendrier, Contact, Photo
 src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
                        Cadrage par photo (position / positionMobile) dans mediakit.js
 ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)
-api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les pages)
+api/streak.js, lib/    Fonction Strava (identifiants en variables Vercel, jamais côté client).
+                       Utilisée par /defi-2026 : validatedDates = jours avec UNE course ≥ 5 km.
 ```
 
 ## Principe de mise en page (src/styles/site.css = système commun)
@@ -58,6 +62,9 @@ api/streak.js, lib/    Fonction Strava de l'ancien site (non utilisée par les p
 - Accueil : statistiques (faits) et « Pourquoi moi ? » (arguments) toujours séparés.
   Totaux cumulés = non dédupliqués, avec leur note. Âge des abonnés TikTok et âge
   des spectateurs TikTok (365 jours) sont deux populations : ne jamais les mélanger.
+
+- Tuiles : `.tuile-stat` = information, non cliquable (pas de lien, curseur normal) ;
+  `.tuile-chrono` = lien avec libellé de destination. Ne pas mélanger les deux.
 
 ## Règles éditoriales (non négociables)
 - N'inventer aucun chiffre, lien, texte personnel, logo ou témoignage.

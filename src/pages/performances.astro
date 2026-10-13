@@ -1,0 +1,61 @@
+---
+/* ==========================================================================
+   Page « Mes performances » : vitrine des meilleures performances réalisées.
+   - Temps, classement et récompense sont distingués : un chrono n'est pas
+     une victoire. Une récompense ne s'affiche que si elle est renseignée.
+   - Date, course et photo : affichées seulement si documentées
+     (src/data/mediakit.js, `performances`).
+   - Les objectifs à venir restent sur /projets, dans un bloc séparé.
+   ========================================================================== */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import Photo from '../components/Photo.astro';
+import { performances, photos, courses } from '../data/mediakit.js';
+
+const temps = (p) => p.temps ?? p.resultat;
+const objectifs = courses.filter((c) => !c.resultat && c.principal);
+---
+
+<Base titre="Mes performances" description="Les meilleures performances de La Gamberge : marathon, 10 km, 5 km et trail.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-performances">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete niveau="h1" id="titre-performances" repere="Performances réalisées" titre="Mes performances."
+        chapeau="Mes meilleurs temps, sur route et en trail. Un chrono n’est pas une victoire : le temps, le classement et une éventuelle récompense sont indiqués séparément." />
+
+      <ul class="vitrine" role="list">
+        {performances.map((p) => (
+          <li class="vitrine__carte" id={p.id}>
+            {p.photo && photos[p.photo] && (
+              <div class="vitrine__photo">
+                <Photo photo={photos[p.photo]} format="naturel" sizes="(max-width: 720px) 100vw, 320px" />
+              </div>
+            )}
+            <div class="vitrine__texte">
+              <h2 class="title">{p.epreuve}</h2>
+              <dl class="vitrine__faits">
+                <div><dt class="label texte-muted">Temps</dt><dd class="chiffre title">{temps(p)}</dd></div>
+                {p.classement && <div><dt class="label texte-muted">Classement</dt><dd class="lead">{p.classement}</dd></div>}
+                {p.recompense && <div><dt class="label texte-muted">Récompense</dt><dd class="lead">{p.recompense}</dd></div>}
+                {p.date && <div><dt class="label texte-muted">Date</dt><dd class="lead">{p.date}</dd></div>}
+              </dl>
+              {p.type === 'trail' && <p class="caption texte-muted">« 50K » est le nom du format de course, pas une distance exacte.</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Objectifs : séparés des performances réalisées -->
+  <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-a-venir">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete repere="À venir" id="titre-a-venir" titre="Objectifs, pas encore des résultats." />
+      <ul class="objectifs-perf" role="list">
+        {objectifs.map((c) => (
+          <li class="objectif-perf"><span class="label texte-muted">{c.dateCourte ?? c.date} · objectif</span><span class="lead">{c.nom} — {c.accrocheAccueil ?? c.accroche}</span></li>
+        ))}
+      </ul>
+      <a class="lg-btn lg-btn--glass" href="/projets">Tout le calendrier</a>
+    </div>
+  </section>
+</Base>

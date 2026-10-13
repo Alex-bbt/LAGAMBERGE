@@ -1,6 +1,7 @@
 ---
 /* Squelette commun : métadonnées, navigation flottante, pied de page. */
 import '../styles/site.css';
+import Reseaux from '../components/Reseaux.astro';
 import { identite, contact, comptes } from '../data/mediakit.js';
 
 // `corps` : classe ajoutée au <body> (ex. 'theme-btr' pour la page Back to Run).
@@ -79,11 +80,7 @@ const insta = comptes.find((c) => c.id === 'instagram');
           <a href="/communaute">Communauté</a>
           <a href="/projets">Projets</a>
         </nav>
-        <ul class="pied__liens" role="list" aria-label="Réseaux">
-          {comptes.map((c) => (
-            <li><a href={c.url} target="_blank" rel="noopener noreferrer">{c.nom}<span class="sr-only"> (nouvel onglet)</span></a></li>
-          ))}
-        </ul>
+        <Reseaux />
         <p class="caption texte-muted">
           {identite.personne.nom} · {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a>}
           · Réseaux : relevés des 10–12 octobre 2026.

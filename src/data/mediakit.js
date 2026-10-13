@@ -63,11 +63,16 @@ export const comptes = [
 // Références chiffrées affichées dans le bandeau « Le coureur ».
 export const performances = [
   // `court` : libellé de la rangée route ; `type` : 'route' | 'trail'.
-  { epreuve: 'Marathon de Paris 2026', court: 'Marathon', contexte: 'Paris 2026', resultat: '2 h 38 min 21 s', type: 'route', forte: true },
-  { epreuve: '10 km', court: '10 km', resultat: '33 min 01 s', type: 'route' },
-  { epreuve: '5 km', court: '5 km', resultat: '15 min 59 s', type: 'route' },
+  // `id` : ancre sur /performances. `date` / `course` : null tant qu'ils ne
+  // sont pas documentés (À FOURNIR). `recompense` : uniquement une récompense
+  // réellement obtenue (podium, titre…) ; null = aucune affichée.
+  { id: 'marathon', epreuve: 'Marathon de Paris 2026', court: 'Marathon', contexte: 'Paris 2026', resultat: '2 h 38 min 21 s', type: 'route', forte: true,
+    course: 'Marathon de Paris', date: null, recompense: null, photo: 'performance' },
+  { id: '10-km', epreuve: '10 km', court: '10 km', resultat: '33 min 01 s', type: 'route', course: null, date: null, recompense: null },
+  { id: '5-km', epreuve: '5 km', court: '5 km', resultat: '15 min 59 s', type: 'route', course: null, date: null, recompense: null },
   // « 50K » est le nom du format, pas une distance exacte.
-  { epreuve: 'Nice Côte d’Azur by UTMB, format 50K', resultat: '26e en 4 h 02', type: 'trail',
+  { id: 'nice-utmb', epreuve: 'Nice Côte d’Azur by UTMB, format 50K', resultat: '26e en 4 h 02', type: 'trail',
+    course: 'Nice Côte d’Azur by UTMB', date: null, recompense: null,
     classement: '26e', temps: '4 h 02', libelle: 'Nice Côte d’Azur by UTMB · format 50K', libelleCourt: 'Nice by UTMB, format 50K' },
 ];
 
@@ -128,6 +133,12 @@ export const defi = {
   joursValides: null, // ex. 285
   dateValidation: null, // ex. '12 octobre 2026'
   source: 'Strava',
+  // Suivi automatique : /api/streak (fonction Vercel, identifiants Strava
+  // côté serveur uniquement). Règle de validation : au moins UNE course à
+  // pied de 5 km ou plus dans la journée (heure de Paris) ; plusieurs sorties
+  // le même jour ne comptent qu'une fois, et ne s'additionnent pas.
+  api: '/api/streak',
+  regle: 'Un jour est validé quand au moins une course à pied de 5 km ou plus y est enregistrée sur Strava (heure de Paris). Plusieurs sorties le même jour comptent pour un seul jour, et deux sorties plus courtes ne s’additionnent pas.',
 };
 
 // -- Statistiques des comptes -------------------------------------------------
@@ -159,7 +170,15 @@ export const stats = {
     partages: 8572,
     commentaires: 1501,
     engagement: 'environ 9 %',
+    engagementCourt: '≈ 9 %',
     engagementDefinition: '(likes + commentaires + partages) / vues',
+    // Médiane des vues par vidéo : calculée sur les 106 vidéos publiques
+    // publiées en 2026 (fichier fourni par Alex, recalculé : 5 117).
+    medianeVues: 5117,
+    medianeVuesAffichage: '≈ 5 100',
+    medianePerimetre: '106 vidéos publiques publiées du 1er janvier au 6 octobre 2026 (2 vidéos privées exclues)',
+    medianeReleve: '12 octobre 2026',
+    quartilesVues: [2346, 11750], // 25 % et 75 % des vidéos
   },
 };
 
@@ -174,7 +193,9 @@ stats.cumul = {
   vuesLegende: 'Vues cumulées sur Instagram et TikTok en 2026',
   note: 'Totaux non dédupliqués. Instagram au 12 octobre 2026 ; TikTok au 10 octobre 2026. Vues depuis le 1er janvier.',
 };
-stats.instagram.engagementLegende = 'Engagement Instagram rapporté à la couverture';
+stats.instagram.engagementLegende = 'Engagement rapporté à la couverture';
+stats.tiktok.engagementLegende = 'Engagement rapporté aux vues';
+stats.tiktok.engagementDetail = '(Likes + commentaires + partages) / vues. Vidéos de 2026, du 1er janvier au 10 octobre.';
 stats.instagram.engagementDetail =
   '(Likes + commentaires + partages + enregistrements) / couverture. Publications retenues de 2026, relevé du 12 octobre.';
 
@@ -360,6 +381,7 @@ export const courses = [
     accroche: 'Grand objectif trail de fin 2026',
     dateCourte: 'Novembre 2026',
     accrocheAccueil: 'Grand objectif trail · Projet de récit YouTube',
+    logo: 'saintelyon.jpeg', // fourni par Alex (src/assets/logos/)
     reserve: 'Format (distance) à confirmer.',
     accueil: true,
     projet: 'Projet de récit YouTube',
@@ -388,6 +410,7 @@ export const courses = [
     sujet: 'Objectif annoncé : moins de 2 h 30.',
     accroche: 'Objectif : moins de 2 h 30',
     accrocheAccueil: 'Objectif : moins de 2 h 30',
+    logo: 'marathon-paris.jpg', // fourni par Alex (src/assets/logos/)
     reserve: 'Date exacte à confirmer (début avril selon les sources).',
     accueil: true,
     resultat: null,
@@ -406,11 +429,7 @@ export const courses = [
 
 // -- Collaborations -----------------------------------------------------------
 export const offres = [
-  {
-    titre: 'Dotation de produits',
-    texte: 'Vous m’équipez avec des produits adaptés à ma pratique, sans publication ni mention dédiée obligatoire.',
-    precision: 'Leur utilisation peut les rendre visibles dans mes entraînements ou contenus, sans exposition garantie.',
-  },
+  // Ordre d'affichage. `secondaire` : moins d'accent (la dotation reste visible).
   {
     titre: 'Création de contenu rémunérée',
     texte: 'Vidéos, photos et stories pour mon audience ou vos propres supports.',
@@ -421,18 +440,30 @@ export const offres = [
     texte: 'Un partenariat construit autour de plusieurs courses, contenus ou initiatives communautaires.',
     precision: 'Accompagnement matériel, rémunération et engagements adaptés au projet.',
   },
+  {
+    titre: 'Dotation de produits',
+    texte: 'Vous m’équipez avec des produits adaptés à ma pratique, sans publication ni mention dédiée obligatoire.',
+    precision: 'Leur utilisation peut les rendre visibles dans mes entraînements ou contenus, sans exposition garantie.',
+    secondaire: true,
+  },
 ];
 
 export const affiliation =
   'Une affiliation rémunérée peut compléter la collaboration, avec des commissions et des conditions définies ensemble.';
 
-// Références : publiées uniquement quand `publier: true` ET `nature` précisée.
+// Références « Collaborations et produits reçus » (liste indiquée par Alex le
+// 13 octobre 2026). Nature des relations non détaillée : aucune légende par
+// marque tant que `nature` vaut null. `logo` : fichier officiel fourni par
+// Alex (src/assets/logos/, ajoutés le 13 octobre 2026) ; l'orthographe suit
+// le logo (Joyfuel, Vaï Vaï Coco).
 export const references = [
-  { nom: 'Shokz', nature: null, publier: false }, // À FOURNIR : nature exacte
-  { nom: 'DJI', nature: null, publier: false },
-  { nom: 'Brevo', nature: null, publier: false },
-  // Envoi de produits reçu : pas une campagne rémunérée ni un partenariat officiel.
-  { nom: 'Nomio', nature: 'Envoi de produits', publier: false },
+  { nom: 'DJI', nature: null, publier: true, logo: 'DJI.png' },
+  { nom: 'Shokz', nature: null, publier: true, logo: 'shokz.png' },
+  { nom: 'Joyfuel', nature: null, publier: true, logo: 'joyfule.png' },
+  { nom: 'Vaï Vaï Coco', nature: null, publier: true, logo: 'vaivai-coco.png' },
+  // Hors liste d'Alex : non publiés.
+  { nom: 'Brevo', nature: null, publier: false, logo: null },
+  { nom: 'Nomio', nature: 'Envoi de produits', publier: false, logo: null },
 ];
 
 // -- Utilitaire d'affichage ----------------------------------------------------
