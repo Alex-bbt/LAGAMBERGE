@@ -29,8 +29,13 @@ const insta = comptes.find((c) => c.id === 'instagram');
     <meta property="og:type" content="website" />
     <meta property="og:title" content={titrePage} />
     <meta property="og:description" content={desc} />
-    <!-- Pas encore de logo dessiné : icône vide pour éviter une erreur 404. -->
-    <link rel="icon" href="data:," />
+    <!-- Favicon : monogramme « LG » (public/favicon.svg, PNG 16/32, ICO, Apple) -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16" />
+    <link rel="shortcut icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <meta name="theme-color" content="#162660" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <slot name="head" />
