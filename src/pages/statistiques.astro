@@ -13,7 +13,8 @@ import Base from '../layouts/Base.astro';
 import EnTete from '../components/EnTete.astro';
 import Barres from '../components/Barres.astro';
 import Colonnes from '../components/Colonnes.astro';
-import { stats, audience, videos, nombre } from '../data/mediakit.js';
+import VideoInstagram from '../components/VideoInstagram.astro';
+import { stats, audience, videosAvant, nombre } from '../data/mediakit.js';
 
 const ig = stats.instagram;
 const tt = stats.tiktok;
@@ -21,7 +22,6 @@ const avecAutres = (pays) => [
   ...pays,
   { libelle: 'Autres pays', valeur: Math.round((100 - pays.reduce((s, p) => s + p.valeur, 0)) * 10) / 10 },
 ];
-const exemples = videos.filter((v) => v.vues).sort((a, b) => b.vues - a.vues);
 
 // Lignes du tableau : [libellé, valeur Instagram, valeur TikTok]
 const lignes = [
@@ -73,16 +73,11 @@ const plateformes = [
 
   <section class="lg-ambient lg-ambient--flip chapitre chapitre--teinte" aria-labelledby="titre-exemples">
     <div class="chapitre__inner chapitre__inner--seul">
-      <h2 class="display-l titre-section" id="titre-exemples">Exemples de vidéos à succès.</h2>
-      <ul class="liste-secondaire" role="list">
-        {exemples.map((v) => (
-          <li>
-            <span class="liste-secondaire__valeur">{v.vuesAffichage ?? nombre(v.vues)}</span>
-            <span class="body">{v.titre} · {v.plateforme}, publiée le {v.publication} <span class="caption texte-muted">({nombre(v.vues)} vues au {v.releve})</span></span>
-          </li>
-        ))}
+      <h2 class="display-l titre-section" id="titre-exemples">Trois formats, trois exemples.</h2>
+      <ul class="videos-avant" role="list">
+        {videosAvant.map((v) => <li><VideoInstagram video={v} /></li>)}
       </ul>
-      <p class="caption texte-muted">Des exemples parmi les contenus de 2026, pas des résultats habituels.</p>
+      <p class="caption texte-muted">Des exemples choisis parmi les contenus, pas des résultats habituels. La vidéo se charge au clic, depuis Instagram.</p>
     </div>
   </section>
 

@@ -1112,3 +1112,39 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
   .tableau-comparatif td { width: auto; }
   .audience-miroir { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Vidéos mises en avant (/statistiques) : chargées au clic */
+.videos-avant { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--espace-interne); align-items: start; }
+.video-avant { display: flex; flex-direction: column; gap: var(--space-4); }
+.video-avant__cadre { position: relative; width: 100%; aspect-ratio: 4 / 5; border-radius: var(--radius-lg); overflow: hidden; background: var(--royal); }
+.video-avant__cadre.est-charge { aspect-ratio: auto; height: calc(var(--space-24) * 6.6); background: var(--white); }
+.video-avant__lecture { position: absolute; inset: 0; display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; color: var(--white); cursor: pointer; text-align: left; }
+.video-avant__lecture:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
+.video-avant__miniature { width: 100%; height: 100%; object-fit: cover; }
+.video-avant__couverture { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-1); padding: var(--space-6); }
+.video-avant__couverture .label { color: var(--bone); }
+.video-avant__couverture .lead { color: var(--powder); }
+.video-avant__vues { font-size: clamp(var(--space-8), 3.4vw, var(--space-12)); }
+.video-avant__bouton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--space-16) + var(--space-2));
+  height: calc(var(--space-16) + var(--space-2));
+  border-radius: var(--radius-pill);
+  background: var(--bone);
+  color: var(--royal);
+  transform: translate(-50%, -60%);
+  box-shadow: var(--shadow-royal);
+  transition: transform 0.2s ease;
+}
+.video-avant__lecture:hover .video-avant__bouton { transform: translate(-50%, -60%) scale(1.06); }
+.video-avant__lecteur { width: 100%; height: 100%; border: 0; display: block; }
+.video-avant__texte { display: flex; flex-direction: column; gap: var(--space-1); }
+.video-avant__titre { font-family: var(--font-display); font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .video-avant__bouton { transition: none; } }
+@media (max-width: 1080px) { .videos-avant { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .videos-avant { grid-template-columns: minmax(0, 1fr); } .video-avant__cadre { max-width: calc(var(--space-24) * 3.6); } }

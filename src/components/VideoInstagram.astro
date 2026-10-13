@@ -1,0 +1,58 @@
+---
+/* ==========================================================================
+   VideoInstagram — vidéo mise en avant, chargée seulement au clic.
+   - Avant le clic : couverture (miniature réelle si fournie, sinon couverture
+     neutre aux couleurs du site, sans fausse capture), bouton lecture.
+   - Au clic : le lecteur officiel Instagram (iframe /embed/) remplace la
+     couverture. Aucun chargement ni son automatique.
+   - Toujours : lien « Voir sur Instagram ».
+   Données : `videosAvant` dans src/data/mediakit.js.
+   ========================================================================== */
+import { Image } from 'astro:assets';
+import { nombre } from '../data/mediakit.js';
+
+const { video: v } = Astro.props;
+const miniatures = import.meta.glob('../assets/videos/*.{jpg,jpeg,png,webp}', { eager: true });
+const miniature = v.miniature ? miniatures[`../assets/videos/${v.miniature}`]?.default : null;
+const embed = `${v.url.replace(/\/?$/, '/')}embed/`;
+---
+
+<figure class="video-avant" data-video data-embed={embed} data-titre={v.titre}>
+  <div class="video-avant__cadre" data-cadre>
+    <button class="video-avant__lecture" type="button" data-lire aria-label={`Lire la vidéo : ${v.titre}`}>
+      {miniature
+        ? <Image src={miniature} alt="" class="video-avant__miniature" width={480} format="webp" />
+        : <span class="video-avant__couverture" aria-hidden="true"><span class="dominant video-avant__vues">{nombre(v.vues)}</span><span class="lead">vues</span></span>}
+      <span class="video-avant__bouton" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+      </span>
+    </button>
+  </div>
+  <figcaption class="video-avant__texte">
+    <span class="label texte-muted">{v.format}</span>
+    <span class="lead video-avant__titre">{v.titre}</span>
+    <span class="body">{v.resume}</span>
+    <span class="caption texte-muted">{nombre(v.vues)} vues sur {v.plateforme} · relevé du {v.releve}</span>
+    <a class="lien-fleche" href={v.url} target="_blank" rel="noopener noreferrer">Voir sur {v.plateforme}<span class="sr-only"> (nouvel onglet)</span></a>
+  </figcaption>
+</figure>
+
+<script>
+  // Le lecteur Instagram n'est chargé qu'à la demande (pas de pistage ni de
+  // poids inutile avant le clic, pas de lecture automatique).
+  document.querySelectorAll('[data-video]').forEach((bloc) => {
+    bloc.querySelector('[data-lire]')?.addEventListener('click', () => {
+      const cadre = bloc.querySelector('[data-cadre]');
+      const iframe = document.createElement('iframe');
+      iframe.src = bloc.dataset.embed;
+      iframe.title = `Vidéo Instagram : ${bloc.dataset.titre}`;
+      iframe.loading = 'lazy';
+      iframe.allow = 'encrypted-media; picture-in-picture';
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.className = 'video-avant__lecteur';
+      cadre.replaceChildren(iframe);
+      cadre.classList.add('est-charge');
+      iframe.focus();
+    });
+  });
+</script>

@@ -311,6 +311,47 @@ export const videos = [
   // en précisant les plateformes additionnées).
 ];
 
+// -- Vidéos mises en avant (page /statistiques) ------------------------------
+// Trois formats typiques, choisis par Alex. Vues communiquées par Alex le
+// 13 octobre 2026. `miniature` : image de couverture réelle (src/assets/videos/),
+// À FOURNIR ; sans elle, une couverture neutre s'affiche (aucune fausse capture).
+// La vidéo n'est chargée (lecteur officiel Instagram) qu'au clic.
+export const videosAvant = [
+  {
+    id: 'depart-10k',
+    format: 'Contenu viral',
+    titre: 'Départ du 10 km adidas, déguisé en vert dans le SAS élite',
+    resume: 'Dans le SAS élite, des coureurs concentrés… et moi, déguisé en vert au milieu d’eux, avec un dossard mérité.',
+    plateforme: 'Instagram',
+    url: 'https://www.instagram.com/p/DZaWXEPI757/',
+    vues: 2958127,
+    releve: '13 octobre 2026',
+    miniature: null,
+  },
+  {
+    id: 'grosse-echeance',
+    format: 'Format long',
+    titre: 'Le récit d’une grosse échéance',
+    resume: 'Une vidéo plus longue : le format que je réalise lors des grosses échéances.',
+    plateforme: 'Instagram',
+    url: 'https://www.instagram.com/reel/DXXAo85iP85/',
+    vues: 52838,
+    releve: '13 octobre 2026',
+    miniature: null,
+  },
+  {
+    id: 'sketch',
+    format: 'Sketch',
+    titre: 'Un sketch d’humour tourné sur une course',
+    resume: 'Un contenu plus ponctuel : un sketch d’humour réalisé lors d’une course.',
+    plateforme: 'Instagram',
+    url: 'https://www.instagram.com/reel/DT-6y1HiCuf/',
+    vues: 532531,
+    releve: '13 octobre 2026',
+    miniature: null,
+  },
+];
+
 // -- Back to Run --------------------------------------------------------------
 export const backToRun = {
   url: 'https://backtorun.fr',
