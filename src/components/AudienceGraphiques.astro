@@ -4,8 +4,8 @@
    - Sélecteur accessible (rôle tablist, flèches gauche/droite, Début/Fin).
    - Sans JavaScript, les deux panneaux restent visibles l'un sous l'autre.
    - Une seule série par graphique, chaque valeur écrite en texte.
-   - Uniquement les ABONNÉS de chaque plateforme : l'âge des spectateurs
-     TikTok (autre population) n'est jamais utilisé à la place.
+   - Uniquement les ABONNÉS de chaque plateforme (jamais les spectateurs
+     TikTok, autre population).
    ========================================================================== */
 import Barres from './Barres.astro';
 import Colonnes from './Colonnes.astro';
@@ -21,7 +21,7 @@ const pays = (d) => {
 };
 const plateformes = [
   { id: 'instagram', nom: 'Instagram', d: audience.instagram, ages: audience.instagram.ages },
-  { id: 'tiktok', nom: 'TikTok', d: audience.tiktok, ages: null },
+  { id: 'tiktok', nom: 'TikTok', d: audience.tiktok, ages: audience.tiktok.ages },
 ];
 ---
 
@@ -41,9 +41,7 @@ const plateformes = [
           <Barres titre="Pays" donnees={pays(p.d)} />
           <Barres titre="Genre" donnees={p.d.genre} />
         </div>
-        {p.ages
-          ? <Colonnes titre="Âge" donnees={p.ages} />
-          : <p class="caption texte-muted graphiques__absent">Âge des abonnés : non fourni par TikTok.</p>}
+        {p.ages && <Colonnes titre="Âge" donnees={p.ages} />}
       </div>
     </section>
   ))}

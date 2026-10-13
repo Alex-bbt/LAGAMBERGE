@@ -87,6 +87,7 @@ const exemples = videos.filter((v) => v.vues).sort((a, b) => b.vues - a.vues);
         <div class="carte-plate"><Barres titre="Pays" population={audience.instagram.population} releve={audience.instagram.releve} donnees={avecAutres(audience.instagram.pays)}
           note={`${audience.instagram.villeRepere.libelle} : ${audience.instagram.villeRepere.valeur.toLocaleString('fr-FR')} % des abonnés Instagram (répartition par ville).`} /></div>
         <div class="carte-plate"><Barres titre="Pays" population={audience.tiktok.population} releve={audience.tiktok.releve} donnees={avecAutres(audience.tiktok.pays)} /></div>
+        <div class="carte-plate"><Colonnes titre="Âge" population={audience.tiktok.population} releve={audience.tiktok.releve} donnees={audience.tiktok.ages} note={audience.tiktok.repereAge} /></div>
       </div>
 
       <h3 class="title">Spectateurs TikTok sur 365 jours</h3>

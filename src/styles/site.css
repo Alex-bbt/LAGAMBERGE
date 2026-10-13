@@ -671,7 +671,6 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 .graphiques__barres { display: flex; flex-direction: column; gap: var(--space-8); }
 .graphiques .barres__piste { height: var(--space-4); }
 .graphiques .barres__libelle, .graphiques .barres__valeur { font-size: var(--space-4); }
-.graphiques__absent { align-self: center; }
 
 /* 3. Pourquoi moi ? : deux arguments en miroir, nettement séparés */
 .argument {
