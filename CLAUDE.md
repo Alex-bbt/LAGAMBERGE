@@ -42,7 +42,8 @@ src/pages/defi-2026.astro     Suivi du défi, lit /api/streak (dernier bilan aff
 src/components/        EnTete, CarteChiffre, Barres, Colonnes, AudienceGraphiques (sélecteur
                        Instagram/TikTok), Frise (calendrier horizontal de /projets),
                        Reseaux (icônes SVG Simple Icons, CC0), DefiQuotidien, Progression,
-                       CarteVideo, Calendrier, Contact, Photo
+                       CarteVideo, Calendrier, Contact, Photo, VideoInstagram (miniature + lecteur
+                       chargé au clic ; `compact` = bloc Divertissement de l'accueil, videoDivertissement)
 src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
                        Cadrage par photo (position / positionMobile) dans mediakit.js
 ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)

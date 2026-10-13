@@ -17,9 +17,10 @@
 import Base from '../layouts/Base.astro';
 import Photo from '../components/Photo.astro';
 import Contact from '../components/Contact.astro';
+import VideoInstagram from '../components/VideoInstagram.astro';
 import AudienceGraphiques from '../components/AudienceGraphiques.astro';
 import { Image } from 'astro:assets';
-import { identite, performances, courses, stats, backToRun, offres, references, photos, nombre } from '../data/mediakit.js';
+import { identite, performances, courses, stats, backToRun, offres, references, photos, videoDivertissement, nombre } from '../data/mediakit.js';
 import logoBtr from '../assets/back-to-run/btr-logo-mascotte.png';
 
 // Logos officiels fournis par Alex (src/assets/logos/), référencés par nom de fichier dans les données.
@@ -129,7 +130,7 @@ const marques = references.filter((r) => r.publier);
       <!-- B. Une aventure suivie -->
       <article class="argument argument--inverse" aria-labelledby="titre-aventure" data-apparition>
         <div class="argument__media">
-          <Photo photo={photos.divertissement} format="portrait" sizes="(max-width: 720px) 80vw, 360px" />
+          <VideoInstagram video={videoDivertissement} compact sizes="(max-width: 720px) 80vw, 360px" />
         </div>
         <div class="argument__texte">
           <p class="repere caption">02 · Divertissement</p>

@@ -432,6 +432,19 @@ export const videosAvant = [
   },
 ];
 
+// Vidéo du bloc « Divertissement » de l'accueil (à la place de la photo en
+// combinaison verte), choisie par Alex le 13 octobre 2026. Lien fourni :
+// statistiques Instagram du média 3915127608997758793, converti en adresse
+// publique de la publication. Miniature : capture fournie par Alex, recadrée
+// en 4:5 (originale dans src/assets/videos/originaux/). Lecteur chargé au clic.
+export const videoDivertissement = {
+  id: 'course-incognito',
+  titre: 'Objectif : gagner la course incognito',
+  plateforme: 'Instagram',
+  url: 'https://www.instagram.com/p/DZVU9EwosdJ/',
+  miniature: 'course-incognito.webp',
+};
+
 // -- Back to Run --------------------------------------------------------------
 export const backToRun = {
   url: 'https://backtorun.fr',
