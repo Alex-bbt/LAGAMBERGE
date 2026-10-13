@@ -18,6 +18,7 @@ const statuts = { prevu: 'Prévu', eventuel: 'Éventuel' };
       <span class="calendrier__date">{c.date}</span>
       <div class:list={['calendrier__carte', 'lg-glass', { 'lg-glass--royal': c.principal && c.id === 'saintelyon' }]}>
         <h3 class="calendrier__nom">{c.nom}{c.format && ` · ${c.format}`}</h3>
+        {c.formatPrecision && <p class="caption texte-muted">Dénivelé : {c.formatPrecision}.</p>}
         <p class="body">{c.sujet}</p>
         {c.projet && <p class="caption calendrier__projet">{c.projet}</p>}
         {(detail || c.statut === 'eventuel') && (

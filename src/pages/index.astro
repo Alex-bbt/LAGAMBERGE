@@ -202,6 +202,7 @@ const marques = references.filter((r) => r.publier);
               <span class="label texte-muted">{c.dateCourte ?? c.date}{c.format && ` · ${c.format}`}</span>
               <h3 class="title">{c.nom}</h3>
               <p class="lead">{c.accrocheAccueil ?? c.accroche}</p>
+              {c.formatPrecision && <p class="caption texte-muted">Dénivelé : {c.formatPrecision}.</p>}
             </li>
           ))}
         </ul>

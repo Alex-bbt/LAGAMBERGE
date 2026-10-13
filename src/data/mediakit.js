@@ -520,8 +520,10 @@ export const courses = [
   {
     id: 'saintelyon',
     nom: 'SaintéLyon',
-    // Distance et dénivelé communiqués par Alex le 13 octobre 2026.
-    format: '80 km · 2 000 m D+',
+    // Distance et dénivelé communiqués par Alex le 13 octobre 2026 ; le
+    // dénivelé reste une estimation tant que le profil officiel n'est pas publié.
+    format: '80 km · environ 2 000 m D+',
+    formatPrecision: 'estimation, profil officiel à venir',
     date: '28 et 29 novembre 2026',
     type: 'Trail de nuit',
     statut: 'prevu',
