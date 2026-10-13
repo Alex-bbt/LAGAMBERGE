@@ -1263,9 +1263,6 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
   .tableau-comparatif tbody tr { border-bottom: 1px solid var(--hairline); }
   .tableau-comparatif tbody tr > * { border-bottom: 0; }
 }
-/* /performances : la marge générale (scroll-padding) ne s'applique pas au
-   saut vers une ancre au chargement ; les tuiles portent leur propre marge. */
-.mur__case { scroll-margin-top: var(--decalage-ancre); }
 
 /* ==========================================================================
    CORRECTIONS CIBLÉES (après V1)
@@ -1277,8 +1274,19 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 
 /* Ancres : hauteur réelle de la navigation (~86 px) + ~28 px de marge */
 :root { --decalage-ancre: calc(var(--space-24) + var(--space-6)); }
+
+/* /performances : page détaillée à hauteur naturelle.
+   Cause du haut de page inaccessible : .lg-ambient (design system) est en
+   overflow: hidden, donc un conteneur de défilement invisible ; sa nappe
+   ::after (bottom: -30 %) déborde, et le saut vers #marathon faisait défiler
+   la SECTION elle-même (≈ 265 px), décalage que la molette ne peut annuler.
+   overflow: clip rogne la nappe pareil sans créer de conteneur de défilement :
+   seul le document défile. Un seul mécanisme d'ancre : le saut natif + la
+   marge de la carte ciblée (pas de scroll-padding global en plus). */
+.chapitre--performances { overflow: clip; }
+html:has(.chapitre--performances) { scroll-padding-top: 0; }
 .mur__case { scroll-margin-top: var(--decalage-ancre); }
-/* /performances : en-tête nettement sous la navigation fixe */
+/* En-tête nettement sous la navigation fixe (navigation + marge de sécurité) */
 main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) + var(--space-16)); }
 @media (max-width: 720px) {
   main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) + var(--space-12)); }
@@ -1312,7 +1320,7 @@ main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) +
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .perf-carte:hover { transform: translateY(calc(var(--space-1) * -0.5)); box-shadow: var(--shadow-glass-lift); }
 }
-.mur__case.est-cible .perf-carte { border-color: var(--royal); box-shadow: 0 0 0 3px var(--royal), var(--shadow-glass); }
+.mur__case:target .perf-carte { border-color: var(--royal); box-shadow: 0 0 0 3px var(--royal), var(--shadow-glass); }
 
 /* Fenêtre de détails */
 .perf-detail {
