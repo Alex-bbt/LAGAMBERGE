@@ -493,3 +493,109 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
   .nav-cta { display: none; }
   .menu-mobile__cta { display: inline-flex; }
 }
+
+/* ==========================================================================
+   VERSION COURTE — CINQ SECTIONS, FONDS NETS
+   Palette jointe par Alex : Royal Blue #162660 et Powder Blue #D0E6FD (déjà
+   présents dans les tokens : --royal, --powder) + Bone #F1E4D1, la nouvelle
+   couleur d'accent (création, communauté et boutons de partenariat).
+   Chaque section a son fond : le changement de couleur marque le changement
+   de sujet. Contrastes vérifiés : royal/bone 11,3:1 · muted/bone 5,6:1 ·
+   royal/powder 11,1:1 · bone/royal 11,3:1 · blanc/royal 14,2:1.
+   ========================================================================== */
+:root {
+  --bone: #F1E4D1;
+}
+
+/* Fonds de section : changements nets, contenu sur la même grille */
+.fond-clair { background: var(--mist); }
+.fond-poudre { background: var(--powder); }
+.fond-accent { background: var(--bone); }
+.fond-blanc { background: var(--white); }
+.fond-roi { background: var(--royal); color: var(--white); }
+.fond-roi .texte-muted, .fond-roi .caption { color: var(--powder); }
+.fond-roi a { color: var(--white); }
+.fond-roi :focus-visible { outline-color: var(--bone); }
+
+/* Repère de section : simple surtitre, sans pastille */
+.repere {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--royal-muted);
+}
+
+/* Bouton de partenariat : couleur d'accent Bone */
+.btn-accent {
+  background: var(--bone);
+  color: var(--royal);
+  border: 2px solid var(--royal);
+}
+.btn-accent:hover { background: var(--white); }
+.fond-roi .btn-accent { border-color: var(--bone); color: var(--royal); }
+.fond-roi .btn-accent:hover { background: var(--powder); }
+.lg-nav .btn-accent { min-height: 44px; }
+
+/* Compositions : une grille commune (photo 5/12, texte 7/12) */
+.compo--texte-photo { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.compo--photo-texte { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.compo--centre { align-items: center; }
+.compo--collaborer { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; }
+.compo__contenu { gap: var(--espace-interne); }
+.compo__contenu > .lien-fleche { margin-top: var(--space-2); }
+/* Photos à proportions naturelles : largeur maîtrisée, collées à leur texte */
+.compo__media--photo-naturelle { max-width: calc(var(--space-24) * 4.25); width: 100%; }
+.compo--texte-photo .compo__media--photo-naturelle { justify-self: end; }
+.compo--photo-texte .compo__media--photo-naturelle { justify-self: start; }
+.compo__media--projets { max-width: calc(var(--space-24) * 4); width: 100%; }
+/* Photo à gauche plus étroite (4/12) : le texte et ses chiffres tiennent sur une rangée */
+.compo--large-texte { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
+.compo__media--reduite { max-width: calc(var(--space-24) * 3.25); }
+.pile { display: flex; flex-direction: column; gap: var(--espace-bloc); }
+.sous-partie { padding-top: var(--espace-bloc); border-top: 1px solid var(--hairline); }
+
+/* Chiffres de preuve : même présentation pour tous, alignés sur une rangée */
+.chiffres { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-8); padding: var(--space-2) 0; }
+.chiffres > li { display: flex; flex-direction: column; gap: var(--space-1); }
+
+/* Phrase de transition vers la section suivante */
+.transition { color: var(--royal-muted); font-style: italic; text-align: center; }
+
+/* Projets : deux rendez-vous côte à côte, sans cartes */
+.projets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
+.projet-ligne { display: flex; flex-direction: column; gap: var(--space-1); padding-left: var(--space-4); border-left: 3px solid var(--royal); }
+
+/* Collaborer : libellés sobres + contact */
+.libelles { font-weight: 700; }
+/* Titre de section avec son repère (surtitre) */
+.titre-avec-repere { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; }
+.titre-avec-repere .display-l { display: block; }
+.projet-ligne__date { display: block; font-weight: 700; color: var(--royal-muted); }
+.fond-roi .details-sobre summary { color: var(--powder); }
+.fond-roi .details-sobre__corps { color: var(--white); }
+.contact { padding: 0; border-radius: 0; gap: var(--space-4); }
+.contact__email { color: var(--white); font-family: var(--font-display); font-weight: 800; text-underline-offset: 6px; }
+.contact__copier { color: var(--powder); padding: var(--space-2) 0; }
+
+/* Pied de page (fond clair) */
+.pied-page { background: var(--mist); padding: var(--space-8) var(--space-4); }
+.pied { border-radius: 0; padding: 0; background: none; border: 0; box-shadow: none; gap: var(--space-3) var(--space-8); }
+.pied__marque { text-decoration: none; }
+.pied__liens { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.pied__liens a { color: var(--royal-muted); }
+
+/* Responsive (version courte) */
+@media (max-width: 1080px) {
+  .compo--texte-photo, .compo--photo-texte, .compo--collaborer, .compo--large-texte { grid-template-columns: minmax(0, 1fr); }
+  .compo--photo-texte .compo__media { order: 2; }
+  .compo--photo-texte .compo__contenu { order: 1; }
+  .compo--texte-photo .compo__media--photo-naturelle,
+  .compo--photo-texte .compo__media--photo-naturelle { justify-self: start; max-width: calc(var(--space-24) * 3.5); }
+}
+@media (max-width: 720px) {
+  .compo--texte-photo .compo__media--photo-naturelle,
+  .compo--photo-texte .compo__media--photo-naturelle { justify-self: center; max-width: calc(var(--space-24) * 2.75); }
+  .compo__media--projets { max-width: none; }
+  .projets { grid-template-columns: minmax(0, 1fr); }
+  .chiffres { gap: var(--space-3) var(--space-8); }
+}

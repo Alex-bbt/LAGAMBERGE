@@ -23,13 +23,14 @@
 export const identite = {
   marque: 'LA GAMBERGE',
   positionnement: 'La performance, sans se prendre au sérieux.',
-  description: 'Coureur en quête de progression, créateur de contenu et organisateur de défis sportifs.',
+  description: 'Coureur, créateur de contenu et organisateur de défis sportifs.',
   promesse:
     'Je raconte ma progression avec de l’ambition, de l’autodérision et l’envie de faire courir les autres.',
   personne: {
     nom: 'Alex Bourbigot',
     age: 23,
-    contexte: ['23 ans', 'IÉSEG', 'Étudiant-entrepreneur'],
+    // Contexte affiché sur l'accueil (l'âge figure sur la page Histoire).
+    contexte: ['IÉSEG', 'Étudiant-entrepreneur'],
   },
   // Photo principale (originaux dans src/assets/photos/, jamais modifiés).
   // position / positionMobile : zone gardée au recadrage (x% y%), visage inclus.
@@ -98,8 +99,9 @@ export const photos = {
   },
   divertissement: {
     fichier: 'la-gamberge-divertissement.jpeg',
-    // Proportions d'origine (3:4) : tête, mains, costume et contexte visibles.
+    // Original 3:4 : affichée en 4:5 (rognage léger en bas), tête, mains et costume gardés.
     alt: 'Alex en combinaison intégrale verte, médaille de finisher autour du cou.',
+    position: '50% 25%',
   },
   // Photo personnelle (course sur route) : illustre les projets, ce n'est PAS
   // une photo de trail ni de la SaintéLyon. Ne pas la légender comme telle.
@@ -331,6 +333,8 @@ export const courses = [
     principal: true,
     sujet: 'Le grand objectif trail de fin 2026, de nuit, entre Saint-Étienne et Lyon.',
     accroche: 'Grand objectif trail de fin 2026',
+    dateCourte: 'Novembre 2026',
+    accrocheAccueil: 'Grand objectif trail et projet de récit YouTube.',
     accueil: true,
     projet: 'Projet de récit YouTube',
     resultat: null,
@@ -356,6 +360,7 @@ export const courses = [
     principal: true,
     sujet: 'Objectif annoncé : moins de 2 h 30.',
     accroche: 'Objectif : moins de 2 h 30',
+    accrocheAccueil: 'Objectif : moins de 2 h 30.',
     accueil: true,
     resultat: null,
   },
@@ -381,6 +386,7 @@ export const offres = [
   },
   {
     titre: 'Création de contenu rémunérée',
+    libelleCourt: 'Contenus rémunérés',
     courte: 'Vidéos, photos et stories pour mon audience ou vos propres supports.',
     resume: 'Proposition sur mesure selon les formats, la diffusion et les droits d’utilisation.',
     points: ['Vidéos verticales', 'Photos', 'Stories', 'Récits ou intégrations adaptés au projet', 'Contenus pour mes comptes ou pour vos supports'],

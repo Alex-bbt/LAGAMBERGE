@@ -1,7 +1,7 @@
 ---
 /* Squelette commun : métadonnées, navigation flottante, pied de page. */
 import '../styles/site.css';
-import { identite, stats, contact, comptes } from '../data/mediakit.js';
+import { identite, contact, comptes } from '../data/mediakit.js';
 
 const { titre, description } = Astro.props;
 const titrePage = titre ? `${titre} · La Gamberge` : `La Gamberge · ${identite.positionnement}`;
@@ -9,10 +9,8 @@ const desc = description ?? `${identite.description} Media kit de La Gamberge (A
 
 // Navigation : ancres de la page principale + pages complémentaires.
 const liens = [
-  { libelle: 'Le profil', lien: '/#profil' },
-  { libelle: 'L’histoire', lien: '/histoire' },
-  { libelle: 'La communauté', lien: '/communaute' },
-  { libelle: 'Les projets', lien: '/projets' },
+  { libelle: 'Profil', lien: '/#profil' },
+  { libelle: 'Projets', lien: '/#objectifs' },
 ];
 const chemin = Astro.url.pathname.replace(/\/$/, '') || '/';
 const insta = comptes.find((c) => c.id === 'instagram');
@@ -49,10 +47,10 @@ const insta = comptes.find((c) => c.id === 'instagram');
             <div class="menu-mobile__panneau lg-glass lg-glass--strong">
               {liens.map((l) => <a href={l.lien} class="lg-nav__link">{l.libelle}</a>)}
               <!-- Sur les très petits écrans, « Collaborer » passe dans le menu -->
-              <a href="/#contact" class="lg-btn lg-btn--primary menu-mobile__cta">Collaborer</a>
+              <a href="/#contact" class="lg-btn btn-accent menu-mobile__cta">Collaborer</a>
             </div>
           </details>
-          <a href="/#contact" class="lg-btn lg-btn--primary nav-cta">Collaborer</a>
+          <a href="/#contact" class="lg-btn btn-accent nav-cta">Collaborer</a>
         </div>
       </nav>
     </header>
@@ -61,16 +59,25 @@ const insta = comptes.find((c) => c.id === 'instagram');
       <slot />
     </main>
 
-    <footer class="lg-ambient pied-page">
-      <div class="lg-glass pied">
-        <span class="wordmark">LA GAMBERGE</span>
-        <span class="caption texte-muted">
-          {identite.personne.nom} ·
-          {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a>}
-        </span>
-        <span class="caption texte-muted">
-          Statistiques : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}.
-        </span>
+    <!-- Pied de page : pages détaillées, réseaux et note de mise à jour (une seule) -->
+    <footer class="pied-page">
+      <div class="pied">
+        <a href="/" class="wordmark pied__marque">LA GAMBERGE</a>
+        <nav class="pied__liens" aria-label="Pages détaillées">
+          <a href="/histoire">Histoire</a>
+          <a href="/statistiques">Statistiques</a>
+          <a href="/communaute">Communauté</a>
+          <a href="/projets">Projets</a>
+        </nav>
+        <ul class="pied__liens" role="list" aria-label="Réseaux">
+          {comptes.map((c) => (
+            <li><a href={c.url} target="_blank" rel="noopener noreferrer">{c.nom}<span class="sr-only"> (nouvel onglet)</span></a></li>
+          ))}
+        </ul>
+        <p class="caption texte-muted">
+          {identite.personne.nom} · {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a>}
+          · Réseaux : relevés des 10–12 octobre 2026.
+        </p>
       </div>
     </footer>
 
