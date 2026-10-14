@@ -1,298 +1,206 @@
 /* ==========================================================================
-   CANDIDATURES ADIDAS — FICHIER DE DONNÉES (3 pages non répertoriées)
+   CANDIDATURES ADIDAS — « SHRINK IT » — FICHIER DE DONNÉES
    --------------------------------------------------------------------------
-   Pages : /adidas-marketing, /adidas-brand-communications,
-           /adidas-product-management (liens figés dans les 1-Pagers PDF).
-   Tout le texte de ces pages vit ICI. Les composants
-   (src/components/adidas/) ne contiennent aucun texte en dur.
+   Pages non répertoriées : /adidas-marketing, /adidas-brand-communications,
+   /adidas-product-management (liens figés dans les 1-Pagers PDF).
+   Concept (Claude Design, handoff « Shrink It v2 ») : le visiteur arrive sur
+   le compteur Strava (« DAY N »), puis réduit lui-même, d'un appui long,
+   4 vrais moments de pression jusqu'à « It's only… ». Le dernier écran lui
+   renvoie « You got this ». Ma lecture personnelle de la campagne : aucun
+   logo, aucune trois-bandes, aucun visuel adidas, mention de non-affiliation.
 
-   ⚠️ Le CONTENU est en ANGLAIS (candidature internationale) ; seuls les
-   commentaires restent en français.
+   Tout le texte vit ICI (composants : src/components/adidas/). Le CONTENU est
+   en ANGLAIS ; les commentaires restent en français.
 
-   Organisation :
-     - `commun`   : tout ce qui est partagé par les 3 pages ;
-     - `equipes`  : un objet par équipe (intitulé, fin de l'intro, ordre des
-                    sections, chronologie, fin du paragraphe « game »,
-                    3 apports, PDF, title/description).
-   Un champ à null (ou une liste vide) n'est simplement pas affiché.
-   Les champs « TODO » attendent une info d'Alex : ne rien inventer.
+   Jetons dans les textes (remplacés par le composant / le script) :
+     {jour}  → « Day 285 today » / « Day 285, as of yesterday » /
+               « Day 285, as of 13 Oct 2026 » (selon la fraîcheur de la donnée)
+     {n}     → nombre de jours validés d'affilée
+     {proj}  → numéro du jour projeté au 1er mars 2027
+     {team}  → intitulé de l'équipe
+   Un moment dont `voix` est vide n'est pas publié (écran non construit).
    ========================================================================== */
 
-// Dossier des fichiers publics (public/adidas/).
 const A = '/adidas';
 
 export const commun = {
-  nom: 'Alex Bourbigot',
   email: 'alex.bourbigot78@gmail.com',
-
-  // CV : chemin du PDF dans public/adidas/. Mettre null pour masquer tous
-  // les boutons CV (jamais de lien cassé).
   cv: `${A}/Alex_Bourbigot_CV.pdf`,
+  marque: 'La Gamberge',
+  pour: 'For adidas',
+  nonAffiliation: 'A personal project by Alex Bourbigot. Not affiliated with or endorsed by adidas.',
+  mailSujet: 'You got this — {team}',
 
-  // Photo du hero (déjà retouchée : ne pas la recadrer autrement).
-  photo: {
-    src: `${A}/img/hero.webp`,
-    srcMobile: `${A}/img/hero-640.webp`,
-    width: 1256,
-    height: 1548,
-    alt: 'Alex Bourbigot running a race, saluting, in colour against a black-and-white crowd.',
-  },
-  mascotte: {
-    src: `${A}/img/mascot.webp`,
-    width: 400,
-    height: 650,
-    alt: 'The Back to Run beaver mascot, waving.',
-  },
-
-  // -- Hero -------------------------------------------------------------------
-  hero: {
-    surTitre: 'adidas application',
-    titre: 'I’m back', // le point bleu est ajouté par le composant
-    dossard: '#2',
-    dossardLegende: 'Application',
-    debutIntro:
-      'Last year, I applied for an adidas internship. I made it past the first round, but no further. I took that as a sign I still had more to learn.',
-    mention: '6-month internship · From 1 March 2027 · Ready to move to Herzogenaurach',
+  // -- Le défi quotidien (compteur) -------------------------------------------
+  // En direct : /api/streak (Strava). Sans réponse : la valeur de SECOURS
+  // ci-dessous, avec sa date de vérification (jamais le jour de l'année).
+  // 👉 À mettre à jour de temps en temps (jours VALIDÉS + date du relevé).
+  streak: {
+    debut: '2026-01-01',
+    premierJour: '2027-03-01',
+    secours: { jours: 285, date: '2026-10-12' }, // relevé Strava : 285 jours validés au 12 oct. 2026
+    libelleDirect: 'Live from Strava',
+    libelleSecours: 'Verified on Strava',
+    jourAujourdhui: 'Day {n} today',
+    jourHier: 'Day {n}, as of yesterday',
+    jourAuDate: 'Day {n}, as of {date}',
   },
 
+  // -- Écran 1 : DAY N ---------------------------------------------------------
+  ecranJour: {
+    titre: 'Day',
+    regle: 'At least 5 km, every single day since January 1, 2026.',
+    regleCassee: 'Back to zero. Day {n} of the new streak.',
+    accroche: 'Pressure makes everything look huge.',
+    accrocheAccent: 'Let’s make it small.',
+    intro: 'My take on “You Got This”. Scroll ↓',
+  },
+
+  // -- Écran 2 : la grille ------------------------------------------------------
+  grille: {
+    titre: 'One missed day.',
+    titreAccent: 'Back to zero.',
+    // Couru aujourd'hui (donnée en direct, jour validé)
+    texteAujourdhui: '{n} squares. The orange one is today. The empty one is tomorrow, and it’s never guaranteed.',
+    // Donnée de la veille ou de secours
+    texteDernier: '{n} squares. The orange one is the latest. The empty one is next, and it’s never guaranteed.',
+    // Série retombée à zéro (donnée en direct)
+    texteZero: 'No squares left. The empty one is the first of a new streak, and it’s never guaranteed.',
+    libelleAujourdhui: 'Today',
+    libelleDernier: 'Latest day',
+    libelleSuivant: 'Next day',
+  },
+
+  // -- Les 4 moments de pression (moments VÉCUS, fournis par Alex) -------------
+  //   tag : contexte · grand : le mot qui rétrécit · voix : la voix négative
+  //   seul / seulAccent : « It's only… » (accent = mot en orange, optionnel)
+  //   preuve : le fait vérifiable
   boutons: {
-    pdf: 'Download my 1-Pager (PDF)',
-    cv: 'Download my CV',
-    email: 'Email me',
+    repos: 'Hold to shrink it',
+    appui: 'Keep holding…',
+    encore: 'Hold a little longer',
+    fini: 'Next ↓',
   },
-
-  // -- Chronologie « One year. New splits. » ---------------------------------
-  splits: {
-    repere: '02',
-    surTitre: 'What changed',
-    titre: 'One year.',
-    titreAccent: 'New splits.',
-    transition: 'On paper: management, export sales and sport retail.',
-    transitionFleche: 'Beyond the CV ↓',
-    // Dernière étape, commune aux 3 équipes (contour bleu).
-    prochaine: { quand: 'Mar 2027', chiffre: 'Next', titre: 'Herzogenaurach', texte: 'Six months. Ready to move.' },
-  },
-
-  // -- Sections de preuves (ordre défini par équipe) --------------------------
-  sections: {
-    backToRun: {
-      id: 'back-to-run',
-      surTitre: 'Back to Run · September 2026',
-      titre: 'I built a 30-day running challenge.',
-      paragraphes: [
-        'Back to Run was an online challenge: run at least 5 km every day for 30 days, throughout September 2026. Runs were tracked via Strava or logged by hand.',
-        'The rule was demanding, and the pressure was real. What I could shape was how it felt: a beaver mascot, 12 beaver avatars to pick from, a “Tribunal” where runners pleaded a missed day, and “Le Coffre”, a weekend event with missions during the campaign.',
-        'Not everyone lived it the same way. The rule stayed hard; the game, the humour and runners helping each other changed how it felt to carry.',
-      ],
-      // Ne jamais confondre inscrits, participants actifs et finishers.
-      chiffres: [
-        { valeur: '2,020', legende: 'signed up' },
-        { valeur: '~1,200', legende: 'logged at least one run' },
-        { valeur: '~250', legende: 'finished all 30 days' },
-        { prefixe: 'Almost', valeur: '100,000', legende: 'km run together' },
-      ],
-      logo: { src: `${A}/img/btr-logo.webp`, width: 480, height: 314, alt: 'Back to Run logo' },
-      univers: [
-        { src: `${A}/img/btr-tribunal.webp`, width: 360, height: 360, alt: 'The beaver as judge, gavel in hand.', legende: 'The Tribunal: where runners pleaded a missed day.' },
-        { src: `${A}/img/btr-coffre.webp`, width: 360, height: 362, alt: 'The beaver leaning on a treasure chest.', legende: 'Le Coffre: a weekend event with missions during the campaign.' },
-        { src: `${A}/img/btr-medaille.webp`, width: 300, height: 482, alt: 'The beaver holding up a medal.', legende: 'One mascot, many moods.' },
-      ],
-      avatarsLegende: '12 beaver avatars, one for every kind of runner.',
-      avatars: [
-        { src: `${A}/img/avatar-classique.webp`, alt: 'Classic beaver avatar' },
-        { src: `${A}/img/avatar-crame.webp`, alt: 'Exhausted beaver avatar' },
-        { src: `${A}/img/avatar-pluie.webp`, alt: 'Rainy-day beaver avatar' },
-        { src: `${A}/img/avatar-frimeur.webp`, alt: 'Show-off beaver avatar with sunglasses' },
-        { src: `${A}/img/avatar-trailer.webp`, alt: 'Trail-runner beaver avatar' },
-        { src: `${A}/img/avatar-finisher.webp`, alt: 'Finisher beaver avatar with a medal' },
-      ],
-      photo: {
-        src: `${A}/img/btr-community.webp`,
-        width: 1200,
-        height: 960,
-        alt: 'Members of the Back to Run community together in Paris, smiling.',
-        legende: 'Back to Run community members, together in Paris.',
-      },
-      // URL publique du site (reprise de src/data/mediakit.js). À confirmer.
-      lien: { url: 'https://backtorun.fr', texte: 'Visit Back to Run' },
+  moments: [
+    {
+      id: 'm1',
+      tag: 'Paris Marathon · April 2026',
+      grand: 'KM 34',
+      voix: 'No. You can’t crack now.',
+      seul: 'It’s only a race.',
+      preuve: 'The group blew up. I ran the last 8 km alone. Finished in 2:38:21.',
     },
-
-    laGamberge: {
-      id: 'la-gamberge',
-      surTitre: 'La Gamberge · since November 2025',
-      titre: 'I make running content. People answer back.',
-      paragraphes: [
-        'In November 2025, I started La Gamberge: running content on Instagram, TikTok and YouTube. Video by video, it has grown to 19,000+ followers across the three.',
-        'I write, film and edit every piece myself, and I talk with my audience directly.',
-        'I have also made paid content for brands and for agency campaigns.',
-        'In July 2026, I took it offline: the first La Gamberge community run, in Paris.',
-      ],
-      chiffre: { valeur: '19K+', legende: 'followers across Instagram, TikTok and YouTube' },
-      videosTitre: 'A few videos',
-      // Cartes vignettes cliquables (aucun embed lourd).
-      //   plateforme : 'Instagram' | 'TikTok' | 'YouTube'
-      //   YouTube : renseigner `youtubeId` → façade légère (vignette, iframe au clic).
-      //   Une carte sans `url` (ni `youtubeId`) n'est pas affichée.
-      // TODO (Alex) : confirmer ces 4 vidéos (reprises de mediakit.js) ou les
-      // remplacer par tes liens TikTok / Instagram / YouTube préférés.
-      videos: [
-        { titre: '10K start line, dressed in green in the elite pen', plateforme: 'Instagram', url: 'https://www.instagram.com/p/DZaWXEPI757/', miniature: `${A}/img/video-depart-10k.webp`, width: 600, height: 935 },
-        { titre: 'My Paris Marathon story', plateforme: 'Instagram', url: 'https://www.instagram.com/reel/DXXAo85iP85/', miniature: `${A}/img/video-marathon-paris.webp`, width: 600, height: 931 },
-        { titre: 'A comedy sketch filmed during a race', plateforme: 'Instagram', url: 'https://www.instagram.com/reel/DT-6y1HiCuf/', miniature: `${A}/img/video-sketch.webp`, width: 600, height: 935 },
-        { titre: 'Mission: win the race incognito', plateforme: 'Instagram', url: 'https://www.instagram.com/p/DZVU9EwosdJ/', miniature: `${A}/img/video-course-incognito.webp`, width: 558, height: 698 },
-      ],
-      reseauxTitre: 'Follow along',
+    {
+      id: 'm2',
+      tag: 'The streak · Just another day',
+      grand: '0%',
+      voix: 'You can’t crack now. You have to.',
+      seul: 'It’s only 5 km.',
+      preuve: 'No race, no reason. Motivation at zero. Still went. {jour}.',
     },
-
-    coureur: {
-      id: 'the-runner',
-      surTitre: 'The runner',
-      titre: 'Amateur runner. Serious about it.',
-      paragraphes: [
-        'I’m not a professional athlete. I played competitive football for about 12 years, then running took over.',
-        'My first marathon was Paris 2025, in 2:59. One year later, in April 2026, I ran 2:38:21 at the Paris Marathon.',
-        'Since 1 January 2026, I have run at least 5 km every single day. In 2026, I qualified for the French Championships over 5 km, 10 km and the marathon. In September 2026, I ran my first trail: Nice by UTMB, about 39 km.',
-      ],
-      chiffres: [
-        { valeur: '2:59', legende: 'First marathon · Paris 2025' },
-        { valeur: '2:38:21', legende: 'Paris Marathon · April 2026', accent: true },
-        { valeur: '3', legende: 'French Championships qualifications in 2026: 5 km, 10 km, marathon' },
-        { valeur: '~39 km', legende: 'First trail · Nice by UTMB, Sept 2026' },
-      ],
-      // Compteur EN DIRECT (/api/streak, Strava). Valeur de secours affichée
-      // tant que l'API ne répond pas ou si elle échoue.
-      streak: {
-        secours: '280+',
-        legende: 'days in a row with at least 5 km, since 1 January 2026',
-        enDirect: 'Live from Strava', // suivi de « · updated {date} »
-        misAJour: 'updated',
-      },
+    {
+      id: 'm3',
+      tag: 'Nice by UTMB · September 2026',
+      grand: 'KM 30',
+      voix: 'I can’t take it anymore. I’m going to walk.',
+      seul: 'It’s only a few minutes.',
+      preuve: 'My first trail. About 39 km.',
     },
-
-    experience: {
-      id: 'experience',
-      surTitre: 'Experience',
-      titre: 'On paper.',
-      postes: [
-        {
-          quand: 'Mar – Aug 2025',
-          ou: 'Savencia International',
-          role: 'Export Sales Assistant Intern',
-          detail: 'International client portfolio, SAP orders, pricing, promotions, logistics follow-up, Excel and PowerPoint reporting.',
-        },
-        {
-          quand: 'Jun – Aug 2022',
-          ou: 'Nike House of Innovation Paris',
-          role: 'Retail Athlete',
-          detail: 'Advised customers in French, English and Spanish; Nike Air Zoom Mercurial activation.',
-        },
-        {
-          quand: 'May – Jul 2021',
-          ou: 'Decathlon',
-          role: 'Running & Team Sports Sales Associate',
-          detail: null,
-        },
-        {
-          quand: 'Education',
-          ou: 'IÉSEG School of Management',
-          role: 'Master in Management',
-          detail: 'General Management & Strategy Consulting. Exchange semester in Bogotá (2023).',
-        },
-      ],
-      langues: {
-        titre: 'Languages',
-        liste: ['French · native', 'English · C1 (TOEIC 960)', 'Spanish · B2'],
-      },
+    {
+      id: 'm4',
+      tag: 'This application',
+      grand: 'Round 2',
+      voix: 'I wasn’t ready last year. Why would I be now? I’ve got nothing good to send.',
+      seul: 'It’s only a',
+      seulAccent: 'game',
+      seulFin: '.',
+      preuve: 'Last year I passed round one, not round two. So I came back.',
     },
+  ],
+
+  // -- Écran 6 : Back to Run ---------------------------------------------------
+  // Chiffres validés : ne jamais confondre inscrits, actifs et finishers.
+  backToRun: {
+    surTitre: 'Back to Run · 30 days · 5 km a day · September 2026',
+    titre: 'So I gave the same rule to',
+    titreAccent: '2,020',
+    titreFin: 'people.',
+    chiffres: [
+      { valeur: '2,020', legende: 'signed up' },
+      { valeur: '~1,200', legende: 'logged at least one run' },
+      { valeur: '~250', legende: 'finished all 30 days' },
+      { valeur: '~100K', legende: 'km, all together', accent: true },
+    ],
+    texte: 'The rule made real pressure. A beaver, a Tribunal to plead a missed day and Le Coffre, a weekend of missions, made it a game.',
+    avatarsLegende: 'The 12 beaver avatars runners could pick from.',
+    avatars: [
+      { src: `${A}/img/avatar-classique.webp`, alt: 'Classic beaver' },
+      { src: `${A}/img/avatar-crame.webp`, alt: 'Exhausted beaver' },
+      { src: `${A}/img/avatar-determine.webp`, alt: 'Determined beaver' },
+      { src: `${A}/img/avatar-finisher.webp`, alt: 'Finisher beaver with a medal' },
+      { src: `${A}/img/avatar-frimeur.webp`, alt: 'Show-off beaver in sunglasses' },
+      { src: `${A}/img/avatar-juge.webp`, alt: 'Judge beaver with a gavel' },
+      { src: `${A}/img/avatar-leve-tot.webp`, alt: 'Early-riser beaver' },
+      { src: `${A}/img/avatar-marcheur.webp`, alt: 'Walking beaver' },
+      { src: `${A}/img/avatar-nocturne.webp`, alt: 'Night-runner beaver with a headlamp' },
+      { src: `${A}/img/avatar-pluie.webp`, alt: 'Rainy-day beaver' },
+      { src: `${A}/img/avatar-supporter.webp`, alt: 'Supporter beaver waving a flag' },
+      { src: `${A}/img/avatar-trailer.webp`, alt: 'Trail-runner beaver' },
+    ],
   },
 
-  // -- Bande bleue « Remember it's a game » -----------------------------------
-  jeu: {
-    repere: '03',
-    surTitre: 'You got this',
-    titre: 'Remember it’s a game.',
-    debut:
-      '5 km every day sounds like pressure, and Back to Run’s rules were demanding. So I wrapped them in a playful world: a beaver mascot, a “Tribunal” to plead a missed day, runners pushing each other to come back.',
+  // -- Écran 8 : Your turn -----------------------------------------------------
+  aToi: {
+    titre: 'Your turn.',
+    question: 'What feels huge for you today?',
+    reponse: 'You got this.',
   },
 
-  apports: { repere: '04', titre: 'What I’d bring to' },
-
-  // -- Pied de page / contact -------------------------------------------------
-  contact: {
-    repere: '05',
-    surTitre: 'The rest of the story',
-    titre: 'Let’s talk',
-    mention: '6-month internship · From 1 March 2027 · Herzogenaurach',
+  // -- Écran 9 : Next ------------------------------------------------------------
+  suite: {
+    titre: 'March 2027.',
+    titreAccent: 'Herzogenaurach.',
+    projection: '{jour}. If the streak holds, my first day would be Day {proj}.',
+    lienPdf: 'My {team} one-pager',
+    lienCv: 'My CV',
+    pdfFleche: 'PDF ↓',
   },
+
+  // -- Barre fixe -----------------------------------------------------------------
+  barre: { pdf: 'One-pager ↓', cv: 'CV ↓', email: 'Email me' },
 };
 
-// Les sections de preuves disponibles (clés de `commun.sections`).
-//   'backToRun' | 'laGamberge' | 'coureur' | 'experience'
-
+// -- Par équipe : intitulé, PDF, ligne Back to Run, 3 choix, phrase de fin -----
+// Textes validés provisoirement (à ajuster ici).
 export const equipes = {
   marketing: {
     slug: 'adidas-marketing',
     equipe: 'Marketing',
     title: 'Alex Bourbigot · adidas application · Marketing',
-    description:
-      'Alex Bourbigot’s application for the adidas Marketing internship: Back to Run, La Gamberge, the runner and the experience behind the 1-Pager.',
-    finIntro: 'So I spent the year finding out what it takes to turn an idea into something people actually join.',
-    ordre: ['backToRun', 'laGamberge', 'coureur', 'experience'],
-    splits: [
-      { quand: 'Nov 2025', chiffre: '19K+', titre: 'La Gamberge', texte: 'Started posting regularly. The audience grew, video by video, to 19,000+.' },
-      { quand: 'Apr 2026', chiffre: '2:38', titre: 'Paris Marathon', texte: 'From 2:59 to 2:38:21 in one year. I know the sport by doing it.', accent: true },
-      { quand: 'Sep 2026', chiffre: '2,020', titre: 'Back to Run', texte: '2,020 signed up. Around 1,200 took part. About 250 finished all 30 days.' },
-    ],
-    finJeu: 'A rule on its own asks people to comply. A story and a community give them a reason to join, and to keep following.',
-    apports: [
-      { titre: 'Plan the journey', texte: 'I set a goal, designed each stage of the challenge and tracked sign-ups, first runs and finishers separately. A sign-up is only the start.' },
-      { titre: 'Adapt while it’s live', texte: 'I ran the challenge day by day and launched “Le Coffre” during the campaign to create a new moment. Watch, adjust, relaunch.' },
-      { titre: 'Turn content into participation', texte: 'Videos are one thing. In July, I brought people together for a community run in Paris. In September, I launched Back to Run.' },
-    ],
+    description: 'My take on “You Got This”: four real moments of pressure, made small. Alex Bourbigot’s application for the adidas Marketing internship.',
     pdf: `${A}/pdf/Alex_Bourbigot_adidas_1-Pager_Marketing.pdf`,
+    btrLine: 'An idea only counts if people join it, and keep showing up.',
+    choix: ['A launch date', 'A number to hit', 'A Monday brief'],
+    finale: 'I want to turn ideas into things people join. At adidas Marketing.',
   },
-
   brandCommunications: {
     slug: 'adidas-brand-communications',
     equipe: 'Brand Communications',
     title: 'Alex Bourbigot · adidas application · Brand Communications',
-    description:
-      'Alex Bourbigot’s application for the adidas Brand Communications internship: La Gamberge, Back to Run, the runner and the experience behind the 1-Pager.',
-    finIntro: 'So I spent the year getting closer to sport: running it, telling its stories and building something others could join.',
-    ordre: ['laGamberge', 'backToRun', 'coureur', 'experience'],
-    splits: [
-      { quand: 'Nov 2025', chiffre: '19K+', titre: 'La Gamberge', texte: 'Started sharing what I was learning as a runner. Now a community of 19,000+.' },
-      { quand: 'Apr 2026', chiffre: '2:38', titre: 'Paris Marathon', texte: 'From 2:59 to 2:38:21 in one year.', accent: true },
-      { quand: 'Sep 2026', chiffre: '2,020', titre: 'Back to Run', texte: 'I built my first running challenge from scratch. 2,020 people joined.' },
-    ],
-    finJeu: 'The challenge stayed real. Playing it together made it easier to carry.',
-    apports: [
-      { titre: 'Several sides of sport', texte: 'Beginner, then competitive runner. Participant, then organiser. Watching sport’s stories, then telling my own.' },
-      { titre: 'Ideas grounded in practice', texte: 'Publishing and running a challenge gave me ideas I couldn’t test alone. I’d bring the strongest ones, ready to be challenged by the team.' },
-      { titre: 'Listen, then create', texte: 'I talk with my audience directly. Their replies show me which stories land, spark a reaction and make people want to join in.' },
-    ],
+    description: 'My take on “You Got This”: four real moments of pressure, made small. Alex Bourbigot’s application for the adidas Brand Communications internship.',
     pdf: `${A}/pdf/Alex_Bourbigot_adidas_1-Pager_Brand_Communications.pdf`,
+    btrLine: 'One rule. 2,020 different stories with it. Finding the ones that touch people is the job.',
+    choix: ['A blank page', 'A story that won’t land', 'A deadline'],
+    finale: 'I want to find the sport stories that touch people. At adidas Brand Communications.',
   },
-
   productManagement: {
     slug: 'adidas-product-management',
     equipe: 'Product Management',
     title: 'Alex Bourbigot · adidas application · Product Management',
-    description:
-      'Alex Bourbigot’s application for the adidas Product Management internship: the runner, the store floor, Back to Run and La Gamberge behind the 1-Pager.',
-    finIntro: 'So I spent the year living sport day to day: training, racing and running alongside people of every level.',
-    ordre: ['coureur', 'experience', 'backToRun', 'laGamberge'],
-    splits: [
-      { quand: 'Jan 2026', chiffre: '280+', titre: 'Days in a row', texte: 'At least 5 km every day: rain, heat, road, trail. Small frictions show up fast.' },
-      { quand: 'Apr 2026', chiffre: '2:38', titre: 'Paris Marathon', texte: 'From 2:59 to 2:38:21 in one year.', accent: true },
-      { quand: 'Sep 2026', chiffre: '2,020', titre: 'Back to Run', texte: '2,020 runners signed up, with very different levels and reasons to run.' },
-    ],
-    finJeu: 'Running daily myself, I saw kit play a similar role: the right product makes movement more inviting, the wrong one adds friction.',
-    apports: [
-      { titre: 'The athlete’s view', texte: 'About 12 years of football, then running, up to a 2:38:21 marathon. I know what a committed amateur expects from kit, session after session.' },
-      { titre: 'The store-floor view', texte: 'At Nike and Decathlon, I advised customers and heard the questions and doubts that come just before a purchase.' },
-      { titre: 'Not every runner is the same', texte: 'Through Back to Run and my community, I’ve seen people start from very different places. A beginner doesn’t need what a seasoned racer needs, and a range should reflect that.' },
-    ],
+    description: 'My take on “You Got This”: four real moments of pressure, made small. Alex Bourbigot’s application for the adidas Product Management internship.',
     pdf: `${A}/pdf/Alex_Bourbigot_adidas_1-Pager_Product_Management.pdf`,
+    btrLine: 'Every runner started from a different place. Every drop-off was a friction worth understanding.',
+    choix: ['A trade-off', 'A user who quit', 'A launch date'],
+    finale: 'I want to build for runners who all start somewhere different. At adidas Product Management.',
   },
 };

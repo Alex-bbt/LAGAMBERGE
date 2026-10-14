@@ -1,0 +1,9 @@
+---
+/* Rend un texte contenant des jetons ({jour}, {proj}, {n}) : chaque jeton
+   devient un <span data-yg-…> pré-rempli avec la valeur de secours, que le
+   script remplace par la valeur en direct. */
+import { morceaux } from '../../lib/adidas-texte.js';
+
+const { texte, valeurs } = Astro.props;
+---
+{morceaux(texte).map((m) => (m.jeton ? <span data-yg={m.jeton}>{valeurs[m.jeton]}</span> : m.texte))}
