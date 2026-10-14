@@ -15,6 +15,7 @@ import { commun, equipes } from '../../data/adidas.js';
 import { ecartJours, dateLisible, remplir } from '../../lib/adidas-texte.js';
 import Moment from './Moment.astro';
 import Jetons from './Jetons.astro';
+import Logo from './Logo.astro';
 
 const { team } = Astro.props;
 const equipe = equipes[team];
@@ -69,7 +70,7 @@ const config = {
     <section class="yg-ecran fond-marine jour" aria-label="Day counter">
       <header class="yg-col jour__tete">
         <span class="yg-large jour__marque">{commun.marque}</span>
-        <span class="yg-etiquette jour__pour">{commun.pour} · {equipe.equipe}</span>
+        <span class="yg-etiquette jour__pour">{commun.pour} <Logo hauteur="15px" class="jour__logo" /> · {equipe.equipe}</span>
       </header>
       <div class="yg-col jour__centre">
         <p class="yg-etiquette jour__direct"><span class="jour__point" aria-hidden="true"></span><span data-yg-libelle>{libelleSecours}</span></p>
@@ -160,6 +161,7 @@ const config = {
     <!-- 09 · NEXT -->
     <section class="yg-ecran fond-blanc suite" aria-label="Next" id="contact">
       <div class="yg-col suite__col">
+        <Logo hauteur="clamp(40px, 6vw, 64px)" class="suite__logo" />
         <h2 class="yg-large suite__titre">{suite.titre}<br /><span class="yg-accent">{suite.titreAccent}</span></h2>
         <p class="suite__projection"><Jetons texte={suite.projection} valeurs={valeurs} /></p>
         <p class="yg-large suite__finale">{equipe.finale}</p>
@@ -325,7 +327,8 @@ const config = {
   .jour { padding-top: 20px; padding-bottom: calc(var(--yg-barre) + 20px + env(safe-area-inset-bottom)); }
   .jour__tete { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .jour__marque { font-size: 14px; line-height: 1; letter-spacing: 0.02em; }
-  .jour__pour { color: var(--yg-texte-marine); text-align: right; letter-spacing: 0.12em; }
+  .jour__pour { color: var(--yg-texte-marine); text-align: right; letter-spacing: 0.12em; display: inline-flex; align-items: center; gap: 0.5em; }
+  .jour__pour :global(.jour__logo) { color: #fff; margin-inline: 0.1em; }
   .jour__centre { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-block: min(32px, 3svh); }
   .jour__direct { display: flex; align-items: center; gap: 8px; color: var(--yg-texte-marine); }
   .jour__point { width: 8px; height: 8px; background: var(--yg-orange); flex: none; }
@@ -400,6 +403,7 @@ const config = {
   /* -- 09 Next ----------------------------------------------------------------- */
   .suite { justify-content: center; padding-top: 48px; padding-bottom: calc(var(--yg-barre) + 54px + env(safe-area-inset-bottom)); }
   .suite__col { display: flex; flex-direction: column; gap: 28px; }
+  .suite__col :global(.suite__logo) { color: var(--yg-marine); align-self: flex-start; margin-bottom: -8px; }
   .suite__titre { font-size: clamp(22px, 6.2vw, 92px); line-height: 0.95; }
   .suite__projection { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); max-width: 34ch; }
   .suite__finale { font-size: clamp(18px, 2.2vw, 26px); line-height: 1.1; max-width: 30ch; }
