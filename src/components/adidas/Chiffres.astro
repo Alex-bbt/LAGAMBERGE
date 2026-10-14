@@ -1,0 +1,50 @@
+---
+/* Grille de chiffres (grand nombre + légende), utilisée par les preuves.
+   `prefixe` (optionnel) s'affiche en petit au-dessus du nombre. */
+const { chiffres, fond = 'blanc' } = Astro.props;
+---
+
+<dl class:list={['chiffres', `chiffres--${fond}`]}>
+  {chiffres.map((c) => (
+    <div class:list={['chiffre', { 'chiffre--accent': c.accent }]}>
+      <dt class="chiffre__v">
+        {c.prefixe && <small>{c.prefixe}</small>}
+        {c.valeur}
+      </dt>
+      <dd class="chiffre__l">{c.legende}</dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .chiffres {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    background: var(--ad-line);
+    border: 1px solid var(--ad-line);
+  }
+  .chiffre { background: var(--ad-white); padding: 1.1rem 1rem 1.2rem; min-width: 0; }
+  .chiffre__v {
+    font-family: var(--ad-display);
+    font-weight: 900;
+    font-size: clamp(2.3rem, 10vw, 3.25rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+  .chiffre__v small {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--ad-mute-light);
+    margin-bottom: 0.15rem;
+  }
+  .chiffre--accent .chiffre__v { color: var(--ad-blue); }
+  .chiffre__l { margin: 0.4rem 0 0; font-size: 0.9rem; line-height: 1.4; color: var(--ad-text); }
+  @media (min-width: 860px) {
+    .chiffres { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+</style>
