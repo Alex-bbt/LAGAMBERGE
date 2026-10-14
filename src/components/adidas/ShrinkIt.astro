@@ -1,0 +1,432 @@
+---
+/* ==========================================================================
+   ShrinkIt — la proposition créative « You Got This » (handoff Claude Design,
+   « Shrink It v2 »). Une seule page, déclinée par la prop `team`
+   ('marketing' | 'brandCommunications' | 'productManagement').
+   Écrans : 1 Day N · 2 Back to zero · 3–5 Moments 01–03 · 6 Back to Run ·
+   7 Moment 04 · 8 Your turn · 9 Next. Barre d'actions fixe.
+   Tout le texte vient de src/data/adidas.js ; seule l'équipe demandée est
+   lue (aucune autre équipe dans le HTML).
+   Rendu au build = valeurs de SECOURS (relevé Strava daté) ; le script
+   remplace par /api/streak quand il répond (2,5 s max).
+   ========================================================================== */
+import AdidasLayout from '../../layouts/AdidasLayout.astro';
+import { commun, equipes } from '../../data/adidas.js';
+import { ecartJours, dateLisible, remplir } from '../../lib/adidas-texte.js';
+import Moment from './Moment.astro';
+import Jetons from './Jetons.astro';
+
+const { team } = Astro.props;
+const equipe = equipes[team];
+if (!equipe) throw new Error(`Équipe adidas inconnue : « ${team} »`);
+
+const { streak, ecranJour, grille, backToRun, aToi, suite, barre } = commun;
+const moments = commun.moments.filter((m) => m && m.voix);
+const total = moments.length;
+
+// -- Valeurs de secours (relevé Strava daté, jamais le jour de l'année) --------
+const n = streak.secours.jours;
+const ref = streak.secours.date;
+const valeurs = {
+  n,
+  jour: remplir(streak.jourAuDate, { n, date: dateLisible(ref) }),
+  proj: n + ecartJours(ref, streak.premierJour),
+};
+const serieCassee = n < ecartJours(streak.debut, ref) + 1;
+const libelleSecours = `${streak.libelleSecours} · ${dateLisible(ref)}`;
+
+const mailto = `mailto:${commun.email}?subject=${encodeURIComponent(remplir(commun.mailSujet, { team: equipe.equipe }))}`;
+const pdfNom = equipe.pdf.split('/').pop();
+const cvNom = commun.cv.split('/').pop();
+
+// Fonds des écrans de moments, dans l'ordre du prototype.
+const fondsMoments = ['ciel', 'marine', 'creme', 'marine'];
+const avantBtr = moments.slice(0, 3);
+const apresBtr = moments.slice(3);
+
+// Configuration lue par le script (gabarits de texte + dates).
+const config = {
+  debut: streak.debut,
+  premierJour: streak.premierJour,
+  libelleDirect: streak.libelleDirect,
+  jourAujourdhui: streak.jourAujourdhui,
+  jourHier: streak.jourHier,
+  jourAuDate: streak.jourAuDate,
+  regle: ecranJour.regle,
+  regleCassee: ecranJour.regleCassee,
+  grilleAujourdhui: grille.texteAujourdhui,
+  grilleDernier: grille.texteDernier,
+  grilleZero: grille.texteZero,
+  libelleAujourdhui: grille.libelleAujourdhui,
+  libelleDernier: grille.libelleDernier,
+  libelleSuivant: grille.libelleSuivant,
+};
+---
+
+<AdidasLayout title={equipe.title} description={equipe.description}>
+  <main>
+    <!-- 01 · DAY N -->
+    <section class="yg-ecran fond-marine jour" aria-label="Day counter">
+      <header class="yg-col jour__tete">
+        <span class="yg-large jour__marque">{commun.marque}</span>
+        <span class="yg-etiquette jour__pour">{commun.pour} · {equipe.equipe}</span>
+      </header>
+      <div class="yg-col jour__centre">
+        <p class="yg-etiquette jour__direct"><span class="jour__point" aria-hidden="true"></span><span data-yg-libelle>{libelleSecours}</span></p>
+        <h1>
+          <span class="yg-large jour__mot">{ecranJour.titre}</span>
+          <span class="yg-serre jour__n" data-yg="n">{n}</span>
+        </h1>
+        <p class="jour__regle" data-yg-regle>{serieCassee ? remplir(ecranJour.regleCassee, { n }) : ecranJour.regle}</p>
+      </div>
+      <div class="yg-col jour__pied">
+        <p class="yg-large jour__accroche">{ecranJour.accroche} <span class="yg-accent">{ecranJour.accrocheAccent}</span></p>
+        <p class="jour__intro">{ecranJour.intro}</p>
+      </div>
+    </section>
+
+    <!-- 02 · BACK TO ZERO -->
+    <section class="yg-ecran fond-blanc grille" aria-label={`${grille.titre} ${grille.titreAccent}`}>
+      <div class="yg-col grille__col">
+        <h2 class="yg-large grille__titre">{grille.titre}<br /><span class="yg-accent">{grille.titreAccent}</span></h2>
+        <div class="grille__cases" data-yg-grille aria-hidden="true">
+          {Array.from({ length: Math.max(0, n - 1) }, () => <span class="case"></span>)}
+          {n > 0 && <span class="case case--dernier" title={grille.libelleDernier}></span>}
+          <span class="case case--suivant" title={grille.libelleSuivant}></span>
+        </div>
+        <p class="grille__texte" data-yg-grille-texte>{remplir(grille.texteDernier, { n })}</p>
+      </div>
+    </section>
+
+    <!-- 03–05 · MOMENTS 01–03 -->
+    {avantBtr.map((m, i) => (
+      <Moment moment={m} index={i + 1} total={total} fond={fondsMoments[i]} valeurs={valeurs} />
+    ))}
+
+    <!-- 06 · BACK TO RUN -->
+    <section class="yg-ecran fond-blanc btr" aria-label="Back to Run">
+      <div class="yg-col btr__col">
+        <div class="btr__tete">
+          <p class="yg-etiquette btr__sur">{backToRun.surTitre}</p>
+          <h2 class="yg-large btr__titre">{backToRun.titre} <span class="yg-accent">{backToRun.titreAccent}</span> {backToRun.titreFin}</h2>
+        </div>
+        <dl class="btr__chiffres">
+          {backToRun.chiffres.map((c) => (
+            <div>
+              <dt class:list={['yg-serre', { 'yg-accent': c.accent }]}>{c.valeur}</dt>
+              <dd>{c.legende}</dd>
+            </div>
+          ))}
+        </dl>
+        <div class="btr__bas">
+          <div class="btr__textes">
+            <p class="btr__texte">{backToRun.texte}</p>
+            <p class="yg-large btr__ligne">{equipe.btrLine}</p>
+          </div>
+          <figure class="btr__avatars">
+            <ul>
+              {backToRun.avatars.map((a) => (
+                <li><img src={a.src} alt={a.alt} width="128" height="128" loading="lazy" decoding="async" /></li>
+              ))}
+            </ul>
+            <figcaption>{backToRun.avatarsLegende}</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 · MOMENT 04 -->
+    {apresBtr.map((m, i) => (
+      <Moment moment={m} index={i + 4} total={total} fond={fondsMoments[i + 3]} valeurs={valeurs} />
+    ))}
+
+    <!-- 08 · YOUR TURN -->
+    <section class="yg-ecran fond-creme tour" aria-label={aToi.titre}>
+      <div class="yg-col tour__col">
+        <h2 class="yg-large tour__titre">{aToi.titre}</h2>
+        <p class="tour__question">{aToi.question}</p>
+        <div class="tour__choix">
+          {equipe.choix.map((c) => (
+            <button type="button" class="tour__bouton" aria-pressed="false" data-choix={c}>{c}</button>
+          ))}
+        </div>
+        <div class="tour__scene" aria-live="polite">
+          <p class="yg-serre tour__mot" data-tour-mot></p>
+          <p class="yg-large tour__reponse" data-tour-reponse>{aToi.reponse}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 · NEXT -->
+    <section class="yg-ecran fond-blanc suite" aria-label="Next" id="contact">
+      <div class="yg-col suite__col">
+        <h2 class="yg-large suite__titre">{suite.titre}<br /><span class="yg-accent">{suite.titreAccent}</span></h2>
+        <p class="suite__projection"><Jetons texte={suite.projection} valeurs={valeurs} /></p>
+        <p class="yg-large suite__finale">{equipe.finale}</p>
+        <div class="suite__liens">
+          <a href={equipe.pdf} download={pdfNom} data-pdf><span class="yg-large">{remplir(suite.lienPdf, { team: equipe.equipe })}</span><span class="suite__fleche">{suite.pdfFleche}</span></a>
+          <a href={commun.cv} download={cvNom} data-cv><span class="yg-large">{suite.lienCv}</span><span class="suite__fleche">{suite.pdfFleche}</span></a>
+          <a href={mailto} class="suite__mail"><span>{commun.email}</span><span class="suite__fleche">→</span></a>
+        </div>
+        <p class="suite__mention">{commun.nonAffiliation}</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="barre" aria-label="Quick actions">
+    <div class="barre__in">
+      <a href={equipe.pdf} download={pdfNom} data-pdf>{barre.pdf}</a>
+      <a href={commun.cv} download={cvNom} data-cv>{barre.cv}</a>
+      <a href={mailto} class="barre__mail">{barre.email}</a>
+    </div>
+  </nav>
+
+  <script type="application/json" id="yg-config" set:html={JSON.stringify(config)} />
+</AdidasLayout>
+
+<script>
+  // ==========================================================================
+  // Script unique (vanilla) : compteur Strava en direct, appui long des
+  // moments, choix « Your turn ». Sans JS, la page reste complète (états
+  // finaux rendus au build).
+  // ==========================================================================
+  type Config = Record<string, string>;
+  const cfg: Config = JSON.parse(document.getElementById('yg-config')?.textContent || '{}');
+  const reduit = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const JOUR_MS = 864e5;
+  const ecart = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / JOUR_MS);
+  const veille = (ymd: string) => new Date(Date.parse(`${ymd}T00:00:00Z`) - JOUR_MS).toISOString().slice(0, 10);
+  const lisible = (ymd: string) => new Date(`${ymd}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const remplir = (t: string, v: Record<string, string | number>) => t.replace(/\{(\w+)\}/g, (m, k) => (k in v ? String(v[k]) : m));
+  const aujourdhuiParis = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+
+  // -- 1. Compteur en direct ---------------------------------------------------
+  function appliquer(n: number, ref: string, mode: 'aujourdhui' | 'hier' | 'date') {
+    const gabarit = mode === 'aujourdhui' ? cfg.jourAujourdhui : mode === 'hier' ? cfg.jourHier : cfg.jourAuDate;
+    const valeurs: Record<string, string | number> = {
+      n,
+      jour: remplir(gabarit, { n, date: lisible(ref) }),
+      proj: n + ecart(ref, cfg.premierJour),
+    };
+    document.querySelectorAll<HTMLElement>('[data-yg]').forEach((el) => {
+      const cle = el.dataset.yg || '';
+      if (cle in valeurs) el.textContent = String(valeurs[cle]);
+    });
+    const libelle = document.querySelector<HTMLElement>('[data-yg-libelle]');
+    if (libelle) libelle.textContent = cfg.libelleDirect;
+    const regle = document.querySelector<HTMLElement>('[data-yg-regle]');
+    if (regle) regle.textContent = n < ecart(cfg.debut, ref) + 1 ? remplir(cfg.regleCassee, { n }) : cfg.regle;
+
+    // Grille : n cases (la dernière en orange) + la suivante en pointillés.
+    const grille = document.querySelector<HTMLElement>('[data-yg-grille]');
+    if (grille) {
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < n - 1; i++) { const c = document.createElement('span'); c.className = 'case'; frag.appendChild(c); }
+      if (n > 0) {
+        const d = document.createElement('span');
+        d.className = 'case case--dernier';
+        d.title = mode === 'aujourdhui' ? cfg.libelleAujourdhui : cfg.libelleDernier;
+        frag.appendChild(d);
+      }
+      const s = document.createElement('span'); s.className = 'case case--suivant'; s.title = cfg.libelleSuivant; frag.appendChild(s);
+      grille.replaceChildren(frag);
+    }
+    const texte = document.querySelector<HTMLElement>('[data-yg-grille-texte]');
+    if (texte) texte.textContent = remplir(n === 0 ? cfg.grilleZero : mode === 'aujourdhui' ? cfg.grilleAujourdhui : cfg.grilleDernier, { n });
+  }
+
+  const ctrl = new AbortController();
+  const minuteur = setTimeout(() => ctrl.abort(), 2500);
+  fetch('/api/streak', { signal: ctrl.signal, headers: { Accept: 'application/json' } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      if (!d || !d.configured || !d.today) return;
+      const etat = d.state;
+      const n = etat === 'failed' ? 0 : Number(d.validatedDay);
+      if (!Number.isFinite(n) || n < 0) return;
+      // Jour de référence : aujourd'hui si couru, sinon la veille.
+      const ref = etat === 'pending' ? veille(d.today) : d.today;
+      // Donnée calculée un autre jour (cache) : on la date explicitement.
+      const frais = d.today === aujourdhuiParis();
+      appliquer(n, ref, !frais ? 'date' : etat === 'pending' ? 'hier' : 'aujourdhui');
+    })
+    .catch(() => { /* secours conservé */ })
+    .finally(() => clearTimeout(minuteur));
+
+  // -- 2. Appui long : « shrink it » --------------------------------------------
+  const DUREE = 1200;
+  document.querySelectorAll<HTMLElement>('[data-moment]').forEach((section) => {
+    const bouton = section.querySelector<HTMLButtonElement>('.moment__bouton');
+    const libelle = section.querySelector<HTMLElement>('.moment__libelle');
+    if (!bouton || !libelle) return;
+    let minuteurAppui = 0;
+    let ignorerClic = false;
+    const fait = () => section.classList.contains('is-fait');
+    const ecrire = (cle: 'repos' | 'appui' | 'encore' | 'fini') => { libelle.textContent = bouton.dataset[cle] || ''; };
+    const terminer = (parPointeur: boolean) => {
+      clearTimeout(minuteurAppui);
+      if (parPointeur) ignorerClic = true;
+      section.classList.remove('is-appui');
+      section.classList.add('is-fait');
+      ecrire('fini');
+      bouton.setAttribute('aria-label', bouton.dataset.fini || '');
+    };
+    bouton.addEventListener('pointerdown', () => {
+      if (fait()) return;
+      if (reduit()) { terminer(true); return; }
+      section.classList.add('is-appui');
+      ecrire('appui');
+      minuteurAppui = window.setTimeout(() => terminer(true), DUREE);
+    });
+    const relacher = () => {
+      if (fait() || !section.classList.contains('is-appui')) return;
+      clearTimeout(minuteurAppui);
+      section.classList.remove('is-appui');
+      ecrire('encore');
+    };
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => bouton.addEventListener(t, relacher));
+    bouton.addEventListener('contextmenu', (e) => e.preventDefault());
+    bouton.addEventListener('click', (e) => {
+      if (ignorerClic) { ignorerClic = false; return; }
+      if (fait()) {
+        const suivant = section.nextElementSibling;
+        if (suivant) window.scrollTo({ top: suivant.getBoundingClientRect().top + window.scrollY, behavior: reduit() ? 'auto' : 'smooth' });
+        return;
+      }
+      // Clavier (Entrée / Espace) : état final directement.
+      if (e.detail === 0) terminer(false);
+    });
+  });
+
+  // -- 3. Your turn ---------------------------------------------------------------
+  const mot = document.querySelector<HTMLElement>('[data-tour-mot]');
+  const reponse = document.querySelector<HTMLElement>('[data-tour-reponse]');
+  const scene = mot?.parentElement;
+  let t1 = 0;
+  let t2 = 0;
+  document.querySelectorAll<HTMLButtonElement>('[data-choix]').forEach((b, _, tous) => {
+    b.addEventListener('click', () => {
+      if (!mot || !reponse || !scene) return;
+      clearTimeout(t1); clearTimeout(t2);
+      tous.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      mot.textContent = b.dataset.choix || '';
+      scene.classList.remove('is-reduit', 'is-repondu');
+      scene.classList.add('is-choisi');
+      if (reduit()) { scene.classList.add('is-reduit', 'is-repondu'); return; }
+      void mot.offsetWidth; // relance la transition
+      t1 = window.setTimeout(() => scene.classList.add('is-reduit'), 350);
+      t2 = window.setTimeout(() => scene.classList.add('is-repondu'), 1500);
+    });
+  });
+</script>
+
+<style>
+  /* -- 01 Day N -------------------------------------------------------------- */
+  .jour { padding-top: 20px; padding-bottom: calc(var(--yg-barre) + 20px + env(safe-area-inset-bottom)); }
+  .jour__tete { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .jour__marque { font-size: 14px; line-height: 1; letter-spacing: 0.02em; }
+  .jour__pour { color: var(--yg-texte-marine); text-align: right; letter-spacing: 0.12em; }
+  .jour__centre { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-block: min(32px, 3svh); }
+  .jour__direct { display: flex; align-items: center; gap: 8px; color: var(--yg-texte-marine); }
+  .jour__point { width: 8px; height: 8px; background: var(--yg-orange); flex: none; }
+  .jour__mot { display: block; font-size: clamp(28px, min(10vw, 8svh), 104px); line-height: 0.9; margin-top: min(18px, 2svh); }
+  .jour__n { display: block; font-size: clamp(100px, min(66vw, 30svh), 620px); line-height: 0.78; letter-spacing: -0.02em; }
+  .jour__regle { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); max-width: 28ch; margin-top: min(24px, 2.5svh); }
+  .jour__pied { display: flex; flex-direction: column; gap: 10px; border-top: 2px solid #fff; padding-top: 18px; }
+  .jour__accroche { font-size: clamp(20px, 3.4vw, 38px); line-height: 1; }
+  .jour__intro { font: 500 13px/1.4 var(--yg-texte); color: var(--yg-texte-marine); }
+
+  /* -- 02 Grille ------------------------------------------------------------- */
+  .grille { justify-content: center; padding-top: 48px; }
+  .grille__col { display: flex; flex-direction: column; gap: 28px; }
+  .grille__titre { font-size: clamp(40px, 9vw, 112px); line-height: 0.9; }
+  .grille__cases { display: flex; flex-wrap: wrap; gap: 3px; max-width: 760px; }
+  .grille__cases :global(.case) { width: clamp(8px, 1.1vw, 13px); height: clamp(8px, 1.1vw, 13px); background: var(--yg-marine); }
+  .grille__cases :global(.case--dernier) { background: var(--yg-orange); }
+  .grille__cases :global(.case--suivant) { background: transparent; border: 1.5px dashed var(--yg-marine); }
+  .grille__texte { font: 600 clamp(16px, 1.8vw, 20px)/1.45 var(--yg-texte); max-width: 34ch; }
+
+  /* -- 06 Back to Run -------------------------------------------------------- */
+  .btr { justify-content: center; padding-top: 48px; }
+  .btr__col { display: flex; flex-direction: column; gap: 28px; }
+  .btr__tete { display: flex; flex-direction: column; gap: 12px; }
+  .btr__sur { color: var(--yg-texte-clair); }
+  .btr__titre { font-size: clamp(34px, 7.4vw, 92px); line-height: 0.92; }
+  .btr__chiffres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; border-top: 2px solid var(--yg-marine); padding-top: 20px; margin: 0; }
+  .btr__chiffres div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .btr__chiffres dt { font-size: clamp(60px, 8vw, 104px); line-height: 0.85; }
+  .btr__chiffres dd { margin: 0; font: 600 14px/1.35 var(--yg-texte); color: var(--yg-texte-clair); }
+  .btr__bas { display: grid; gap: 24px; align-items: center; }
+  .btr__textes { display: flex; flex-direction: column; gap: 14px; }
+  .btr__texte { font: 500 clamp(16px, 1.8vw, 20px)/1.45 var(--yg-texte); }
+  .btr__ligne { font-size: clamp(18px, 2.2vw, 26px); line-height: 1.1; }
+  .btr__avatars { margin: 0; min-width: 0; }
+  .btr__avatars ul { list-style: none; margin: 0; padding: 4px 0 8px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; }
+  .btr__avatars li { flex: none; }
+  .btr__avatars img { width: 56px; height: 56px; border-radius: 50%; }
+  .btr__avatars figcaption { margin-top: 6px; font: 600 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); }
+
+  /* -- 08 Your turn ---------------------------------------------------------- */
+  .tour { padding-top: 48px; }
+  .tour__col { flex: 1; display: flex; flex-direction: column; gap: 24px; }
+  .tour__titre { font-size: clamp(44px, 10vw, 124px); line-height: 0.88; }
+  .tour__question { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); }
+  .tour__choix { display: flex; flex-wrap: wrap; gap: 10px; }
+  .tour__bouton {
+    min-height: 48px; padding: 0 18px;
+    border: 2px solid var(--yg-marine); background: transparent; color: var(--yg-marine);
+    font: 800 13px var(--yg-titre); font-stretch: 125%; letter-spacing: 0.04em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .tour__bouton[aria-pressed='true'] { background: var(--yg-marine); color: #fff; }
+  .tour__scene { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; min-height: 260px; text-align: center; }
+  .tour__mot {
+    font-size: clamp(90px, 26vw, 300px); line-height: 0.85;
+    text-wrap: balance; overflow-wrap: anywhere; max-width: 100%;
+    transform-origin: 50% 0; transform: scale(1);
+    transition: transform 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .tour__scene:global(.is-reduit) .tour__mot { transform: scale(0.22); }
+  .tour__reponse {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    font-size: clamp(40px, 10vw, 128px); line-height: 0.88; color: var(--yg-orange);
+    opacity: 0; transition: opacity 400ms ease-out;
+  }
+  .tour__scene:global(.is-repondu) .tour__reponse { opacity: 1; }
+  /* Sans JS : la réponse s'affiche directement sous les choix. */
+  :global(html:not(.js)) .tour__reponse { position: static; opacity: 1; }
+  :global(html:not(.js)) .tour__scene { min-height: 0; }
+
+  /* -- 09 Next ----------------------------------------------------------------- */
+  .suite { justify-content: center; padding-top: 48px; padding-bottom: calc(var(--yg-barre) + 54px + env(safe-area-inset-bottom)); }
+  .suite__col { display: flex; flex-direction: column; gap: 28px; }
+  .suite__titre { font-size: clamp(22px, 6.2vw, 92px); line-height: 0.95; }
+  .suite__projection { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); max-width: 34ch; }
+  .suite__finale { font-size: clamp(18px, 2.2vw, 26px); line-height: 1.1; max-width: 30ch; }
+  .suite__liens { display: flex; flex-direction: column; border-top: 2px solid var(--yg-marine); }
+  .suite__liens a {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    min-height: 64px; border-bottom: 1px solid var(--yg-filet); text-decoration: none;
+  }
+  .suite__liens a .yg-large { font-size: clamp(14px, 1.8vw, 20px); }
+  .suite__mail { font: 700 clamp(15px, 1.8vw, 20px) var(--yg-texte); overflow-wrap: anywhere; }
+  .suite__fleche { font: 700 13px var(--yg-texte); flex: none; }
+  .suite__mention { font: 500 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); }
+
+  /* -- Barre fixe -------------------------------------------------------------- */
+  .barre { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--yg-marine); border-top: 1px solid #3d4a7a; padding-bottom: env(safe-area-inset-bottom); }
+  .barre__in { max-width: var(--yg-max); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .barre a { min-height: var(--yg-barre); display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font: 700 14px var(--yg-texte); }
+  .barre a + a { border-left: 1px solid #3d4a7a; }
+  .barre a:hover { color: var(--yg-orange-sur-marine); }
+  .barre .barre__mail { background: var(--yg-creme); color: var(--yg-marine); }
+  .barre .barre__mail:hover { color: var(--yg-orange); }
+
+  @media (min-width: 860px) {
+    .btr__chiffres { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .btr__bas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tour__mot, .tour__reponse { transition: none; }
+  }
+</style>

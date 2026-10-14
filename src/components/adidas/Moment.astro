@@ -1,0 +1,104 @@
+---
+/* Un moment de pression : voix négative → grand mot → appui long → « It's only… »
+   + preuve. Sans JS : état final rendu directement (mot réduit, résultat visible,
+   pas de bouton). Les interactions sont dans le script de ShrinkIt.astro. */
+import { commun } from '../../data/adidas.js';
+import Jetons from './Jetons.astro';
+
+const { moment, index, total, fond, valeurs } = Astro.props;
+const { boutons } = commun;
+const sombre = fond === 'marine';
+---
+
+<section class:list={['yg-ecran', `fond-${fond}`, 'moment']} aria-label={`Moment ${index} of ${total}: ${moment.tag}`} data-moment>
+  <div class="yg-col moment__col">
+    <div class="moment__tete yg-etiquette"><span>{moment.tag}</span><span>{String(index).padStart(2, '0')} / {String(total).padStart(2, '0')}</span></div>
+    <p class="moment__voix">“{moment.voix}”</p>
+    <div class="moment__scene">
+      <p class:list={['moment__grand', 'yg-serre', { 'moment__grand--long': moment.grand.length > 5 }]} aria-hidden="true">{moment.grand}</p>
+      <div class="moment__resultat">
+        <p class="moment__seul yg-large">
+          {moment.seul}{moment.seulAccent && <> <span class="yg-accent">{moment.seulAccent}</span></>}{moment.seulFin}
+        </p>
+        <p class="moment__preuve"><Jetons texte={moment.preuve} valeurs={valeurs} /></p>
+      </div>
+    </div>
+    <button
+      class:list={['moment__bouton', { 'moment__bouton--clair': sombre }]}
+      type="button"
+      data-repos={boutons.repos}
+      data-appui={boutons.appui}
+      data-encore={boutons.encore}
+      data-fini={boutons.fini}
+      aria-label={`${boutons.repos}: ${moment.grand}`}
+    >
+      <span class="moment__jauge" aria-hidden="true"></span>
+      <span class="moment__libelle">{boutons.repos}</span>
+    </button>
+  </div>
+</section>
+
+<style>
+  .moment__col { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+  .moment__tete { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid currentColor; padding-bottom: 12px; }
+  .moment__voix {
+    font: italic 600 clamp(18px, 2.4vw, 26px)/1.35 var(--yg-texte);
+    max-width: 30ch;
+    transition: opacity 500ms;
+  }
+  .moment__scene { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; min-height: 280px; }
+  .moment__grand {
+    font-size: clamp(110px, 32vw, 400px);
+    line-height: 0.82;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    transform-origin: 50% 0;
+    transform: scale(1);
+    transition: transform 300ms ease-out;
+  }
+  .moment__grand--long { font-size: clamp(96px, 26vw, 300px); }
+  .moment__resultat {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
+  }
+  .moment__seul { font-size: clamp(30px, 6.4vw, 80px); line-height: 0.95; }
+  .moment__preuve { font: 600 15px/1.45 var(--yg-texte); margin-top: 14px; }
+  .fond-marine .moment__preuve { color: var(--yg-texte-marine); }
+
+  .moment__bouton {
+    position: relative; overflow: hidden;
+    align-self: center;
+    width: 100%; max-width: 380px; height: 60px;
+    border: 0; padding: 0;
+    background: var(--yg-marine); color: #fff;
+    cursor: pointer;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  .moment__bouton--clair { background: #fff; color: var(--yg-marine); }
+  .moment__jauge { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--yg-orange); transition: width 250ms ease-out; }
+  .moment__bouton--clair .moment__jauge { background: var(--yg-orange-sur-marine); }
+  .moment__libelle { position: relative; font: 900 15px var(--yg-titre); font-stretch: 125%; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* Appui en cours / terminé (et rendu sans JS = état final) */
+  :global(html:not(.js)) .moment__grand,
+  .moment:global(.is-appui) .moment__grand,
+  .moment:global(.is-fait) .moment__grand { transform: scale(0.16); }
+  .moment:global(.is-appui) .moment__grand,
+  .moment:global(.is-fait) .moment__grand { transition: transform 1200ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .moment:global(.is-appui) .moment__voix,
+  .moment:global(.is-fait) .moment__voix { opacity: 0; }
+  :global(html:not(.js)) .moment__resultat,
+  .moment:global(.is-fait) .moment__resultat { opacity: 1; transform: none; }
+  .moment:global(.is-appui) .moment__jauge { width: 100%; transition: width 1200ms linear; }
+  .moment:global(.is-fait) .moment__jauge { width: 100%; }
+  :global(html:not(.js)) .moment__bouton { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .moment__voix, .moment__grand, .moment__resultat, .moment__jauge,
+    .moment:global(.is-appui) .moment__grand, .moment:global(.is-fait) .moment__grand,
+    .moment:global(.is-appui) .moment__jauge { transition: none; }
+  }
+</style>
