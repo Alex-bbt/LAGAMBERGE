@@ -1,0 +1,40 @@
+---
+/* Bande bleue « REMEMBER IT'S A GAME. » + mascotte castor.
+   Paragraphe = début commun + fin propre à l'équipe. */
+import { commun } from '../../data/adidas.js';
+
+const { equipe } = Astro.props;
+const { jeu, mascotte } = commun;
+---
+
+<section class="jeu" aria-labelledby="jeu-titre">
+  <div class="jeu__in ad-wrap">
+    <img class="jeu__mascotte" src={mascotte.src} width={mascotte.width} height={mascotte.height} alt={mascotte.alt} loading="lazy" decoding="async" />
+    <div class="jeu__texte">
+      <p class="ad-lab"><i>{jeu.repere}</i>{jeu.surTitre}</p>
+      <h2 class="jeu__titre" id="jeu-titre">{jeu.titre}</h2>
+      <p class="jeu__p">{jeu.debut} {equipe.finJeu}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .jeu { background: var(--ad-blue); color: var(--ad-white); overflow: hidden; }
+  .jeu__in { display: grid; gap: 1.5rem; padding-block: clamp(3rem, 8vw, 5rem); align-items: center; }
+  .jeu .ad-lab { color: var(--ad-white); }
+  .jeu .ad-lab i { color: var(--ad-white); opacity: 0.65; }
+  .jeu__titre {
+    font-family: var(--ad-display);
+    font-weight: 900;
+    font-size: clamp(2.6rem, 11vw, 4.75rem);
+    line-height: 0.9;
+    text-transform: uppercase;
+    margin-top: 0.6rem;
+  }
+  .jeu__p { margin-top: 1.25rem; font-size: clamp(1.02rem, 2.4vw, 1.15rem); line-height: 1.6; color: #e9ecff; max-width: 40rem; }
+  .jeu__mascotte { width: min(46vw, 190px); justify-self: start; }
+  @media (min-width: 860px) {
+    .jeu__in { grid-template-columns: 280px minmax(0, 1fr); gap: 3.5rem; }
+    .jeu__mascotte { width: 100%; max-width: 280px; }
+  }
+</style>

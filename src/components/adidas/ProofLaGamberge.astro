@@ -1,0 +1,186 @@
+---
+/* Preuve « LA GAMBERGE » : création de contenu, chiffre d'audience, grille de
+   vidéos (cartes vignettes, sans embed lourd ; façade légère pour YouTube),
+   liens réseaux (repris de src/data/mediakit.js → `comptes`).
+   Une vidéo sans `url` ni `youtubeId` n'est pas affichée. */
+import { commun } from '../../data/adidas.js';
+import { comptes } from '../../data/mediakit.js';
+import EnTete from './EnTete.astro';
+
+const s = commun.sections.laGamberge;
+const videos = (s.videos || []).filter((v) => v && (v.url || v.youtubeId));
+const reseaux = comptes.filter((c) => c && c.url);
+const aYouTube = videos.some((v) => v.youtubeId);
+---
+
+<section class="ad-section lg" id={s.id} aria-labelledby={`${s.id}-titre`}>
+  <div class="ad-wrap">
+    <EnTete surTitre={s.surTitre} titre={s.titre} id={`${s.id}-titre`} />
+
+    <div class="lg__intro">
+      <div class="lg__texte">
+        {s.paragraphes.map((p) => <p>{p}</p>)}
+      </div>
+      {s.chiffre && (
+        <p class="lg__chiffre"><b>{s.chiffre.valeur}</b><span>{s.chiffre.legende}</span></p>
+      )}
+    </div>
+
+    {videos.length > 0 && (
+      <div class="lg__videos">
+        <h3 class="ad-lab">{s.videosTitre}</h3>
+        <ul>
+          {videos.map((v) => (
+            <li>
+              {v.youtubeId ? (
+                <button class="carte carte--yt" type="button" data-yt={v.youtubeId} aria-label={`Play on this page: ${v.titre} (YouTube)`}>
+                  <img src={v.miniature || `https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`} width={v.width || 480} height={v.height || 360} alt="" loading="lazy" decoding="async" />
+                  <span class="carte__play" aria-hidden="true">▶</span>
+                  <span class="carte__meta"><span class="carte__pf">{v.plateforme}</span><span class="carte__titre">{v.titre}</span></span>
+                </button>
+              ) : (
+                <a class="carte" href={v.url} target="_blank" rel="noopener noreferrer">
+                  {v.miniature && <img src={v.miniature} width={v.width} height={v.height} alt="" loading="lazy" decoding="async" />}
+                  <span class="carte__play" aria-hidden="true">▶</span>
+                  <span class="carte__meta"><span class="carte__pf">{v.plateforme} ↗</span><span class="carte__titre">{v.titre}</span></span>
+                  <span class="sr-only"> (opens {v.plateforme} in a new tab)</span>
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {reseaux.length > 0 && (
+      <div class="lg__reseaux">
+        <h3 class="ad-lab">{s.reseauxTitre}</h3>
+        <ul>
+          {reseaux.map((r) => (
+            <li>
+              <a href={r.url} target="_blank" rel="noopener noreferrer">
+                <b>{r.nom}</b><span>{r.pseudo}</span><span class="sr-only"> (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+</section>
+
+{aYouTube && (
+  <script>
+    // Façade YouTube : l'iframe n'est chargée qu'au clic (rien de tiers avant).
+    document.querySelectorAll<HTMLButtonElement>('button[data-yt]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const f = document.createElement('iframe');
+        f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.yt || '')}?autoplay=1`;
+        f.title = b.getAttribute('aria-label') || 'YouTube video';
+        f.allow = 'autoplay; encrypted-media; picture-in-picture';
+        f.allowFullscreen = true;
+        f.className = 'carte__iframe';
+        b.replaceWith(f);
+      });
+    });
+  </script>
+)}
+
+<style>
+  .lg__intro { display: grid; gap: 1.5rem; align-items: start; }
+  .lg__texte { display: grid; gap: 1rem; font-size: 1.05rem; color: var(--ad-text); max-width: 40rem; }
+  .lg__chiffre { background: var(--ad-ink); color: var(--ad-white); padding: 1.25rem 1.25rem 1.4rem; }
+  .lg__chiffre b {
+    display: block;
+    font-family: var(--ad-display);
+    font-weight: 900;
+    font-size: clamp(3.5rem, 16vw, 5rem);
+    line-height: 0.9;
+    color: var(--ad-white);
+  }
+  .lg__chiffre span { display: block; margin-top: 0.4rem; font-size: 0.95rem; color: #d4d5d9; }
+
+  .lg__videos, .lg__reseaux { margin-top: 2.5rem; }
+  .lg__videos ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  .carte {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 9 / 14;
+    overflow: hidden;
+    background: var(--ad-ink);
+    color: var(--ad-white);
+    text-decoration: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+  }
+  .carte img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+  .carte:hover img { transform: scale(1.03); }
+  .carte::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0) 45%, rgba(10, 10, 10, 0.9) 100%);
+  }
+  .carte__play {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 2;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    background: var(--ad-blue);
+    color: var(--ad-white);
+    font-size: 0.85rem;
+  }
+  .carte__meta { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 0.75rem; display: grid; gap: 0.2rem; }
+  .carte__pf {
+    font-family: var(--ad-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #d4d5d9;
+  }
+  .carte__titre {
+    font-family: var(--ad-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+  :global(.carte__iframe) { width: 100%; aspect-ratio: 9 / 14; border: 0; display: block; }
+
+  .lg__reseaux ul { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  .lg__reseaux a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.75rem 0.9rem;
+    min-height: 48px;
+    border: 2px solid var(--ad-ink);
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .lg__reseaux a:hover { background: var(--ad-ink); color: var(--ad-white); }
+  .lg__reseaux b { font-family: var(--ad-display); font-weight: 800; font-size: 1.15rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .lg__reseaux span { font-size: 0.875rem; overflow-wrap: anywhere; }
+
+  @media (min-width: 860px) {
+    .lg__intro { grid-template-columns: minmax(0, 1fr) 300px; gap: 3rem; }
+    .lg__videos ul { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+    .lg__reseaux ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+</style>

@@ -1,0 +1,25 @@
+---
+/* Boutons d'action partagés (hero + pied de page) : 1-Pager PDF, CV, e-mail.
+   Le bouton CV n'apparaît que si `commun.cv` est renseigné (jamais de lien cassé).
+   `pdfNom` : nom du fichier proposé au téléchargement. */
+import { commun } from '../../data/adidas.js';
+
+const { pdf, fond = 'noir' } = Astro.props;
+const pdfNom = pdf.split('/').pop();
+const cvNom = commun.cv ? commun.cv.split('/').pop() : null;
+const secondaire = fond === 'noir' ? 'ad-btn--ghost' : 'ad-btn--dark';
+---
+
+<div class="ad-btns">
+  <a class="ad-btn ad-btn--primary" href={pdf} download={pdfNom} data-pdf>
+    {commun.boutons.pdf}
+  </a>
+  {commun.cv && (
+    <a class={`ad-btn ${secondaire}`} href={commun.cv} download={cvNom} data-cv>
+      {commun.boutons.cv}
+    </a>
+  )}
+  <a class={`ad-btn ${secondaire}`} href={`mailto:${commun.email}`}>
+    {commun.boutons.email}
+  </a>
+</div>

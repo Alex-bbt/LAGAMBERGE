@@ -1,0 +1,129 @@
+---
+/* HERO (fond noir, coupe diagonale) : identité, « I'M BACK. », intro de
+   l'équipe, photo, boutons. Tout le texte vient de src/data/adidas.js. */
+import { commun } from '../../data/adidas.js';
+import Boutons from './Boutons.astro';
+
+const { equipe } = Astro.props;
+const { hero, photo, nom } = commun;
+---
+
+<header class="hero">
+  <div class="hero__in ad-wrap">
+    <div class="hero__texte">
+      <p class="hero__top"><b>{nom}</b><span>{hero.surTitre} · {equipe.equipe}</span></p>
+      <h1 class="hero__titre">{hero.titre}<em>.</em></h1>
+      <p class="hero__intro">{hero.debutIntro} {equipe.finIntro}</p>
+      <Boutons pdf={equipe.pdf} fond="noir" />
+      <p class="hero__mention">{hero.mention}</p>
+      <p class="hero__dossard" aria-hidden="true">{hero.dossard}<small>{hero.dossardLegende}</small></p>
+    </div>
+    <picture class="hero__photo">
+      <source media="(max-width: 700px)" srcset={photo.srcMobile} />
+      <img src={photo.src} width={photo.width} height={photo.height} alt={photo.alt} fetchpriority="high" decoding="async" />
+    </picture>
+  </div>
+</header>
+
+<style>
+  .hero {
+    position: relative;
+    background: var(--ad-ink);
+    color: var(--ad-white);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - var(--ad-cut)));
+    overflow: hidden;
+    padding-bottom: calc(var(--ad-cut) + 2rem);
+  }
+  .hero__in {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-top: clamp(1.5rem, 5vw, 3rem);
+  }
+  .hero__top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    font-family: var(--ad-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #bfc1c6;
+  }
+  .hero__top b { color: var(--ad-white); font-weight: 800; }
+  .hero__titre {
+    font-family: var(--ad-display);
+    font-weight: 900;
+    font-size: clamp(5rem, 25vw, 9.5rem);
+    line-height: 0.84;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin-top: 1.25rem;
+    white-space: nowrap;
+  }
+  .hero__titre em { font-style: normal; color: var(--ad-blue); }
+  .hero__intro {
+    margin-top: 1.25rem;
+    font-size: clamp(1.02rem, 2.6vw, 1.15rem);
+    line-height: 1.55;
+    color: #e8e8ea;
+    max-width: 36rem;
+  }
+  .hero__texte :global(.ad-btns) { margin-top: 1.75rem; }
+  .hero__mention {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: #bfc1c6;
+  }
+  .hero__dossard {
+    display: none;
+    font-family: var(--ad-display);
+    font-weight: 900;
+    font-size: 4rem;
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--ad-white);
+    margin-top: 2rem;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+  .hero__dossard small {
+    font-size: 0.85rem;
+    -webkit-text-stroke: 0;
+    color: #bfc1c6;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding-bottom: 0.2rem;
+  }
+  .hero__photo { order: -1; margin-inline: calc(var(--ad-gutter) * -1); }
+  .hero__photo img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: 50% 18%;
+  }
+  /* Mobile : photo sous le titre, au-dessus de l'intro */
+  @media (max-width: 859px) {
+    .hero__in { display: flex; flex-direction: column; }
+    .hero__texte { display: contents; }
+    .hero__top { order: 1; }
+    .hero__titre { order: 2; margin-top: 0; }
+    .hero__photo { order: 3; }
+    .hero__intro { order: 4; margin-top: 0; }
+    .hero__texte :global(.ad-btns) { order: 5; margin-top: 0.25rem; }
+    .hero__mention { order: 6; margin-top: 0; }
+  }
+  @media (min-width: 860px) {
+    .hero { padding-bottom: 0; min-height: 640px; }
+    .hero__in { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 2.5rem; padding-top: 0; }
+    .hero__texte { padding-block: 3.5rem calc(var(--ad-cut) + 3rem); }
+    .hero__dossard { display: flex; }
+    .hero__photo { order: 0; margin: 0 calc(var(--ad-gutter) * -1) 0 0; position: relative; }
+    .hero__photo img { height: 100%; aspect-ratio: auto; object-position: 50% 20%; }
+  }
+  @media (min-width: 1100px) {
+    .hero__photo { margin-right: calc((100vw - var(--ad-max)) / -2 - var(--ad-gutter)); }
+  }
+</style>

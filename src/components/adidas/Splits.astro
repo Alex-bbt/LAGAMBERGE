@@ -1,0 +1,120 @@
+---
+/* « ONE YEAR. NEW SPLITS. » — la chronologie en piste, comme dans le PDF :
+   3 étapes propres à l'équipe + la dernière étape commune « NEXT ».
+   Mobile : piste verticale. Desktop : piste horizontale en 4 colonnes. */
+import { commun } from '../../data/adidas.js';
+
+const { equipe } = Astro.props;
+const { splits } = commun;
+const etapes = [...equipe.splits, { ...splits.prochaine, next: true }];
+---
+
+<section class="splits" aria-labelledby="splits-titre">
+  <div class="ad-wrap">
+    <div class="splits__hd">
+      <div>
+        <p class="ad-lab"><i>{splits.repere}</i>{splits.surTitre}</p>
+        <h2 class="ad-h2" id="splits-titre">{splits.titre}<br /><em>{splits.titreAccent}</em></h2>
+      </div>
+      <p class="splits__solo">{splits.transition}<br /><a href="#preuves"><b>{splits.transitionFleche}</b></a></p>
+    </div>
+
+    <ol class="track">
+      {etapes.map((e) => (
+        <li class:list={['split', { 'split--hi': e.accent, 'split--next': e.next }]}>
+          <p class="split__k">{e.quand}</p>
+          <p class="split__n">{e.chiffre}</p>
+          <p class="split__t">{e.titre}</p>
+          <p class="split__s">{e.texte}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .splits { padding-block: 2.5rem clamp(3.5rem, 8vw, 5.5rem); }
+  .splits__hd { display: flex; flex-direction: column; gap: 1.25rem; }
+  .splits__hd .ad-lab { color: var(--ad-ink); }
+  .splits__solo { font-size: 1rem; line-height: 1.5; color: var(--ad-text); }
+  .splits__solo a { text-decoration: none; }
+  .splits__solo b {
+    display: inline-block;
+    margin-top: 0.3rem;
+    color: var(--ad-ink);
+    font-family: var(--ad-display);
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .splits__solo a:hover b { color: var(--ad-blue); }
+
+  .track {
+    list-style: none;
+    padding: 0;
+    margin: 2.5rem 0 0;
+    position: relative;
+    display: grid;
+    gap: 2rem;
+    padding-left: 1.75rem;
+  }
+  .track::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    border-left: 3px solid var(--ad-ink);
+  }
+  .split { position: relative; }
+  .split::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.75rem + 1px);
+    top: 0.3rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ad-ink);
+  }
+  .split__k {
+    font-family: var(--ad-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ad-mute-light);
+  }
+  .split__n {
+    font-family: var(--ad-display);
+    font-weight: 900;
+    font-size: clamp(3.5rem, 15vw, 4.5rem);
+    line-height: 0.9;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .split__t {
+    font-family: var(--ad-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-top: 0.35rem;
+  }
+  .split__s { font-size: 0.975rem; line-height: 1.5; color: var(--ad-text); margin-top: 0.25rem; max-width: 30rem; }
+  .split--hi .split__n { color: var(--ad-blue); }
+  .split--next::before { background: var(--ad-blue); box-shadow: 0 0 0 6px var(--ad-blue-soft); }
+  .split--next .split__n { color: transparent; -webkit-text-stroke: 2px var(--ad-blue); }
+  .split--next .split__t { color: var(--ad-blue); }
+
+  @media (min-width: 860px) {
+    .splits__hd { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+    .splits__solo { text-align: right; padding-bottom: 0.3rem; }
+    .track { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.75rem; padding-left: 0; padding-top: 1.5rem; margin-top: 3rem; }
+    .track::before { left: 0; right: 0; top: 0; bottom: auto; border-left: 0; border-top: 3px solid var(--ad-ink); }
+    .split::before { left: 0; top: calc(-1.5rem - 6px); }
+    .split__n { font-size: clamp(3.5rem, 6vw, 4.75rem); }
+  }
+</style>
