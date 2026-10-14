@@ -27,7 +27,10 @@ export const commun = {
   email: 'alex.bourbigot78@gmail.com',
   cv: `${A}/Alex_Bourbigot_CV.pdf`,
   marque: 'La Gamberge',
-  pour: 'For adidas',
+  pour: 'For', // suivi du logo adidas puis de l'équipe : « For [logo] · Marketing »
+  // Logo adidas (fichier fourni par Alex), affiché avec parcimonie :
+  // en-tête de l'écran 1 et signature de l'écran final.
+  logo: { src: `${A}/img/adidas-logo.png`, alt: 'adidas' },
   nonAffiliation: 'A personal project by Alex Bourbigot. Not affiliated with or endorsed by adidas.',
   mailSujet: 'You got this — {team}',
 
