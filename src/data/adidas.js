@@ -25,10 +25,9 @@ export const commun = {
   nom: 'Alex Bourbigot',
   email: 'alex.bourbigot78@gmail.com',
 
-  // CV : chemin du PDF dans public/adidas/. TODO (Alex) : déposer le CV dans
-  // public/adidas/Alex_Bourbigot_CV.pdf puis remplacer null par
-  // `${A}/Alex_Bourbigot_CV.pdf`. Tant que c'est null, aucun bouton CV.
-  cv: null,
+  // CV : chemin du PDF dans public/adidas/. Mettre null pour masquer tous
+  // les boutons CV (jamais de lien cassé).
+  cv: `${A}/Alex_Bourbigot_CV.pdf`,
 
   // Photo du hero (déjà retouchée : ne pas la recadrer autrement).
   photo: {
