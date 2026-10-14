@@ -1,72 +1,96 @@
 ---
-/* Un moment de pression : voix négative → grand mot → appui long → « It's only… »
-   + preuve. Sans JS : état final rendu directement (mot réduit, résultat visible,
-   pas de bouton). Les interactions sont dans le script de ShrinkIt.astro. */
+/* Un moment de pression : contexte → voix négative → LE PROBLÈME en énorme →
+   appui long → le problème rétrécit → « It's only… » + preuve + signature
+   « You got this. [logo] ». Sans JS : état final rendu directement.
+   Les interactions sont dans le script de ShrinkIt.astro. */
 import { commun } from '../../data/adidas.js';
 import Jetons from './Jetons.astro';
+import Logo from './Logo.astro';
 
 const { moment, index, total, fond, valeurs } = Astro.props;
 const { boutons } = commun;
 const sombre = fond === 'marine';
+// Les phrases longues prennent un corps un peu plus petit.
+const long = moment.grand.length > 14;
 ---
 
 <section class:list={['yg-ecran', `fond-${fond}`, 'moment']} aria-label={`Moment ${index} of ${total}: ${moment.tag}`} data-moment>
   <div class="yg-col moment__col">
     <div class="moment__tete yg-etiquette"><span>{moment.tag}</span><span>{String(index).padStart(2, '0')} / {String(total).padStart(2, '0')}</span></div>
-    <p class="moment__voix">“{moment.voix}”</p>
-    <div class="moment__scene">
-      <p class:list={['moment__grand', 'yg-serre', { 'moment__grand--long': moment.grand.length > 5 }]} aria-hidden="true">{moment.grand}</p>
-      <div class="moment__resultat">
-        <p class="moment__seul yg-large">
-          {moment.seul}{moment.seulAccent && <> <span class="yg-accent">{moment.seulAccent}</span></>}{moment.seulFin}
-        </p>
-        <p class="moment__preuve"><Jetons texte={moment.preuve} valeurs={valeurs} /></p>
+    <div class="moment__corps">
+      <p class="moment__voix">“{moment.voix}”</p>
+      <div class="moment__scene">
+        <p class:list={['moment__grand', 'yg-serre', { 'moment__grand--long': long }]}>{moment.grand}</p>
+        <div class="moment__resultat">
+          <p class="moment__seul yg-large">
+            {moment.seul}{moment.seulAccent && <> <span class="yg-accent">{moment.seulAccent}</span></>}{moment.seulFin}
+          </p>
+          <p class="moment__preuve"><Jetons texte={moment.preuve} valeurs={valeurs} /></p>
+          <p class="moment__signature yg-large">{commun.signature} <Logo hauteur="0.95em" /></p>
+        </div>
       </div>
+      <button
+        class:list={['moment__bouton', { 'moment__bouton--clair': sombre }]}
+        type="button"
+        data-repos={boutons.repos}
+        data-appui={boutons.appui}
+        data-encore={boutons.encore}
+        data-fini={boutons.fini}
+        aria-label={`${boutons.repos}: ${moment.grand}`}
+      >
+        <span class="moment__jauge" aria-hidden="true"></span>
+        <span class="moment__libelle">{boutons.repos}</span>
+      </button>
     </div>
-    <button
-      class:list={['moment__bouton', { 'moment__bouton--clair': sombre }]}
-      type="button"
-      data-repos={boutons.repos}
-      data-appui={boutons.appui}
-      data-encore={boutons.encore}
-      data-fini={boutons.fini}
-      aria-label={`${boutons.repos}: ${moment.grand}`}
-    >
-      <span class="moment__jauge" aria-hidden="true"></span>
-      <span class="moment__libelle">{boutons.repos}</span>
-    </button>
   </div>
 </section>
 
 <style>
-  .moment__col { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+  .moment__col { flex: 1; display: flex; flex-direction: column; }
   .moment__tete { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid currentColor; padding-bottom: 12px; }
+  .moment__tete span:last-child { white-space: nowrap; }
+  /* Le contenu est centré verticalement : plus de grand vide entre le
+     problème et le bouton. */
+  .moment__corps { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(18px, 3svh, 32px); padding-block: 24px 8px; }
   .moment__voix {
     font: italic 600 clamp(18px, 2.4vw, 26px)/1.35 var(--yg-texte);
-    max-width: 30ch;
+    max-width: 32ch;
     transition: opacity 500ms;
   }
-  .moment__scene { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; min-height: 280px; }
+  /* Scène : le problème en haut ; le résultat s'affiche en bas, sous le
+     problème réduit. Hauteur réservée = problème réduit + résultat. */
+  .moment__scene { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 210px; }
   .moment__grand {
-    font-size: clamp(110px, 32vw, 400px);
-    line-height: 0.82;
+    width: 100%;
+    font-size: clamp(60px, 17vw, 168px);
+    line-height: 0.88;
     letter-spacing: -0.01em;
-    white-space: nowrap;
+    text-align: center;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
     transform-origin: 50% 0;
     transform: scale(1);
     transition: transform 300ms ease-out;
   }
-  .moment__grand--long { font-size: clamp(96px, 26vw, 300px); }
+  .moment__grand--long { font-size: clamp(54px, 15vw, 150px); }
   .moment__resultat {
     position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
     text-align: center;
     opacity: 0;
     transform: translateY(16px);
     transition: opacity 400ms ease-out, transform 400ms ease-out;
+    pointer-events: none;
   }
-  .moment__seul { font-size: clamp(30px, 6.4vw, 80px); line-height: 0.95; }
-  .moment__preuve { font: 600 15px/1.45 var(--yg-texte); margin-top: 14px; }
+  .moment__seul { font-size: clamp(28px, 6vw, 72px); line-height: 0.95; }
+  .moment__preuve { font: 600 15px/1.45 var(--yg-texte); max-width: 44ch; }
   .fond-marine .moment__preuve { color: var(--yg-texte-marine); }
+  .moment__signature {
+    display: inline-flex; align-items: center; gap: 0.45em;
+    font-size: clamp(15px, 1.6vw, 19px); letter-spacing: 0.02em;
+    color: var(--yg-orange);
+  }
+  .fond-marine .moment__signature { color: var(--yg-orange-sur-marine); }
 
   .moment__bouton {
     position: relative; overflow: hidden;
@@ -85,17 +109,20 @@ const sombre = fond === 'marine';
   /* Appui en cours / terminé (et rendu sans JS = état final) */
   :global(html:not(.js)) .moment__grand,
   .moment:global(.is-appui) .moment__grand,
-  .moment:global(.is-fait) .moment__grand { transform: scale(0.16); }
+  .moment:global(.is-fait) .moment__grand { transform: scale(0.18); }
   .moment:global(.is-appui) .moment__grand,
   .moment:global(.is-fait) .moment__grand { transition: transform 1200ms cubic-bezier(0.2, 0.7, 0.2, 1); }
   .moment:global(.is-appui) .moment__voix,
   .moment:global(.is-fait) .moment__voix { opacity: 0; }
   :global(html:not(.js)) .moment__resultat,
-  .moment:global(.is-fait) .moment__resultat { opacity: 1; transform: none; }
+  .moment:global(.is-fait) .moment__resultat { opacity: 1; transform: none; pointer-events: auto; }
   .moment:global(.is-appui) .moment__jauge { width: 100%; transition: width 1200ms linear; }
   .moment:global(.is-fait) .moment__jauge { width: 100%; }
   :global(html:not(.js)) .moment__bouton { display: none; }
 
+  @media (min-width: 860px) {
+    .moment__scene { min-height: 260px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .moment__voix, .moment__grand, .moment__resultat, .moment__jauge,
     .moment:global(.is-appui) .moment__grand, .moment:global(.is-fait) .moment__grand,

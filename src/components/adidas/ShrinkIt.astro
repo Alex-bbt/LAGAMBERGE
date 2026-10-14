@@ -68,21 +68,22 @@ const config = {
   <main>
     <!-- 01 · DAY N -->
     <section class="yg-ecran fond-marine jour" aria-label="Day counter">
+      <Logo hauteur="min(72svh, 620px)" class="jour__filigrane" decoratif />
       <header class="yg-col jour__tete">
         <span class="yg-large jour__marque">{commun.marque}</span>
         <span class="yg-etiquette jour__pour">{commun.pour} <Logo hauteur="15px" class="jour__logo" /> · {equipe.equipe}</span>
       </header>
       <div class="yg-col jour__centre">
-        <p class="yg-etiquette jour__direct"><span class="jour__point" aria-hidden="true"></span><span data-yg-libelle>{libelleSecours}</span></p>
-        <h1>
+        <p class="jour__direct"><span class="jour__point" aria-hidden="true"></span><span data-yg-libelle>{libelleSecours}</span></p>
+        <h1 class="jour__titre">
           <span class="yg-large jour__mot">{ecranJour.titre}</span>
-          <span class="yg-serre jour__n" data-yg="n">{n}</span>
+          <span class="jour__n" data-yg="n">{n}</span>
         </h1>
         <p class="jour__regle" data-yg-regle>{serieCassee ? remplir(ecranJour.regleCassee, { n }) : ecranJour.regle}</p>
-      </div>
-      <div class="yg-col jour__pied">
-        <p class="yg-large jour__accroche">{ecranJour.accroche} <span class="yg-accent">{ecranJour.accrocheAccent}</span></p>
-        <p class="jour__intro">{ecranJour.intro}</p>
+        <div class="jour__pied">
+          <p class="yg-large jour__accroche">{ecranJour.accroche} <span class="yg-accent">{ecranJour.accrocheAccent}</span></p>
+          <p class="jour__intro">{ecranJour.intro}</p>
+        </div>
       </div>
     </section>
 
@@ -107,23 +108,26 @@ const config = {
     <!-- 06 · BACK TO RUN -->
     <section class="yg-ecran fond-blanc btr" aria-label="Back to Run">
       <div class="yg-col btr__col">
-        <div class="btr__tete">
-          <p class="yg-etiquette btr__sur">{backToRun.surTitre}</p>
-          <h2 class="yg-large btr__titre">{backToRun.titre} <span class="yg-accent">{backToRun.titreAccent}</span> {backToRun.titreFin}</h2>
-        </div>
-        <dl class="btr__chiffres">
-          {backToRun.chiffres.map((c) => (
-            <div>
-              <dt class:list={['yg-serre', { 'yg-accent': c.accent }]}>{c.valeur}</dt>
-              <dd>{c.legende}</dd>
-            </div>
-          ))}
-        </dl>
-        <div class="btr__bas">
-          <div class="btr__textes">
-            <p class="btr__texte">{backToRun.texte}</p>
-            <p class="yg-large btr__ligne">{equipe.btrLine}</p>
+        <div class="btr__texte-col">
+          <div class="btr__tete">
+            <img class="btr__logo" src={backToRun.logo.src} width={backToRun.logo.width} height={backToRun.logo.height} alt={backToRun.logo.alt} loading="lazy" decoding="async" />
+            <p class="yg-etiquette btr__sur">{backToRun.surTitre}</p>
           </div>
+          <h2 class="yg-large btr__titre">{backToRun.titre} <span class="yg-accent">{backToRun.titreAccent}</span> {backToRun.titreFin}</h2>
+          <p class="btr__explication">{backToRun.explication}</p>
+          <dl class="btr__chiffres">
+            {backToRun.chiffres.map((c) => (
+              <div>
+                <dt class:list={['btr__valeur', { 'yg-accent': c.accent }]}>{c.valeur}</dt>
+                <dd>{c.legende}</dd>
+              </div>
+            ))}
+          </dl>
+          <p class="btr__texte">{backToRun.texte}</p>
+          <p class="yg-large btr__ligne">{equipe.btrLine}</p>
+        </div>
+        <div class="btr__visuel">
+          <img class="btr__mascotte" src={backToRun.mascotte.src} width={backToRun.mascotte.width} height={backToRun.mascotte.height} alt={backToRun.mascotte.alt} loading="lazy" decoding="async" />
           <figure class="btr__avatars">
             <ul>
               {backToRun.avatars.map((a) => (
@@ -146,6 +150,7 @@ const config = {
       <div class="yg-col tour__col">
         <h2 class="yg-large tour__titre">{aToi.titre}</h2>
         <p class="tour__question">{aToi.question}</p>
+        <p class="tour__consigne">{aToi.consigne}</p>
         <div class="tour__choix">
           {equipe.choix.map((c) => (
             <button type="button" class="tour__bouton" aria-pressed="false" data-choix={c}>{c}</button>
@@ -153,22 +158,38 @@ const config = {
         </div>
         <div class="tour__scene" aria-live="polite">
           <p class="yg-serre tour__mot" data-tour-mot></p>
-          <p class="yg-large tour__reponse" data-tour-reponse>{aToi.reponse}</p>
+          <p class="yg-large tour__reponse" data-tour-reponse>{aToi.reponse} <Logo hauteur="0.8em" /></p>
         </div>
       </div>
     </section>
 
     <!-- 09 · NEXT -->
-    <section class="yg-ecran fond-blanc suite" aria-label="Next" id="contact">
+    <section class="yg-ecran fond-blanc suite" aria-label={suite.surTitre} id="contact">
       <div class="yg-col suite__col">
-        <Logo hauteur="clamp(40px, 6vw, 64px)" class="suite__logo" />
-        <h2 class="yg-large suite__titre">{suite.titre}<br /><span class="yg-accent">{suite.titreAccent}</span></h2>
-        <p class="suite__projection"><Jetons texte={suite.projection} valeurs={valeurs} /></p>
-        <p class="yg-large suite__finale">{equipe.finale}</p>
-        <div class="suite__liens">
-          <a href={equipe.pdf} download={pdfNom} data-pdf><span class="yg-large">{remplir(suite.lienPdf, { team: equipe.equipe })}</span><span class="suite__fleche">{suite.pdfFleche}</span></a>
-          <a href={commun.cv} download={cvNom} data-cv><span class="yg-large">{suite.lienCv}</span><span class="suite__fleche">{suite.pdfFleche}</span></a>
-          <a href={mailto} class="suite__mail"><span>{commun.email}</span><span class="suite__fleche">→</span></a>
+        <div class="suite__gauche">
+          <Logo hauteur="clamp(44px, 6vw, 72px)" class="suite__logo" />
+          <p class="yg-etiquette suite__sur">{suite.surTitre}</p>
+          <h2 class="yg-large suite__titre">{suite.titre}<br /><span class="yg-accent">{suite.titreAccent}</span></h2>
+          <p class="yg-large suite__finale">{equipe.finale}</p>
+          <ul class="suite__infos">
+            {suite.infos.map((i) => <li>{i}</li>)}
+          </ul>
+          <p class="suite__projection"><Jetons texte={suite.projection} valeurs={valeurs} /></p>
+        </div>
+        <div class="suite__droite">
+          <p class="yg-etiquette suite__actions-titre">{suite.actionsTitre}</p>
+          <a class="action action--plein" href={equipe.pdf} download={pdfNom} data-pdf>
+            <span class="action__texte"><span class="yg-large action__titre">{remplir(suite.lienPdf, { team: equipe.equipe })}</span><span class="action__detail">{suite.lienPdfDetail}</span></span>
+            <span class="action__fleche" aria-hidden="true">↓</span>
+          </a>
+          <a class="action" href={commun.cv} download={cvNom} data-cv>
+            <span class="action__texte"><span class="yg-large action__titre">{suite.lienCv}</span><span class="action__detail">{suite.lienCvDetail}</span></span>
+            <span class="action__fleche" aria-hidden="true">↓</span>
+          </a>
+          <a class="action" href={mailto}>
+            <span class="action__texte"><span class="yg-large action__titre">{suite.lienMail}</span><span class="action__detail">{commun.email}</span></span>
+            <span class="action__fleche" aria-hidden="true">→</span>
+          </a>
         </div>
         <p class="suite__mention">{commun.nonAffiliation}</p>
       </div>
@@ -324,19 +345,47 @@ const config = {
 
 <style>
   /* -- 01 Day N -------------------------------------------------------------- */
-  .jour { padding-top: 20px; padding-bottom: calc(var(--yg-barre) + 20px + env(safe-area-inset-bottom)); }
+  .jour { position: relative; padding-top: 20px; padding-bottom: calc(var(--yg-barre) + 28px + env(safe-area-inset-bottom)); }
+  .jour > :not(.jour__filigrane) { position: relative; z-index: 1; }
+  /* Grand logo en filigrane, bleu plus clair, à droite (ordinateur). */
+  .jour :global(.jour__filigrane) {
+    display: none;
+    position: absolute; z-index: 0;
+    right: max(-6vw, -80px); top: 50%;
+    transform: translateY(-46%);
+    color: #2c3d86;
+    opacity: 0.55;
+    pointer-events: none;
+  }
   .jour__tete { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .jour__marque { font-size: 14px; line-height: 1; letter-spacing: 0.02em; }
   .jour__pour { color: var(--yg-texte-marine); text-align: right; letter-spacing: 0.12em; display: inline-flex; align-items: center; gap: 0.5em; }
   .jour__pour :global(.jour__logo) { color: #fff; margin-inline: 0.1em; }
-  .jour__centre { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-block: min(32px, 3svh); }
-  .jour__direct { display: flex; align-items: center; gap: 8px; color: var(--yg-texte-marine); }
-  .jour__point { width: 8px; height: 8px; background: var(--yg-orange); flex: none; }
-  .jour__mot { display: block; font-size: clamp(28px, min(10vw, 8svh), 104px); line-height: 0.9; margin-top: min(18px, 2svh); }
-  .jour__n { display: block; font-size: clamp(100px, min(66vw, 30svh), 620px); line-height: 0.78; letter-spacing: -0.02em; }
-  .jour__regle { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); max-width: 28ch; margin-top: min(24px, 2.5svh); }
-  .jour__pied { display: flex; flex-direction: column; gap: 10px; border-top: 2px solid #fff; padding-top: 18px; }
-  .jour__accroche { font-size: clamp(20px, 3.4vw, 38px); line-height: 1; }
+  .jour__centre { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(14px, 2.4svh, 24px); padding-block: clamp(24px, 5svh, 56px) 0; }
+  /* Badge « Live from Strava » : même famille que les titres, cadré. */
+  .jour__direct {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 7px 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    font: 700 12px/1 var(--yg-titre); font-stretch: 110%;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: #fff;
+  }
+  .jour__point { width: 8px; height: 8px; background: var(--yg-orange-sur-marine); flex: none; animation: pouls 1.8s ease-in-out infinite; }
+  @keyframes pouls { 50% { opacity: 0.35; } }
+  .jour__titre { display: flex; flex-direction: column; gap: 4px; }
+  .jour__mot { font-size: clamp(26px, min(7vw, 6svh), 64px); line-height: 0.9; color: var(--yg-texte-marine); }
+  /* Chiffre : Archivo 900 en largeur normale (plus lisible que l'ultra-condensé). */
+  .jour__n {
+    font-family: var(--yg-titre); font-weight: 900; font-stretch: 100%;
+    font-size: clamp(110px, min(38vw, 30svh), 300px);
+    line-height: 0.82; letter-spacing: -0.045em;
+    font-variant-numeric: tabular-nums;
+  }
+  .jour__regle { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); max-width: 30ch; }
+  .jour__pied { display: flex; flex-direction: column; gap: 10px; border-top: 2px solid rgba(255, 255, 255, 0.85); padding-top: 18px; margin-top: clamp(8px, 3svh, 32px); max-width: 640px; }
+  .jour__accroche { font-size: clamp(20px, 3vw, 34px); line-height: 1; }
   .jour__intro { font: 500 13px/1.4 var(--yg-texte); color: var(--yg-texte-marine); }
 
   /* -- 02 Grille ------------------------------------------------------------- */
@@ -351,29 +400,33 @@ const config = {
 
   /* -- 06 Back to Run -------------------------------------------------------- */
   .btr { justify-content: center; padding-top: 48px; }
-  .btr__col { display: flex; flex-direction: column; gap: 28px; }
-  .btr__tete { display: flex; flex-direction: column; gap: 12px; }
+  .btr__col { display: grid; gap: 32px; align-items: center; }
+  .btr__texte-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .btr__tete { display: flex; align-items: center; gap: 14px; }
+  .btr__logo { width: 92px; height: auto; flex: none; }
   .btr__sur { color: var(--yg-texte-clair); }
-  .btr__titre { font-size: clamp(34px, 7.4vw, 92px); line-height: 0.92; }
-  .btr__chiffres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; border-top: 2px solid var(--yg-marine); padding-top: 20px; margin: 0; }
-  .btr__chiffres div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .btr__chiffres dt { font-size: clamp(60px, 8vw, 104px); line-height: 0.85; }
-  .btr__chiffres dd { margin: 0; font: 600 14px/1.35 var(--yg-texte); color: var(--yg-texte-clair); }
-  .btr__bas { display: grid; gap: 24px; align-items: center; }
-  .btr__textes { display: flex; flex-direction: column; gap: 14px; }
-  .btr__texte { font: 500 clamp(16px, 1.8vw, 20px)/1.45 var(--yg-texte); }
-  .btr__ligne { font-size: clamp(18px, 2.2vw, 26px); line-height: 1.1; }
-  .btr__avatars { margin: 0; min-width: 0; }
-  .btr__avatars ul { list-style: none; margin: 0; padding: 4px 0 8px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; }
+  .btr__titre { font-size: clamp(30px, 5.6vw, 72px); line-height: 0.95; }
+  .btr__explication { font: 500 clamp(16px, 1.7vw, 19px)/1.5 var(--yg-texte); max-width: 46ch; }
+  .btr__chiffres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; border-top: 2px solid var(--yg-marine); padding-top: 16px; margin: 0; }
+  .btr__chiffres div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .btr__valeur { font-family: var(--yg-titre); font-weight: 900; font-stretch: 100%; font-size: clamp(34px, 5vw, 64px); line-height: 0.9; letter-spacing: -0.03em; }
+  .btr__chiffres dd { margin: 0; font: 600 13px/1.35 var(--yg-texte); color: var(--yg-texte-clair); }
+  .btr__texte { font: 500 clamp(15px, 1.6vw, 18px)/1.5 var(--yg-texte); max-width: 46ch; }
+  .btr__ligne { font-size: clamp(17px, 2vw, 24px); line-height: 1.1; padding-left: 14px; border-left: 4px solid var(--yg-orange); }
+  .btr__visuel { display: flex; flex-direction: column; align-items: center; gap: 18px; min-width: 0; }
+  .btr__mascotte { width: min(46vw, 220px); height: auto; }
+  .btr__avatars { margin: 0; min-width: 0; max-width: 100%; }
+  .btr__avatars ul { list-style: none; margin: 0; padding: 4px 0 8px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; }
   .btr__avatars li { flex: none; }
-  .btr__avatars img { width: 56px; height: 56px; border-radius: 50%; }
-  .btr__avatars figcaption { margin-top: 6px; font: 600 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); }
+  .btr__avatars img { width: 48px; height: 48px; border-radius: 50%; }
+  .btr__avatars figcaption { margin-top: 6px; font: 600 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); text-align: center; }
 
   /* -- 08 Your turn ---------------------------------------------------------- */
-  .tour { padding-top: 48px; }
-  .tour__col { flex: 1; display: flex; flex-direction: column; gap: 24px; }
+  .tour { justify-content: center; padding-top: 48px; }
+  .tour__col { display: flex; flex-direction: column; gap: 18px; }
   .tour__titre { font-size: clamp(44px, 10vw, 124px); line-height: 0.88; }
-  .tour__question { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); }
+  .tour__question { font: 700 clamp(18px, 2.2vw, 24px)/1.35 var(--yg-texte); }
+  .tour__consigne { font: 500 14px/1.4 var(--yg-texte); color: var(--yg-texte-clair); margin-top: -10px; }
   .tour__choix { display: flex; flex-wrap: wrap; gap: 10px; }
   .tour__bouton {
     min-height: 48px; padding: 0 18px;
@@ -381,18 +434,22 @@ const config = {
     font: 800 13px var(--yg-titre); font-stretch: 125%; letter-spacing: 0.04em; text-transform: uppercase;
     cursor: pointer;
   }
+  .tour__bouton:hover { background: rgba(25, 39, 95, 0.08); }
   .tour__bouton[aria-pressed='true'] { background: var(--yg-marine); color: #fff; }
-  .tour__scene { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; min-height: 260px; text-align: center; }
+  /* Scène à hauteur réservée : le mot choisi tient toujours dans l'écran. */
+  .tour__scene { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 190px; text-align: center; }
   .tour__mot {
-    font-size: clamp(90px, 26vw, 300px); line-height: 0.85;
-    text-wrap: balance; overflow-wrap: anywhere; max-width: 100%;
+    width: 100%;
+    font-size: clamp(52px, 14vw, 150px); line-height: 0.88;
+    text-wrap: balance; overflow-wrap: anywhere;
     transform-origin: 50% 0; transform: scale(1);
     transition: transform 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .tour__scene:global(.is-reduit) .tour__mot { transform: scale(0.22); }
   .tour__reponse {
     position: absolute; left: 0; right: 0; bottom: 0;
-    font-size: clamp(40px, 10vw, 128px); line-height: 0.88; color: var(--yg-orange);
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.15em 0.3em;
+    font-size: clamp(24px, 6.4vw, 96px); line-height: 0.9; white-space: nowrap; color: var(--yg-orange);
     opacity: 0; transition: opacity 400ms ease-out;
   }
   .tour__scene:global(.is-repondu) .tour__reponse { opacity: 1; }
@@ -401,21 +458,33 @@ const config = {
   :global(html:not(.js)) .tour__scene { min-height: 0; }
 
   /* -- 09 Next ----------------------------------------------------------------- */
-  .suite { justify-content: center; padding-top: 48px; padding-bottom: calc(var(--yg-barre) + 54px + env(safe-area-inset-bottom)); }
-  .suite__col { display: flex; flex-direction: column; gap: 28px; }
-  .suite__col :global(.suite__logo) { color: var(--yg-marine); align-self: flex-start; margin-bottom: -8px; }
-  .suite__titre { font-size: clamp(22px, 6.2vw, 92px); line-height: 0.95; }
-  .suite__projection { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); max-width: 34ch; }
-  .suite__finale { font-size: clamp(18px, 2.2vw, 26px); line-height: 1.1; max-width: 30ch; }
-  .suite__liens { display: flex; flex-direction: column; border-top: 2px solid var(--yg-marine); }
-  .suite__liens a {
-    display: flex; justify-content: space-between; align-items: center; gap: 12px;
-    min-height: 64px; border-bottom: 1px solid var(--yg-filet); text-decoration: none;
+  .suite { justify-content: center; padding-top: 48px; padding-bottom: calc(var(--yg-barre) + 48px + env(safe-area-inset-bottom)); }
+  .suite__col { display: grid; gap: 36px; }
+  .suite__gauche { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .suite__gauche :global(.suite__logo) { color: var(--yg-marine); align-self: flex-start; }
+  .suite__sur { color: var(--yg-texte-clair); }
+  .suite__titre { font-stretch: 100%; font-size: clamp(26px, 8vw, 44px); line-height: 0.95; margin-top: -8px; }
+  .suite__finale { font-size: clamp(17px, 2vw, 24px); line-height: 1.15; max-width: 30ch; }
+  .suite__infos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .suite__infos li { font: 700 13px/1 var(--yg-texte); padding: 9px 12px; background: var(--yg-ciel); }
+  .suite__projection { font: 500 15px/1.45 var(--yg-texte); color: var(--yg-texte-clair); max-width: 40ch; }
+  .suite__droite { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .suite__actions-titre { color: var(--yg-texte-clair); margin-bottom: 4px; }
+  .action {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    min-height: 76px; padding: 14px 18px;
+    border: 2px solid var(--yg-marine); color: var(--yg-marine);
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
-  .suite__liens a .yg-large { font-size: clamp(14px, 1.8vw, 20px); }
-  .suite__mail { font: 700 clamp(15px, 1.8vw, 20px) var(--yg-texte); overflow-wrap: anywhere; }
-  .suite__fleche { font: 700 13px var(--yg-texte); flex: none; }
-  .suite__mention { font: 500 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); }
+  .action:hover { background: var(--yg-marine); color: #fff; }
+  .action--plein { background: var(--yg-marine); color: #fff; }
+  .action--plein:hover { background: var(--yg-orange); border-color: var(--yg-orange); color: #fff; }
+  .action__texte { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .action__titre { font-size: clamp(14px, 1.5vw, 17px); line-height: 1.15; }
+  .action__detail { font: 600 13px/1.3 var(--yg-texte); opacity: 0.75; overflow-wrap: anywhere; }
+  .action__fleche { font: 900 22px/1 var(--yg-titre); flex: none; }
+  .suite__mention { font: 500 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); border-top: 1px solid var(--yg-filet); padding-top: 14px; }
 
   /* -- Barre fixe -------------------------------------------------------------- */
   .barre { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--yg-marine); border-top: 1px solid #3d4a7a; padding-bottom: env(safe-area-inset-bottom); }
@@ -427,10 +496,15 @@ const config = {
   .barre .barre__mail:hover { color: var(--yg-orange); }
 
   @media (min-width: 860px) {
-    .btr__chiffres { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .btr__bas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .jour :global(.jour__filigrane) { display: block; }
+    .btr__col { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 56px; }
+    .btr__mascotte { width: min(26vw, 300px); }
+    .suite__col { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: center; }
+    .suite__titre { font-size: clamp(32px, 3.8vw, 52px); }
+    .suite__mention { grid-column: 1 / -1; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tour__mot, .tour__reponse { transition: none; }
+    .jour__point { animation: none; }
   }
 </style>
