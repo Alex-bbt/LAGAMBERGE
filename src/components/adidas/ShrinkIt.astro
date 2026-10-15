@@ -22,7 +22,7 @@ const equipe = equipes[team];
 if (!equipe) throw new Error(`Équipe adidas inconnue : « ${team} »`);
 
 const { streak, ecranJour, grille, backToRun, aToi, suite, barre } = commun;
-const moments = commun.moments.filter((m) => m && m.voix);
+const moments = commun.moments.filter((m) => m && m.grand);
 const total = moments.length;
 
 // -- Valeurs de secours (relevé Strava daté, jamais le jour de l'année) --------
@@ -37,6 +37,8 @@ const serieCassee = n < ecartJours(streak.debut, ref) + 1;
 const libelleSecours = `${streak.libelleSecours} · ${dateLisible(ref)}`;
 
 const mailto = `mailto:${commun.email}?subject=${encodeURIComponent(remplir(commun.mailSujet, { team: equipe.equipe }))}`;
+const { embauche } = suite;
+const mailEmbauche = `mailto:${commun.email}?subject=${encodeURIComponent(embauche.sujet)}&body=${encodeURIComponent(embauche.corps.map((l) => remplir(l, { team: equipe.equipe })).join('\n'))}`;
 const pdfNom = equipe.pdf.split('/').pop();
 const cvNom = commun.cv.split('/').pop();
 
@@ -108,26 +110,32 @@ const config = {
     <!-- 06 · BACK TO RUN -->
     <section class="yg-ecran fond-blanc btr" aria-label="Back to Run">
       <div class="yg-col btr__col">
-        <div class="btr__texte-col">
-          <div class="btr__tete">
-            <img class="btr__logo" src={backToRun.logo.src} width={backToRun.logo.width} height={backToRun.logo.height} alt={backToRun.logo.alt} loading="lazy" decoding="async" />
-            <p class="yg-etiquette btr__sur">{backToRun.surTitre}</p>
-          </div>
-          <h2 class="yg-large btr__titre">{backToRun.titre} <span class="yg-accent">{backToRun.titreAccent}</span> {backToRun.titreFin}</h2>
-          <p class="btr__explication">{backToRun.explication}</p>
-          <dl class="btr__chiffres">
-            {backToRun.chiffres.map((c) => (
-              <div>
-                <dt class:list={['btr__valeur', { 'yg-accent': c.accent }]}>{c.valeur}</dt>
-                <dd>{c.legende}</dd>
-              </div>
-            ))}
-          </dl>
-          <p class="btr__texte">{backToRun.texte}</p>
-          <p class="yg-large btr__ligne">{equipe.btrLine}</p>
+        <div class="btr__tete">
+          <img class="btr__logo" src={backToRun.logo.src} width={backToRun.logo.width} height={backToRun.logo.height} alt={backToRun.logo.alt} loading="lazy" decoding="async" />
+          <p class="yg-etiquette btr__sur">{backToRun.surTitre}</p>
         </div>
-        <div class="btr__visuel">
+        <h2 class="yg-large btr__titre">{backToRun.titre} <span class="yg-accent">{backToRun.titreAccent}</span> {backToRun.titreFin}</h2>
+        <div class="btr__grille">
+          <div class="btr__bloc">
+            <h3 class="yg-etiquette">{backToRun.definitionTitre}</h3>
+            <p>{backToRun.explication}</p>
+          </div>
+          <div class="btr__bloc">
+            <h3 class="yg-etiquette">{backToRun.texteTitre}</h3>
+            <p>{backToRun.texte}</p>
+          </div>
           <img class="btr__mascotte" src={backToRun.mascotte.src} width={backToRun.mascotte.width} height={backToRun.mascotte.height} alt={backToRun.mascotte.alt} loading="lazy" decoding="async" />
+        </div>
+        <dl class="btr__chiffres">
+          {backToRun.chiffres.map((c) => (
+            <div>
+              <dt class:list={['btr__valeur', { 'yg-accent': c.accent }]}>{c.valeur}</dt>
+              <dd>{c.legende}</dd>
+            </div>
+          ))}
+        </dl>
+        <div class="btr__bas">
+          <p class="yg-large btr__ligne">{equipe.btrLine}</p>
           <figure class="btr__avatars">
             <ul>
               {backToRun.avatars.map((a) => (
@@ -152,13 +160,13 @@ const config = {
         <p class="tour__question">{aToi.question}</p>
         <p class="tour__consigne">{aToi.consigne}</p>
         <div class="tour__choix">
-          {equipe.choix.map((c) => (
-            <button type="button" class="tour__bouton" aria-pressed="false" data-choix={c}>{c}</button>
+          {aToi.choix.map((c) => (
+            <button type="button" class="tour__bouton" aria-pressed="false" data-choix={c.probleme} data-reponse={c.reponse}>{c.probleme}</button>
           ))}
         </div>
         <div class="tour__scene" aria-live="polite">
           <p class="yg-serre tour__mot" data-tour-mot></p>
-          <p class="yg-large tour__reponse" data-tour-reponse>{aToi.reponse} <Logo hauteur="0.8em" /></p>
+          <p class="yg-large tour__reponse" data-tour-reponse><span data-tour-texte>{aToi.reponse}</span> <Logo hauteur="0.8em" /></p>
         </div>
       </div>
     </section>
@@ -178,7 +186,11 @@ const config = {
         </div>
         <div class="suite__droite">
           <p class="yg-etiquette suite__actions-titre">{suite.actionsTitre}</p>
-          <a class="action action--plein" href={equipe.pdf} download={pdfNom} data-pdf>
+          <a class="action action--embauche" href={mailEmbauche} data-embauche>
+            <span class="action__texte"><span class="yg-large action__titre">{embauche.titre}</span><span class="action__detail">{embauche.detail}</span></span>
+            <span class="action__fleche" aria-hidden="true">→</span>
+          </a>
+          <a class="action" href={equipe.pdf} download={pdfNom} data-pdf>
             <span class="action__texte"><span class="yg-large action__titre">{remplir(suite.lienPdf, { team: equipe.equipe })}</span><span class="action__detail">{suite.lienPdfDetail}</span></span>
             <span class="action__fleche" aria-hidden="true">↓</span>
           </a>
@@ -333,6 +345,8 @@ const config = {
       clearTimeout(t1); clearTimeout(t2);
       tous.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       mot.textContent = b.dataset.choix || '';
+      const texte = reponse.querySelector<HTMLElement>('[data-tour-texte]');
+      if (texte && b.dataset.reponse) texte.textContent = b.dataset.reponse;
       scene.classList.remove('is-reduit', 'is-repondu');
       scene.classList.add('is-choisi');
       if (reduit()) { scene.classList.add('is-reduit', 'is-repondu'); return; }
@@ -399,62 +413,65 @@ const config = {
   .grille__texte { font: 600 clamp(16px, 1.8vw, 20px)/1.45 var(--yg-texte); max-width: 34ch; }
 
   /* -- 06 Back to Run -------------------------------------------------------- */
-  .btr { justify-content: center; padding-top: 48px; }
-  .btr__col { display: grid; gap: 32px; align-items: center; }
-  .btr__texte-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .btr { justify-content: center; padding-top: 40px; }
+  .btr__col { display: flex; flex-direction: column; gap: clamp(16px, 2.6svh, 26px); }
   .btr__tete { display: flex; align-items: center; gap: 14px; }
-  .btr__logo { width: 92px; height: auto; flex: none; }
+  .btr__logo { width: 84px; height: auto; flex: none; }
   .btr__sur { color: var(--yg-texte-clair); }
-  .btr__titre { font-size: clamp(30px, 5.6vw, 72px); line-height: 0.95; }
-  .btr__explication { font: 500 clamp(16px, 1.7vw, 19px)/1.5 var(--yg-texte); max-width: 46ch; }
-  .btr__chiffres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; border-top: 2px solid var(--yg-marine); padding-top: 16px; margin: 0; }
+  .btr__titre { font-size: clamp(26px, 4.6vw, 54px); line-height: 0.98; max-width: 22ch; }
+  .btr__grille { display: grid; gap: 16px 32px; align-items: start; }
+  .btr__bloc { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .btr__bloc h3 { margin: 0; color: var(--yg-orange); }
+  .btr__bloc p { font: 500 clamp(15px, 1.5vw, 18px)/1.5 var(--yg-texte); }
+  .btr__mascotte { width: auto; height: 120px; justify-self: center; }
+  .btr__chiffres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; border-top: 2px solid var(--yg-marine); padding-top: 14px; margin: 0; }
   .btr__chiffres div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .btr__valeur { font-family: var(--yg-titre); font-weight: 900; font-stretch: 100%; font-size: clamp(34px, 5vw, 64px); line-height: 0.9; letter-spacing: -0.03em; }
+  .btr__valeur { font-family: var(--yg-titre); font-weight: 900; font-stretch: 100%; font-size: clamp(32px, 5vw, 64px); line-height: 0.9; letter-spacing: -0.03em; }
   .btr__chiffres dd { margin: 0; font: 600 13px/1.35 var(--yg-texte); color: var(--yg-texte-clair); }
-  .btr__texte { font: 500 clamp(15px, 1.6vw, 18px)/1.5 var(--yg-texte); max-width: 46ch; }
-  .btr__ligne { font-size: clamp(17px, 2vw, 24px); line-height: 1.1; padding-left: 14px; border-left: 4px solid var(--yg-orange); }
-  .btr__visuel { display: flex; flex-direction: column; align-items: center; gap: 18px; min-width: 0; }
-  .btr__mascotte { width: min(46vw, 220px); height: auto; }
+  .btr__bas { display: grid; gap: 16px; align-items: center; }
+  .btr__ligne { font-size: clamp(16px, 1.8vw, 22px); line-height: 1.12; padding-left: 14px; border-left: 4px solid var(--yg-orange); }
   .btr__avatars { margin: 0; min-width: 0; max-width: 100%; }
-  .btr__avatars ul { list-style: none; margin: 0; padding: 4px 0 8px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; }
+  .btr__avatars ul { list-style: none; margin: 0; padding: 4px 0 6px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; }
   .btr__avatars li { flex: none; }
-  .btr__avatars img { width: 48px; height: 48px; border-radius: 50%; }
-  .btr__avatars figcaption { margin-top: 6px; font: 600 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); text-align: center; }
+  .btr__avatars img { width: 40px; height: 40px; border-radius: 50%; }
+  .btr__avatars figcaption { margin-top: 4px; font: 600 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); }
 
   /* -- 08 Your turn ---------------------------------------------------------- */
   .tour { justify-content: center; padding-top: 48px; }
-  .tour__col { display: flex; flex-direction: column; gap: 18px; }
-  .tour__titre { font-size: clamp(44px, 10vw, 124px); line-height: 0.88; }
+  .tour__col { display: flex; flex-direction: column; gap: 16px; }
+  .tour__titre { font-size: clamp(44px, 9vw, 112px); line-height: 0.88; }
   .tour__question { font: 700 clamp(18px, 2.2vw, 24px)/1.35 var(--yg-texte); }
-  .tour__consigne { font: 500 14px/1.4 var(--yg-texte); color: var(--yg-texte-clair); margin-top: -10px; }
-  .tour__choix { display: flex; flex-wrap: wrap; gap: 10px; }
+  .tour__consigne { font: 500 14px/1.4 var(--yg-texte); color: var(--yg-texte-clair); margin-top: -8px; }
+  .tour__choix { display: grid; gap: 10px; }
   .tour__bouton {
-    min-height: 48px; padding: 0 18px;
+    min-height: 52px; padding: 10px 16px;
     border: 2px solid var(--yg-marine); background: transparent; color: var(--yg-marine);
-    font: 800 13px var(--yg-titre); font-stretch: 125%; letter-spacing: 0.04em; text-transform: uppercase;
-    cursor: pointer;
+    font: 800 12px/1.25 var(--yg-titre); font-stretch: 115%; letter-spacing: 0.03em; text-transform: uppercase;
+    text-align: left; cursor: pointer;
   }
   .tour__bouton:hover { background: rgba(25, 39, 95, 0.08); }
   .tour__bouton[aria-pressed='true'] { background: var(--yg-marine); color: #fff; }
-  /* Scène à hauteur réservée : le mot choisi tient toujours dans l'écran. */
-  .tour__scene { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 190px; text-align: center; }
+  /* Scène en flux (plus de superposition) : le problème rétrécit, la réponse
+     apparaît dessous. Hauteur réservée pour éviter les sauts. */
+  .tour__scene { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 12px; min-height: 200px; padding-top: 8px; text-align: center; }
   .tour__mot {
-    width: 100%;
-    font-size: clamp(52px, 14vw, 150px); line-height: 0.88;
+    max-width: 100%;
+    font-size: clamp(30px, 6vw, 76px); line-height: 0.92;
     text-wrap: balance; overflow-wrap: anywhere;
-    transform-origin: 50% 0; transform: scale(1);
-    transition: transform 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition: font-size 1000ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 1000ms;
   }
-  .tour__scene:global(.is-reduit) .tour__mot { transform: scale(0.22); }
+  .tour__mot:empty { display: none; }
+  .tour__scene:global(.is-reduit) .tour__mot { font-size: clamp(13px, 1.3vw, 16px); opacity: 0.65; text-decoration: line-through; }
   .tour__reponse {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.15em 0.3em;
-    font-size: clamp(24px, 6.4vw, 96px); line-height: 0.9; white-space: nowrap; color: var(--yg-orange);
-    opacity: 0; transition: opacity 400ms ease-out;
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.15em 0.35em;
+    font-size: clamp(28px, 5.6vw, 72px); line-height: 0.95; color: var(--yg-orange);
+    text-wrap: balance;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
   }
-  .tour__scene:global(.is-repondu) .tour__reponse { opacity: 1; }
+  .tour__scene:global(.is-repondu) .tour__reponse { opacity: 1; transform: none; }
   /* Sans JS : la réponse s'affiche directement sous les choix. */
-  :global(html:not(.js)) .tour__reponse { position: static; opacity: 1; }
+  :global(html:not(.js)) .tour__reponse { opacity: 1; transform: none; }
   :global(html:not(.js)) .tour__scene { min-height: 0; }
 
   /* -- 09 Next ----------------------------------------------------------------- */
@@ -478,8 +495,8 @@ const config = {
     transition: background-color 0.15s ease, color 0.15s ease;
   }
   .action:hover { background: var(--yg-marine); color: #fff; }
-  .action--plein { background: var(--yg-marine); color: #fff; }
-  .action--plein:hover { background: var(--yg-orange); border-color: var(--yg-orange); color: #fff; }
+  .action--embauche { background: var(--yg-orange); border-color: var(--yg-orange); color: #fff; }
+  .action--embauche:hover { background: var(--yg-marine); border-color: var(--yg-marine); color: #fff; }
   .action__texte { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   .action__titre { font-size: clamp(14px, 1.5vw, 17px); line-height: 1.15; }
   .action__detail { font: 600 13px/1.3 var(--yg-texte); opacity: 0.75; overflow-wrap: anywhere; }
@@ -497,14 +514,16 @@ const config = {
 
   @media (min-width: 860px) {
     .jour :global(.jour__filigrane) { display: block; }
-    .btr__col { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 56px; }
-    .btr__mascotte { width: min(26vw, 300px); }
+    .btr__grille { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+    .btr__mascotte { height: 190px; }
+    .btr__bas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
+    .tour__choix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .suite__col { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: center; }
     .suite__titre { font-size: clamp(32px, 3.8vw, 52px); }
     .suite__mention { grid-column: 1 / -1; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .tour__mot, .tour__reponse { transition: none; }
+    .tour__mot, .tour__reponse { transition: none; transform: none; }
     .jour__point { animation: none; }
   }
 </style>
