@@ -153,7 +153,7 @@ export const commun = {
   aToi: {
     titre: 'Your turn.',
     question: 'What feels huge for you today?',
-    consigne: 'Pick one. Watch it shrink.',
+    consigne: 'Pick one. Then hold to shrink it.',
     reponse: 'You got this.', // réponse affichée sans JavaScript
     // Problème (bouton) → réponse affichée quand il a rétréci (suivie du logo).
     // ⚠️ Faits d'actualité fournis par Alex : à vérifier avant envoi.
@@ -181,10 +181,17 @@ export const commun = {
     // Bouton-blague : ouvre un e-mail déjà rédigé vers Alex.
     embauche: {
       titre: 'Hire Alex directly',
-      // Petite étiquette qui assume la blague (évite l'effet présomptueux).
-      clin: 'Just kidding… unless?',
-      detail: 'I even wrote the email for you. No pressure.',
-      sujet: 'Congratulations Alex, you’re hired! 🎉 (draft written by Alex)',
+      detail: 'A ready-to-send email. Just hit send.',
+      sujet: 'Congratulations Alex, you’re hired! 🎉',
+      // Fenêtre intermédiaire : la blague est désamorcée AVANT de préparer
+      // l'e-mail. Si la personne confirme, c'est un vrai choix.
+      fenetre: {
+        titre: 'Wait, I was joking! 😅',
+        texte: 'But if you insist… you won’t have to ask me twice.',
+        confirmer: 'Prepare the email',
+        confirmerDetail: 'Opens your mail app, ready to send.',
+        fermer: 'Fine, back to the page',
+      },
       corps: [
         'Hi Alex,',
         '',
@@ -197,9 +204,6 @@ export const commun = {
         'Best regards,',
         '[Your name]',
         'adidas {team}',
-        '',
-        '—',
-        'P.S. from Alex: yes, I wrote this email myself, as a joke. If you’d rather just talk first, delete everything above and write “Let’s talk”. I’ll be just as happy.',
       ],
     },
   },
