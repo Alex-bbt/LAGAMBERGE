@@ -145,21 +145,8 @@ export const commun = {
     texte: 'The rule made real pressure. So I turned it into a game: a beaver mascot, a Tribunal to plead a missed day, and Le Coffre, a weekend of missions.',
     logo: { src: `${A}/img/btr-logo.webp`, width: 480, height: 314, alt: 'Back to Run' },
     mascotte: { src: `${A}/img/btr-mascotte.webp`, width: 400, height: 650, alt: 'The Back to Run beaver mascot, waving.' },
-    avatarsLegende: 'The 12 beaver avatars runners could pick from.',
-    avatars: [
-      { src: `${A}/img/avatar-classique.webp`, alt: 'Classic beaver' },
-      { src: `${A}/img/avatar-crame.webp`, alt: 'Exhausted beaver' },
-      { src: `${A}/img/avatar-determine.webp`, alt: 'Determined beaver' },
-      { src: `${A}/img/avatar-finisher.webp`, alt: 'Finisher beaver with a medal' },
-      { src: `${A}/img/avatar-frimeur.webp`, alt: 'Show-off beaver in sunglasses' },
-      { src: `${A}/img/avatar-juge.webp`, alt: 'Judge beaver with a gavel' },
-      { src: `${A}/img/avatar-leve-tot.webp`, alt: 'Early-riser beaver' },
-      { src: `${A}/img/avatar-marcheur.webp`, alt: 'Walking beaver' },
-      { src: `${A}/img/avatar-nocturne.webp`, alt: 'Night-runner beaver with a headlamp' },
-      { src: `${A}/img/avatar-pluie.webp`, alt: 'Rainy-day beaver' },
-      { src: `${A}/img/avatar-supporter.webp`, alt: 'Supporter beaver waving a flag' },
-      { src: `${A}/img/avatar-trailer.webp`, alt: 'Trail-runner beaver' },
-    ],
+    // Lien vers le site du défi (remplace la frise des 12 avatars).
+    lien: { url: 'https://backtorun.fr', texte: 'Visit backtorun.fr', detail: 'See the challenge for yourself' },
   },
 
   // -- Écran 8 : Your turn -----------------------------------------------------
@@ -194,8 +181,10 @@ export const commun = {
     // Bouton-blague : ouvre un e-mail déjà rédigé vers Alex.
     embauche: {
       titre: 'Hire Alex directly',
-      detail: 'A ready-to-send email. Just hit send.',
-      sujet: 'Congratulations Alex, you’re hired! 🎉',
+      // Petite étiquette qui assume la blague (évite l'effet présomptueux).
+      clin: 'Just kidding… unless?',
+      detail: 'I even wrote the email for you. No pressure.',
+      sujet: 'Congratulations Alex, you’re hired! 🎉 (draft written by Alex)',
       corps: [
         'Hi Alex,',
         '',
@@ -208,6 +197,9 @@ export const commun = {
         'Best regards,',
         '[Your name]',
         'adidas {team}',
+        '',
+        '—',
+        'P.S. from Alex: yes, I wrote this email myself, as a joke. If you’d rather just talk first, delete everything above and write “Let’s talk”. I’ll be just as happy.',
       ],
     },
   },
