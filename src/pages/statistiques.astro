@@ -1,0 +1,117 @@
+---
+/* ==========================================================================
+   Page « Statistiques détaillées »
+   Instagram à gauche, TikTok à droite, tout le long de la page :
+   - un seul tableau, les mêmes indicateurs pour les deux plateformes ;
+   - les différences de mesure (interactions, engagement, stories) sont
+     précisées en petit sous le tableau, pas en ajoutant des lignes ;
+   - l'audience est présentée ligne par ligne (âge, genre, pays), chaque
+     plateforme dans sa colonne.
+   Données : src/data/mediakit.js (stats, audience, videos).
+   ========================================================================== */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import Barres from '../components/Barres.astro';
+import Colonnes from '../components/Colonnes.astro';
+import VideoInstagram from '../components/VideoInstagram.astro';
+import { stats, audience, videosAvant, nombre } from '../data/mediakit.js';
+
+const ig = stats.instagram;
+const tt = stats.tiktok;
+const avecAutres = (pays) => [
+  ...pays,
+  { libelle: 'Autres pays', valeur: Math.round((100 - pays.reduce((s, p) => s + p.valeur, 0)) * 10) / 10 },
+];
+
+// Lignes du tableau : [libellé, valeur Instagram, valeur TikTok]
+const lignes = [
+  ['Abonnés', nombre(ig.abonnes), nombre(tt.abonnes)],
+  ['Vues en 2026', nombre(ig.vues), nombre(tt.vues)],
+  ['Vues médianes par publication de 2026', `≈ ${nombre(ig.vuesMedianesPublication)}`, tt.medianeVuesAffichage],
+  ['Publications à plus de 10 000 vues', nombre(ig.publicationsPlus10k), nombre(tt.publicationsPlus10k)],
+  ['Publications à plus de 100 000 vues', nombre(ig.publicationsPlus100k), nombre(tt.videosPlus100k)],
+  ['Interactions', nombre(ig.interactions), nombre(tt.interactions)],
+  ['Engagement', ig.engagement, tt.engagementCourt],
+  ['Vues médianes par story (30 derniers jours)', `≈ ${nombre(ig.vuesMedianesStory)}`, tt.vuesMedianesStory ? `≈ ${nombre(tt.vuesMedianesStory)}` : tt.storiesSansObjet],
+];
+const plateformes = [
+  { nom: 'Instagram', d: audience.instagram },
+  { nom: 'TikTok', d: audience.tiktok },
+];
+---
+
+<Base titre="Contenus et audience" description="Contenus et audience des comptes Instagram et TikTok de La Gamberge, avec périodes et définitions.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-stats">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete niveau="h1" id="titre-stats" repere="Statistiques" titre="Contenus et audience"
+        chapeau="Les mêmes indicateurs pour Instagram et TikTok. Les totaux cumulés de l’accueil additionnent les deux plateformes : ce n’est pas une audience dédupliquée, et les vues ne correspondent pas à des personnes uniques." />
+
+      <div class="tableau-comparatif-cadre">
+        <table class="tableau-comparatif">
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Indicateur</span></th>
+              <th scope="col"><span class="title">Instagram</span><span class="caption texte-muted">au {ig.releve}</span></th>
+              <th scope="col"><span class="title">TikTok</span><span class="caption texte-muted">au {tt.releve}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.map(([libelle, a, b]) => (
+              <tr><th scope="row">{libelle}</th><td>{a}</td><td>{b}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <details class="details-sobre comprendre">
+        <summary class="body">Comprendre les données</summary>
+        <ul class="details-sobre__corps notes-tableau caption texte-muted" role="list">
+          <li>Périodes : vues et publications du 1er janvier 2026 à la date de relevé de chaque plateforme (Instagram au {ig.releve}, TikTok au {tt.releve}).</li>
+          <li>Publications : Instagram exclut les Reels d’essai ; TikTok compte les vidéos publiques.</li>
+          <li>Interactions : Instagram = likes + commentaires + partages + enregistrements ; TikTok = likes + commentaires + partages (enregistrements non relevés).</li>
+          <li>Engagement : Instagram = interactions / couverture ; TikTok = interactions / vues. Les dénominateurs diffèrent : les deux taux ne se comparent pas directement.</li>
+          <li>Stories : vues médianes sur les 30 derniers jours{tt.vuesMedianesStoryPeriode ? ` (TikTok : ${tt.vuesMedianesStoryPeriode})` : ' ; TikTok : non applicable, aucune story publiée'}.</li>
+          <li>Totaux cumulés de l’accueil : abonnements et vues additionnés sur les deux plateformes, pas des personnes uniques.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <section class="lg-ambient lg-ambient--flip chapitre chapitre--teinte" aria-labelledby="titre-exemples">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <h2 class="display-l titre-section" id="titre-exemples">Trois formats, trois exemples.</h2>
+      <ul class="videos-avant" role="list">
+        {videosAvant.map((v) => <li><VideoInstagram video={v} /></li>)}
+      </ul>
+      <p class="caption texte-muted">Des exemples choisis parmi les contenus, pas des résultats habituels. La vidéo se charge au clic, depuis Instagram.</p>
+    </div>
+  </section>
+
+  <section class="lg-ambient chapitre" aria-labelledby="audience-detaillee">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <h2 class="display-l titre-section" id="audience-detaillee">L’audience en détail.</h2>
+      <p class="body texte-court">Abonnés de chaque compte : Instagram à gauche, TikTok à droite.</p>
+
+      <h3 class="label audience-miroir__titre">Âge</h3>
+      <div class="audience-miroir">
+        {plateformes.map((p) => (
+          <div class="carte-plate"><Colonnes titre={p.nom} population={p.d.population} releve={p.d.releve} donnees={p.d.ages} note={p.d.repereAge} /></div>
+        ))}
+      </div>
+
+      <h3 class="label audience-miroir__titre">Genre</h3>
+      <div class="audience-miroir">
+        {plateformes.map((p) => (
+          <div class="carte-plate"><Barres titre={p.nom} population={p.d.population} releve={p.d.releve} donnees={p.d.genre} /></div>
+        ))}
+      </div>
+
+      <h3 class="label audience-miroir__titre">Pays</h3>
+      <div class="audience-miroir">
+        {plateformes.map((p) => (
+          <div class="carte-plate"><Barres titre={p.nom} population={p.d.population} releve={p.d.releve} donnees={avecAutres(p.d.pays)} /></div>
+        ))}
+      </div>
+      <a class="lien-fleche" href="/#statistiques">Retour à l’accueil</a>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,165 @@
+---
+/* ==========================================================================
+   Page « Défi 2026 » : suivi du défi « au moins 5 km chaque jour en 2026 ».
+   Source : /api/streak (fonction Vercel de l'ancien site, lib/strava.mjs).
+   Les identifiants Strava restent côté serveur ; le navigateur ne reçoit
+   que des agrégats (jours validés, km par jour, totaux).
+   Règles :
+   - Jours validés = jours avec au moins UNE course ≥ 5 km (validatedDates),
+     jamais le numéro du jour dans l'année, jamais déduit de la date.
+   - Plusieurs sorties le même jour = un seul jour validé.
+   - Si les données manquent, aucun chiffre n'est affiché.
+   ========================================================================== */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import { defi, comptes } from '../data/mediakit.js';
+
+const strava = comptes.find((c) => c.id === 'strava');
+const mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+const joursDansMois = (m) => new Date(Date.UTC(defi.annee, m + 1, 0)).getUTCDate();
+const pad = (n) => String(n).padStart(2, '0');
+---
+
+<Base titre="Défi 2026" description="Suivi du défi de La Gamberge : au moins 5 km de course à pied chaque jour en 2026, synchronisé avec Strava.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-defi">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete niveau="h1" id="titre-defi" repere={`Défi ${defi.annee}`} titre="Au moins 5 km chaque jour en 2026."
+        chapeau={defi.regle} />
+
+      <div class="defi" data-defi data-api={defi.api} data-total={defi.totalJours} data-annee={defi.annee}>
+        <p class="caption texte-muted defi__etat" data-etat role="status">Chargement des données Strava…</p>
+
+        <div class="defi__donnees" data-donnees hidden>
+          <ul class="defi__tuiles" role="list">
+            <li class="defi__tuile defi__tuile--principale">
+              <span class="dominant" data-valide>—</span>
+              <span class="lead">jours validés sur <span data-total-texte>{defi.totalJours}</span></span>
+            </li>
+            <li class="defi__tuile"><span class="chiffre title" data-km>—</span><span class="body">km courus en {defi.annee}</span></li>
+            <li class="defi__tuile"><span class="chiffre title" data-temps>—</span><span class="body">de course (temps en mouvement)</span></li>
+            <li class="defi__tuile"><span class="chiffre title" data-activites>—</span><span class="body">courses enregistrées</span></li>
+          </ul>
+
+          <div class="defi__progression">
+            <div class="barre barre--grande" aria-hidden="true"><span data-barre></span></div>
+            <p class="body" data-progression-texte></p>
+          </div>
+
+          <figure class="calendrier-defi">
+            <figcaption class="barres__titre">
+              <span class="label">Calendrier {defi.annee}</span>
+              <span class="caption texte-muted legende-defi">
+                <span><i class="case case--valide" aria-hidden="true"></i>Jour validé</span>
+                <span><i class="case case--courte" aria-hidden="true"></i>Course de moins de 5 km</span>
+                <span><i class="case" aria-hidden="true"></i>Aucune course enregistrée</span>
+                <span><i class="case case--futur" aria-hidden="true"></i>À venir</span>
+              </span>
+            </figcaption>
+            <ol class="calendrier-defi__mois" role="list">
+              {mois.map((nom, m) => (
+                <li class="calendrier-defi__ligne">
+                  <span class="calendrier-defi__nom caption">{nom}</span>
+                  <span class="calendrier-defi__cases" aria-hidden="true">
+                    {Array.from({ length: joursDansMois(m) }, (_, d) => (
+                      <i class="case" data-jour={`${defi.annee}-${pad(m + 1)}-${pad(d + 1)}`}></i>
+                    ))}
+                  </span>
+                  <span class="calendrier-defi__resume caption texte-muted" data-mois={m}></span>
+                </li>
+              ))}
+            </ol>
+          </figure>
+
+          <p class="caption texte-muted" data-maj></p>
+          <p class="caption texte-muted">
+            Les kilomètres du calendrier additionnent les sorties du jour ; la validation, elle, demande une seule
+            sortie de 5 km ou plus. Les courses sans GPS ou non publiées sur Strava ne sont pas comptées.
+          </p>
+        </div>
+
+        {strava && (
+          <a class="lg-btn lg-btn--primary" href={strava.url} target="_blank" rel="noopener noreferrer">Suivre le défi sur Strava<span class="sr-only"> (nouvel onglet)</span></a>
+        )}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Affichage immédiat du dernier bilan connu, puis actualisation :
+  // 1. ce navigateur a déjà vu un bilan → il s'affiche aussitôt (avec SA date) ;
+  // 2. /api/streak renvoie le dernier bilan enregistré côté serveur (cache
+  //    Supabase partagé par tous les visiteurs) et relance Strava en
+  //    arrière-plan si besoin ;
+  // 3. en cas d'erreur, le bilan déjà affiché reste en place (jamais de zéros).
+  // Aucun chiffre n'est déduit de la date.
+  const bloc = document.querySelector('[data-defi]');
+  const etat = bloc.querySelector('[data-etat]');
+  const total = Number(bloc.dataset.total);
+  const annee = bloc.dataset.annee;
+  const nf = new Intl.NumberFormat('fr-FR');
+  const $ = (s) => bloc.querySelector(s);
+  const CLE = 'lg-defi-bilan';
+  let affiche = false;
+
+  const valide = (d) => d && d.configured && Array.isArray(d.validatedDates) && d.updatedAt;
+  const dateParis = (iso) => new Date(iso).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Paris' });
+
+  const afficher = (d, { local = false } = {}) => {
+    const valides = new Set(d.validatedDates.filter((j) => j.startsWith(annee)));
+    const km = d.dailyKm || {};
+    const n = valides.size;
+
+    $('[data-valide]').textContent = nf.format(n);
+    if (typeof d.seasonKm === 'number') $('[data-km]').textContent = nf.format(d.seasonKm);
+    if (typeof d.seasonMovingTime === 'number') $('[data-temps]').textContent = `${nf.format(Math.round(d.seasonMovingTime / 3600))} h`;
+    if (typeof d.seasonRuns === 'number') $('[data-activites]').textContent = nf.format(d.seasonRuns);
+
+    const part = (n / total) * 100;
+    $('[data-barre]').style.setProperty('--part', `${part}%`);
+    $('[data-progression-texte]').textContent =
+      `${nf.format(n)} jours validés sur ${total}, soit ${part.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} % du défi.`;
+
+    const today = d.today;
+    const parMois = Array(12).fill(0);
+    bloc.querySelectorAll('[data-jour]').forEach((c) => {
+      const j = c.dataset.jour;
+      c.className = 'case';
+      if (today && j > today) { c.classList.add('case--futur'); c.title = `${j} : à venir`; return; }
+      if (valides.has(j)) { c.classList.add('case--valide'); parMois[Number(j.slice(5, 7)) - 1]++; }
+      else if (km[j] > 0) c.classList.add('case--courte');
+      c.title = `${j} : ${km[j] ? `${String(km[j]).replace('.', ',')} km` : 'aucune course'}${valides.has(j) ? ' · validé' : ''}`;
+    });
+    bloc.querySelectorAll('[data-mois]').forEach((el) => {
+      el.textContent = `${parMois[Number(el.dataset.mois)]} validés`;
+    });
+
+    // La date affichée est toujours celle du calcul Strava, jamais l'heure de visite.
+    $('[data-maj]').textContent = `Dernière synchronisation avec Strava : ${dateParis(d.updatedAt)} (heure de Paris).`
+      + (local ? ' Actualisation en cours…' : d.refreshing ? ' Une nouvelle synchronisation est en cours.' : '');
+    etat.hidden = true;
+    $('[data-donnees]').hidden = false;
+    affiche = true;
+  };
+
+  try {
+    const memo = JSON.parse(localStorage.getItem(CLE) || 'null');
+    if (valide(memo)) afficher(memo, { local: true });
+  } catch { /* stockage indisponible : on attend le serveur */ }
+
+  fetch(bloc.dataset.api, { headers: { Accept: 'application/json' } })
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((d) => {
+      if (!valide(d)) throw new Error('donnees');
+      afficher(d);
+      try { localStorage.setItem(CLE, JSON.stringify(d)); } catch { /* sans importance */ }
+    })
+    .catch(() => {
+      if (affiche) {
+        // Le bilan déjà affiché reste en place, avec sa vraie date.
+        $('[data-maj]').textContent = $('[data-maj]').textContent.replace(' Actualisation en cours…', ' Actualisation impossible pour le moment.');
+      } else {
+        etat.textContent = 'Données Strava momentanément indisponibles. Le suivi reprendra dès la prochaine synchronisation.';
+      }
+    });
+</script>

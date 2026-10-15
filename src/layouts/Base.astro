@@ -1,12 +1,22 @@
 ---
-import '../styles/global.css';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { site } from '../data/site.js';
+/* Squelette commun : métadonnées, navigation flottante, pied de page. */
+import '../styles/site.css';
+import Reseaux from '../components/Reseaux.astro';
+import { identite, contact, comptes, stats, videosAvant } from '../data/mediakit.js';
 
-const { title, description } = Astro.props;
-const pageTitle = title ? `${title} — ${site.name}` : `${site.name}`;
-const pageDesc = description ?? site.description;
+// `corps` : classe ajoutée au <body> (ex. 'theme-btr' pour la page Back to Run).
+const { titre, description, corps } = Astro.props;
+const titrePage = titre ? `${titre} · La Gamberge` : `La Gamberge · ${identite.positionnement}`;
+const desc = description ?? `${identite.description} Media kit de La Gamberge (Alex Bourbigot).`;
+
+// Navigation : ancres de la page principale + pages complémentaires.
+const liens = [
+  { libelle: 'Profil', lien: '/#profil' },
+  { libelle: 'Audience', lien: '/#statistiques' },
+  { libelle: 'Projets', lien: '/#objectifs' },
+];
+const chemin = Astro.url.pathname.replace(/\/$/, '') || '/';
+const insta = comptes.find((c) => c.id === 'instagram');
 ---
 
 <!doctype html>
@@ -14,39 +24,104 @@ const pageDesc = description ?? site.description;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>{pageTitle}</title>
-    <meta name="description" content={pageDesc} />
-
-    <!-- Partages (Instagram, iMessage, etc.) -->
+    <title>{titrePage}</title>
+    <meta name="description" content={desc} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={pageDesc} />
-    <meta property="og:site_name" content={site.name} />
-    <meta name="theme-color" content="#fff6ec" />
-
-    <!-- Polices -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-
-    <!--
-      ╔══════════════════════════════════════════════════════════════╗
-      ║  Salut toi qui fouilles le code source. 👀                    ║
-      ║  Oui, on gamberge aussi jusqu'ici. Si tu lis ça, envoie-moi   ║
-      ║  "jour 183" en DM sur Insta (@lagambergee), on est copains.   ║
-      ║  Easter egg #2 débloqué. Retourne courir maintenant.          ║
-      ╚══════════════════════════════════════════════════════════════╝
-    -->
+    <meta property="og:title" content={titrePage} />
+    <meta property="og:description" content={desc} />
+    <!-- Favicon : monogramme « LG » (public/favicon.svg, PNG 16/32, ICO, Apple) -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16" />
+    <link rel="shortcut icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <meta name="theme-color" content="#162660" />
+    <slot name="head" />
+    <!-- Apparitions au défilement : activées seulement si le navigateur les
+         permet et si l'utilisateur n'a pas demandé de réduire les animations. -->
+    <script is:inline>
+      if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('apparitions');
+      }
+    </script>
   </head>
-  <body>
-    <Header />
-    <main>
+  <body class={corps}>
+    <a class="evitement lg-btn lg-btn--primary" href="#contenu">Aller au contenu</a>
+
+    <header class="entete">
+      <nav class="lg-glass lg-nav" aria-label="Navigation principale">
+        <a href="/" class="lg-nav__brand">LA GAMBERGE</a>
+        <div class="lg-nav__links">
+          {liens.map((l) => (
+            <a href={l.lien} class="lg-nav__link lg-nav__link--bureau" aria-current={chemin === l.lien ? 'page' : undefined}>{l.libelle}</a>
+          ))}
+          <!-- Menu mobile : fonctionne sans JavaScript (élément details) -->
+          <details class="menu-mobile">
+            <summary class="lg-btn lg-btn--glass" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg></summary>
+            <div class="menu-mobile__panneau lg-glass lg-glass--strong">
+              {liens.map((l) => <a href={l.lien} class="lg-nav__link">{l.libelle}</a>)}
+              <!-- Sur les très petits écrans, « Collaborer » passe dans le menu -->
+              <a href="/#contact" class="lg-btn btn-accent menu-mobile__cta">Collaborer</a>
+            </div>
+          </details>
+          <a href="/#contact" class="lg-btn btn-accent nav-cta">Collaborer</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="contenu">
       <slot />
     </main>
-    <Footer />
+
+    <!-- Pied de page : pages détaillées, réseaux et note de mise à jour (une seule) -->
+    <footer class="pied-page">
+      <div class="pied">
+        <a href="/" class="wordmark pied__marque">LA GAMBERGE</a>
+        <nav class="pied__liens" aria-label="Pages détaillées">
+          <a href="/histoire">Histoire</a>
+          <a href="/statistiques">Statistiques</a>
+          <a href="/performances">Performances</a>
+          <a href="/communaute">Communauté</a>
+          <a href="/projets">Projets</a>
+        </nav>
+        <Reseaux />
+        <p class="caption texte-muted">
+          {identite.personne.nom} · {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : <a href={insta.url} target="_blank" rel="noopener noreferrer">{insta.pseudo}</a>}
+        </p>
+        <!-- Dates de relevé par type de données (chaque date reste celle du relevé réel) -->
+        <p class="caption texte-muted pied__releves">
+          Abonnés, vues et audience : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}.
+          Vues des vidéos d’exemple : relevées le {videosAvant[0].releve}.
+        </p>
+        <p class="caption pied__legal">
+          <a href="/mentions-legales">Mentions légales</a>
+          <a href="/confidentialite">Confidentialité</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Apparitions : discrètes, une seule fois, jamais bloquantes.
+      if (document.documentElement.classList.contains('apparitions')) {
+        const obs = new IntersectionObserver((entrees) => {
+          entrees.forEach((e) => {
+            if (e.isIntersecting) { e.target.classList.add('est-visible'); obs.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+        document.querySelectorAll('[data-apparition]').forEach((el) => obs.observe(el));
+      }
+
+      // Menu mobile : se ferme après un clic sur un lien, ou avec la touche Échap.
+      const menu = document.querySelector('.menu-mobile');
+      menu?.querySelectorAll('a').forEach((a) =>
+        a.addEventListener('click', () => menu.removeAttribute('open'))
+      );
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu?.open) {
+          menu.removeAttribute('open');
+          menu.querySelector('summary')?.focus();
+        }
+      });
+    </script>
   </body>
 </html>

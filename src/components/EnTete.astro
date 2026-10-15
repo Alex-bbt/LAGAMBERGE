@@ -1,0 +1,13 @@
+---
+/* En-tête de section : repère de chapitre (Chip), titre explicite, chapeau.
+   `niveau` = 'h1' pour le titre principal d'une page complémentaire. */
+const { repere, titre, chapeau, niveau = 'h2', id } = Astro.props;
+const Titre = niveau;
+---
+
+<header class="en-tete">
+  <span class="lg-chip"><span class="lg-chip__dot"></span>{repere}</span>
+  <Titre class="display-l" id={id}>{titre}</Titre>
+  {chapeau && <p class="lead en-tete__chapeau">{chapeau}</p>}
+  <slot />
+</header>

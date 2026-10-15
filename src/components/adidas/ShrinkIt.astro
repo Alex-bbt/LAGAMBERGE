@@ -1,0 +1,661 @@
+---
+/* ==========================================================================
+   ShrinkIt — la proposition créative « You Got This » (handoff Claude Design,
+   « Shrink It v2 »). Une seule page, déclinée par la prop `team`
+   ('marketing' | 'brandCommunications' | 'productManagement').
+   Écrans : 1 Day N · 2 Back to zero · 3–5 Moments 01–03 · 6 Back to Run ·
+   7 Moment 04 · 8 Your turn · 9 Next. Barre d'actions fixe.
+   Tout le texte vient de src/data/adidas.js ; seule l'équipe demandée est
+   lue (aucune autre équipe dans le HTML).
+   Rendu au build = valeurs de SECOURS (relevé Strava daté) ; le script
+   remplace par /api/streak quand il répond (2,5 s max).
+   ========================================================================== */
+import AdidasLayout from '../../layouts/AdidasLayout.astro';
+import { commun, equipes } from '../../data/adidas.js';
+import { ecartJours, dateLisible, remplir } from '../../lib/adidas-texte.js';
+import Moment from './Moment.astro';
+import Jetons from './Jetons.astro';
+import Logo from './Logo.astro';
+
+const { team } = Astro.props;
+const equipe = equipes[team];
+if (!equipe) throw new Error(`Équipe adidas inconnue : « ${team} »`);
+
+const { streak, ecranJour, grille, backToRun, aToi, suite, barre } = commun;
+const moments = commun.moments.filter((m) => m && m.grand);
+const total = moments.length;
+
+// -- Valeurs de secours (relevé Strava daté, jamais le jour de l'année) --------
+const n = streak.secours.jours;
+const ref = streak.secours.date;
+const valeurs = {
+  n,
+  jour: remplir(streak.jourAuDate, { n, date: dateLisible(ref) }),
+  proj: n + ecartJours(ref, streak.premierJour),
+};
+const serieCassee = n < ecartJours(streak.debut, ref) + 1;
+const libelleSecours = `${streak.libelleSecours} · ${dateLisible(ref)}`;
+
+const mailto = `mailto:${commun.email}?subject=${encodeURIComponent(remplir(commun.mailSujet, { team: equipe.equipe }))}`;
+const { embauche } = suite;
+const mailEmbauche = `mailto:${commun.email}?subject=${encodeURIComponent(embauche.sujet)}&body=${encodeURIComponent(embauche.corps.map((l) => remplir(l, { team: equipe.equipe })).join('\n'))}`;
+const pdfNom = equipe.pdf.split('/').pop();
+const cvNom = commun.cv.split('/').pop();
+
+// Fonds des écrans de moments, dans l'ordre du prototype.
+const fondsMoments = ['ciel', 'marine', 'creme', 'marine'];
+const avantBtr = moments.slice(0, 3);
+const apresBtr = moments.slice(3);
+
+// Configuration lue par le script (gabarits de texte + dates).
+const config = {
+  debut: streak.debut,
+  premierJour: streak.premierJour,
+  libelleDirect: streak.libelleDirect,
+  jourAujourdhui: streak.jourAujourdhui,
+  jourHier: streak.jourHier,
+  jourAuDate: streak.jourAuDate,
+  regle: ecranJour.regle,
+  regleCassee: ecranJour.regleCassee,
+  grilleAujourdhui: grille.texteAujourdhui,
+  grilleDernier: grille.texteDernier,
+  grilleZero: grille.texteZero,
+  libelleAujourdhui: grille.libelleAujourdhui,
+  libelleDernier: grille.libelleDernier,
+  libelleSuivant: grille.libelleSuivant,
+};
+---
+
+<AdidasLayout title={equipe.title} description={equipe.description}>
+  <main>
+    <!-- 01 · DAY N -->
+    <section class="yg-ecran fond-marine jour" aria-label="Day counter">
+      <Logo hauteur="min(72svh, 620px)" class="jour__filigrane" decoratif />
+      <header class="yg-col jour__tete">
+        <span class="yg-large jour__marque">{commun.marque}</span>
+        <span class="yg-etiquette jour__pour">{commun.pour} <Logo hauteur="15px" class="jour__logo" /> · {equipe.equipe}</span>
+      </header>
+      <div class="yg-col jour__centre">
+        <p class="jour__direct"><span class="jour__point" aria-hidden="true"></span><span data-yg-libelle>{libelleSecours}</span></p>
+        <h1 class="jour__titre">
+          <span class="yg-large jour__mot">{ecranJour.titre}</span>
+          <span class="jour__n" data-yg="n">{n}</span>
+        </h1>
+        <p class="jour__regle" data-yg-regle>{serieCassee ? remplir(ecranJour.regleCassee, { n }) : ecranJour.regle}</p>
+        <div class="jour__pied">
+          <p class="yg-large jour__accroche">{ecranJour.accroche} <span class="yg-accent">{ecranJour.accrocheAccent}</span></p>
+          <p class="jour__intro">{ecranJour.intro}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 · BACK TO ZERO -->
+    <section class="yg-ecran fond-blanc grille" aria-label={`${grille.titre} ${grille.titreAccent}`}>
+      <div class="yg-col grille__col">
+        <h2 class="yg-large grille__titre">{grille.titre}<br /><span class="yg-accent">{grille.titreAccent}</span></h2>
+        <div class="grille__cases" data-yg-grille aria-hidden="true">
+          {Array.from({ length: Math.max(0, n - 1) }, () => <span class="case"></span>)}
+          {n > 0 && <span class="case case--dernier" title={grille.libelleDernier}></span>}
+          <span class="case case--suivant" title={grille.libelleSuivant}></span>
+        </div>
+        <p class="grille__texte" data-yg-grille-texte>{remplir(grille.texteDernier, { n })}</p>
+      </div>
+    </section>
+
+    <!-- 03–05 · MOMENTS 01–03 -->
+    {avantBtr.map((m, i) => (
+      <Moment moment={m} index={i + 1} total={total} fond={fondsMoments[i]} valeurs={valeurs} />
+    ))}
+
+    <!-- 06 · BACK TO RUN -->
+    <section class="yg-ecran fond-blanc btr" aria-label="Back to Run">
+      <div class="yg-col btr__col">
+        <div class="btr__tete">
+          <img class="btr__logo" src={backToRun.logo.src} width={backToRun.logo.width} height={backToRun.logo.height} alt={backToRun.logo.alt} loading="lazy" decoding="async" />
+          <p class="yg-etiquette btr__sur">{backToRun.surTitre}</p>
+        </div>
+        <h2 class="yg-large btr__titre">{backToRun.titre} <span class="yg-accent">{backToRun.titreAccent}</span> {backToRun.titreFin}</h2>
+        <div class="btr__grille">
+          <div class="btr__bloc">
+            <h3 class="yg-etiquette">{backToRun.definitionTitre}</h3>
+            <p>{backToRun.explication}</p>
+          </div>
+          <div class="btr__bloc">
+            <h3 class="yg-etiquette">{backToRun.texteTitre}</h3>
+            <p>{backToRun.texte}</p>
+          </div>
+          <img class="btr__mascotte" src={backToRun.mascotte.src} width={backToRun.mascotte.width} height={backToRun.mascotte.height} alt={backToRun.mascotte.alt} loading="lazy" decoding="async" />
+        </div>
+        <dl class="btr__chiffres">
+          {backToRun.chiffres.map((c) => (
+            <div>
+              <dt class:list={['btr__valeur', { 'yg-accent': c.accent }]}>{c.valeur}</dt>
+              <dd>{c.legende}</dd>
+            </div>
+          ))}
+        </dl>
+        <div class="btr__bas">
+          <p class="yg-large btr__ligne">{equipe.btrLine}</p>
+          <a class="btr__lien" href={backToRun.lien.url} target="_blank" rel="noopener noreferrer">
+            <span class="btr__lien-texte"><span class="yg-large">{backToRun.lien.texte}</span><span class="btr__lien-detail">{backToRun.lien.detail}</span></span>
+            <span class="btr__lien-fleche" aria-hidden="true">↗</span>
+            <span class="sr-only"> (opens in a new tab)</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 · MOMENT 04 -->
+    {apresBtr.map((m, i) => (
+      <Moment moment={m} index={i + 4} total={total} fond={fondsMoments[i + 3]} valeurs={valeurs} />
+    ))}
+
+    <!-- 08 · YOUR TURN -->
+    <section class="yg-ecran fond-creme tour" aria-label={aToi.titre}>
+      <div class="yg-col tour__col">
+        <h2 class="yg-large tour__titre">{aToi.titre}</h2>
+        <p class="tour__question">{aToi.question}</p>
+        <p class="tour__consigne">{aToi.consigne}</p>
+        <div class="tour__choix">
+          {aToi.choix.map((c) => (
+            <button type="button" class="tour__bouton" aria-pressed="false" data-choix={c.probleme} data-reponse={c.reponse}>{c.probleme}</button>
+          ))}
+        </div>
+        <div class="tour__scene" aria-live="polite">
+          <p class="yg-serre tour__mot" data-tour-mot><span class="tour__barre" data-tour-barre></span></p>
+          <p class="tour__reponse" data-tour-reponse><span class="yg-large" data-tour-texte>{aToi.reponse}</span><Logo hauteur="1.1em" /></p>
+        </div>
+        <button
+          class="tour__tenir"
+          type="button"
+          data-tour-bouton
+          data-repos={commun.boutons.repos}
+          data-appui={commun.boutons.appui}
+          data-encore={commun.boutons.encore}
+          data-fini={commun.boutons.fini}
+          hidden
+        >
+          <span class="tour__jauge" aria-hidden="true"></span>
+          <span class="tour__libelle">{commun.boutons.repos}</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 09 · NEXT -->
+    <section class="yg-ecran fond-blanc suite" aria-label={suite.surTitre} id="contact">
+      <div class="yg-col suite__col">
+        <div class="suite__gauche">
+          <Logo hauteur="clamp(44px, 6vw, 72px)" class="suite__logo" />
+          <p class="yg-etiquette suite__sur">{suite.surTitre}</p>
+          <h2 class="yg-large suite__titre">{suite.titre}<br /><span class="yg-accent">{suite.titreAccent}</span></h2>
+          <p class="yg-large suite__finale">{equipe.finale}</p>
+          <ul class="suite__infos">
+            {suite.infos.map((i) => <li>{i}</li>)}
+          </ul>
+          <p class="suite__projection"><Jetons texte={suite.projection} valeurs={valeurs} /></p>
+        </div>
+        <div class="suite__droite">
+          <p class="yg-etiquette suite__actions-titre">{suite.actionsTitre}</p>
+          <button type="button" class="action action--embauche" popovertarget="fenetre-embauche" data-embauche>
+            <span class="action__texte"><span class="yg-large action__titre">{embauche.titre}</span><span class="action__detail">{embauche.detail}</span></span>
+            <span class="action__fleche" aria-hidden="true">→</span>
+          </button>
+          <a class="action" href={equipe.pdf} download={pdfNom} data-pdf>
+            <span class="action__texte"><span class="yg-large action__titre">{remplir(suite.lienPdf, { team: equipe.equipe })}</span><span class="action__detail">{suite.lienPdfDetail}</span></span>
+            <span class="action__fleche" aria-hidden="true">↓</span>
+          </a>
+          <a class="action" href={commun.cv} download={cvNom} data-cv>
+            <span class="action__texte"><span class="yg-large action__titre">{suite.lienCv}</span><span class="action__detail">{suite.lienCvDetail}</span></span>
+            <span class="action__fleche" aria-hidden="true">↓</span>
+          </a>
+          <a class="action" href={mailto}>
+            <span class="action__texte"><span class="yg-large action__titre">{suite.lienMail}</span><span class="action__detail">{commun.email}</span></span>
+            <span class="action__fleche" aria-hidden="true">→</span>
+          </a>
+        </div>
+        <p class="suite__mention">{commun.nonAffiliation}</p>
+      </div>
+      <div class="fenetre" id="fenetre-embauche" popover role="dialog" aria-labelledby="fenetre-titre">
+        <p class="yg-large fenetre__titre" id="fenetre-titre">{embauche.fenetre.titre}</p>
+        <p class="fenetre__texte">{embauche.fenetre.texte}</p>
+        <a class="action action--embauche" href={mailEmbauche} data-embauche-mail>
+          <span class="action__texte"><span class="yg-large action__titre">{embauche.fenetre.confirmer}</span><span class="action__detail">{embauche.fenetre.confirmerDetail}</span></span>
+          <span class="action__fleche" aria-hidden="true">→</span>
+        </a>
+        <button type="button" class="fenetre__fermer" popovertarget="fenetre-embauche" popovertargetaction="hide">{embauche.fenetre.fermer}</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="barre" aria-label="Quick actions">
+    <div class="barre__in">
+      <a href={equipe.pdf} download={pdfNom} data-pdf>{barre.pdf}</a>
+      <a href={commun.cv} download={cvNom} data-cv>{barre.cv}</a>
+      <a href={mailto} class="barre__mail">{barre.email}</a>
+    </div>
+  </nav>
+
+  <script type="application/json" id="yg-config" set:html={JSON.stringify(config)} />
+</AdidasLayout>
+
+<script>
+  // ==========================================================================
+  // Script unique (vanilla) : compteur Strava en direct, appui long des
+  // moments, choix « Your turn ». Sans JS, la page reste complète (états
+  // finaux rendus au build).
+  // ==========================================================================
+  type Config = Record<string, string>;
+  const cfg: Config = JSON.parse(document.getElementById('yg-config')?.textContent || '{}');
+  const reduit = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const JOUR_MS = 864e5;
+  const ecart = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / JOUR_MS);
+  const veille = (ymd: string) => new Date(Date.parse(`${ymd}T00:00:00Z`) - JOUR_MS).toISOString().slice(0, 10);
+  const lisible = (ymd: string) => new Date(`${ymd}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const remplir = (t: string, v: Record<string, string | number>) => t.replace(/\{(\w+)\}/g, (m, k) => (k in v ? String(v[k]) : m));
+  const aujourdhuiParis = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+
+  // -- 1. Compteur en direct ---------------------------------------------------
+  function appliquer(n: number, ref: string, mode: 'aujourdhui' | 'hier' | 'date') {
+    const gabarit = mode === 'aujourdhui' ? cfg.jourAujourdhui : mode === 'hier' ? cfg.jourHier : cfg.jourAuDate;
+    const valeurs: Record<string, string | number> = {
+      n,
+      jour: remplir(gabarit, { n, date: lisible(ref) }),
+      proj: n + ecart(ref, cfg.premierJour),
+    };
+    document.querySelectorAll<HTMLElement>('[data-yg]').forEach((el) => {
+      const cle = el.dataset.yg || '';
+      if (cle in valeurs) el.textContent = String(valeurs[cle]);
+    });
+    const libelle = document.querySelector<HTMLElement>('[data-yg-libelle]');
+    if (libelle) libelle.textContent = cfg.libelleDirect;
+    const regle = document.querySelector<HTMLElement>('[data-yg-regle]');
+    if (regle) regle.textContent = n < ecart(cfg.debut, ref) + 1 ? remplir(cfg.regleCassee, { n }) : cfg.regle;
+
+    // Grille : n cases (la dernière en orange) + la suivante en pointillés.
+    const grille = document.querySelector<HTMLElement>('[data-yg-grille]');
+    if (grille) {
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < n - 1; i++) { const c = document.createElement('span'); c.className = 'case'; frag.appendChild(c); }
+      if (n > 0) {
+        const d = document.createElement('span');
+        d.className = 'case case--dernier';
+        d.title = mode === 'aujourdhui' ? cfg.libelleAujourdhui : cfg.libelleDernier;
+        frag.appendChild(d);
+      }
+      const s = document.createElement('span'); s.className = 'case case--suivant'; s.title = cfg.libelleSuivant; frag.appendChild(s);
+      grille.replaceChildren(frag);
+    }
+    const texte = document.querySelector<HTMLElement>('[data-yg-grille-texte]');
+    if (texte) texte.textContent = remplir(n === 0 ? cfg.grilleZero : mode === 'aujourdhui' ? cfg.grilleAujourdhui : cfg.grilleDernier, { n });
+  }
+
+  const ctrl = new AbortController();
+  const minuteur = setTimeout(() => ctrl.abort(), 2500);
+  fetch('/api/streak', { signal: ctrl.signal, headers: { Accept: 'application/json' } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      if (!d || !d.configured || !d.today) return;
+      const etat = d.state;
+      const n = etat === 'failed' ? 0 : Number(d.validatedDay);
+      if (!Number.isFinite(n) || n < 0) return;
+      // Jour de référence : aujourd'hui si couru, sinon la veille.
+      const ref = etat === 'pending' ? veille(d.today) : d.today;
+      // Donnée calculée un autre jour (cache) : on la date explicitement.
+      const frais = d.today === aujourdhuiParis();
+      appliquer(n, ref, !frais ? 'date' : etat === 'pending' ? 'hier' : 'aujourdhui');
+    })
+    .catch(() => { /* secours conservé */ })
+    .finally(() => clearTimeout(minuteur));
+
+  // -- 2. Appui long : « shrink it » --------------------------------------------
+  const DUREE = 1200;
+  document.querySelectorAll<HTMLElement>('[data-moment]').forEach((section) => {
+    const bouton = section.querySelector<HTMLButtonElement>('.moment__bouton');
+    const libelle = section.querySelector<HTMLElement>('.moment__libelle');
+    if (!bouton || !libelle) return;
+    let minuteurAppui = 0;
+    let ignorerClic = false;
+    const fait = () => section.classList.contains('is-fait');
+    const ecrire = (cle: 'repos' | 'appui' | 'encore' | 'fini') => { libelle.textContent = bouton.dataset[cle] || ''; };
+    const terminer = (parPointeur: boolean) => {
+      clearTimeout(minuteurAppui);
+      if (parPointeur) ignorerClic = true;
+      section.classList.remove('is-appui');
+      section.classList.add('is-fait');
+      ecrire('fini');
+      bouton.setAttribute('aria-label', bouton.dataset.fini || '');
+    };
+    bouton.addEventListener('pointerdown', () => {
+      if (fait()) return;
+      if (reduit()) { terminer(true); return; }
+      section.classList.add('is-appui');
+      ecrire('appui');
+      minuteurAppui = window.setTimeout(() => terminer(true), DUREE);
+    });
+    const relacher = () => {
+      if (fait() || !section.classList.contains('is-appui')) return;
+      clearTimeout(minuteurAppui);
+      section.classList.remove('is-appui');
+      ecrire('encore');
+    };
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => bouton.addEventListener(t, relacher));
+    bouton.addEventListener('contextmenu', (e) => e.preventDefault());
+    bouton.addEventListener('click', (e) => {
+      if (ignorerClic) { ignorerClic = false; return; }
+      if (fait()) {
+        const suivant = section.nextElementSibling;
+        if (suivant) window.scrollTo({ top: suivant.getBoundingClientRect().top + window.scrollY, behavior: reduit() ? 'auto' : 'smooth' });
+        return;
+      }
+      // Clavier (Entrée / Espace) : état final directement.
+      if (e.detail === 0) terminer(false);
+    });
+  });
+
+  // -- 3. Your turn ---------------------------------------------------------------
+  // Même chemin que les moments : on choisit un problème → il apparaît en grand
+  // (léger flottement) → appui long sur « Hold to shrink it » → il rétrécit,
+  // se fait barrer, puis la réponse et le logo apparaissent dessous.
+  const tourScene = document.querySelector<HTMLElement>('.tour__scene');
+  const tourBarre = document.querySelector<HTMLElement>('[data-tour-barre]');
+  const tourTexte = document.querySelector<HTMLElement>('[data-tour-texte]');
+  const tourBouton = document.querySelector<HTMLButtonElement>('[data-tour-bouton]');
+  const tourLibelle = tourBouton?.querySelector<HTMLElement>('.tour__libelle');
+  const tourSection = tourScene?.closest('section');
+  let tourMinuteur = 0;
+  let tourBarreMinuteur = 0;
+  let tourIgnorer = false;
+  const tourEcrire = (cle: 'repos' | 'appui' | 'encore' | 'fini') => { if (tourLibelle && tourBouton) tourLibelle.textContent = tourBouton.dataset[cle] || ''; };
+  const tourFait = () => !!tourSection?.classList.contains('is-fait');
+  const tourTerminer = (parPointeur: boolean) => {
+    if (!tourSection || !tourScene) return;
+    clearTimeout(tourMinuteur);
+    if (parPointeur) tourIgnorer = true;
+    tourSection.classList.remove('is-appui');
+    tourSection.classList.add('is-fait');
+    tourEcrire('fini');
+    if (reduit()) { tourScene.classList.add('is-barre', 'is-repondu'); return; }
+    tourScene.classList.add('is-barre');
+    tourBarreMinuteur = window.setTimeout(() => tourScene.classList.add('is-repondu'), 420);
+  };
+  document.querySelectorAll<HTMLButtonElement>('[data-choix]').forEach((b, _, tous) => {
+    b.addEventListener('click', () => {
+      if (!tourScene || !tourBarre || !tourTexte || !tourBouton || !tourSection) return;
+      clearTimeout(tourMinuteur); clearTimeout(tourBarreMinuteur);
+      tous.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      tourBarre.textContent = b.dataset.choix || '';
+      if (b.dataset.reponse) tourTexte.textContent = b.dataset.reponse;
+      tourSection.classList.remove('is-appui', 'is-fait');
+      tourScene.classList.remove('is-choisi', 'is-barre', 'is-repondu');
+      void tourScene.offsetWidth; // repart de zéro
+      tourScene.classList.add('is-choisi');
+      tourBouton.hidden = false;
+      tourEcrire('repos');
+      // Amène le problème et le bouton dans l'écran (au-dessus de la barre fixe).
+      const bas = tourBouton.getBoundingClientRect().bottom;
+      const limite = window.innerHeight - 56 - 20;
+      if (bas > limite) window.scrollBy({ top: bas - limite, behavior: reduit() ? 'auto' : 'smooth' });
+    });
+  });
+  if (tourBouton && tourSection) {
+    tourBouton.addEventListener('pointerdown', () => {
+      if (tourFait()) return;
+      if (reduit()) { tourTerminer(true); return; }
+      tourSection.classList.add('is-appui');
+      tourEcrire('appui');
+      tourMinuteur = window.setTimeout(() => tourTerminer(true), DUREE);
+    });
+    const tourRelacher = () => {
+      if (tourFait() || !tourSection.classList.contains('is-appui')) return;
+      clearTimeout(tourMinuteur);
+      tourSection.classList.remove('is-appui');
+      tourEcrire('encore');
+    };
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => tourBouton.addEventListener(t, tourRelacher));
+    tourBouton.addEventListener('contextmenu', (e) => e.preventDefault());
+    tourBouton.addEventListener('click', (e) => {
+      if (tourIgnorer) { tourIgnorer = false; return; }
+      if (tourFait()) {
+        const suivant = tourSection.nextElementSibling;
+        if (suivant) window.scrollTo({ top: suivant.getBoundingClientRect().top + window.scrollY, behavior: reduit() ? 'auto' : 'smooth' });
+        return;
+      }
+      if (e.detail === 0) tourTerminer(false); // clavier
+    });
+  }
+</script>
+
+<style>
+  /* -- 01 Day N -------------------------------------------------------------- */
+  .jour { position: relative; padding-top: 20px; padding-bottom: calc(var(--yg-barre) + 28px + env(safe-area-inset-bottom)); }
+  .jour > :not(.jour__filigrane) { position: relative; z-index: 1; }
+  /* Grand logo en filigrane, bleu plus clair, à droite (ordinateur). */
+  .jour :global(.jour__filigrane) {
+    display: none;
+    position: absolute; z-index: 0;
+    right: max(-6vw, -80px); top: 50%;
+    transform: translateY(-46%);
+    color: #2c3d86;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .jour__tete { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .jour__marque { font-size: 14px; line-height: 1; letter-spacing: 0.02em; }
+  .jour__pour { color: var(--yg-texte-marine); text-align: right; letter-spacing: 0.12em; display: inline-flex; align-items: center; gap: 0.5em; }
+  .jour__pour :global(.jour__logo) { color: #fff; margin-inline: 0.1em; }
+  .jour__centre { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(14px, 2.4svh, 24px); padding-block: clamp(24px, 5svh, 56px) 0; }
+  /* Badge « Live from Strava » : même famille que les titres, cadré. */
+  .jour__direct {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 7px 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    font: 700 12px/1 var(--yg-titre); font-stretch: 110%;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: #fff;
+  }
+  .jour__point { width: 8px; height: 8px; background: var(--yg-orange-sur-marine); flex: none; animation: pouls 1.8s ease-in-out infinite; }
+  @keyframes pouls { 50% { opacity: 0.35; } }
+  .jour__titre { display: flex; flex-direction: column; gap: 4px; }
+  .jour__mot { font-size: clamp(26px, min(7vw, 6svh), 64px); line-height: 0.9; color: var(--yg-texte-marine); }
+  /* Chiffre : Archivo 900 en largeur normale (plus lisible que l'ultra-condensé). */
+  .jour__n {
+    font-family: var(--yg-titre); font-weight: 900; font-stretch: 100%;
+    font-size: clamp(110px, min(38vw, 30svh), 300px);
+    line-height: 0.82; letter-spacing: -0.045em;
+    font-variant-numeric: tabular-nums;
+  }
+  .jour__regle { font: 600 clamp(17px, 2vw, 22px)/1.4 var(--yg-texte); max-width: 30ch; }
+  .jour__pied { display: flex; flex-direction: column; gap: 10px; border-top: 2px solid rgba(255, 255, 255, 0.85); padding-top: 18px; margin-top: clamp(8px, 3svh, 32px); max-width: 640px; }
+  .jour__accroche { font-size: clamp(20px, 3vw, 34px); line-height: 1; }
+  .jour__intro { font: 500 13px/1.4 var(--yg-texte); color: var(--yg-texte-marine); }
+
+  /* -- 02 Grille ------------------------------------------------------------- */
+  .grille { justify-content: center; padding-top: 48px; }
+  .grille__col { display: flex; flex-direction: column; gap: 28px; }
+  .grille__titre { font-size: clamp(40px, 9vw, 112px); line-height: 0.9; }
+  .grille__cases { display: flex; flex-wrap: wrap; gap: 3px; max-width: 760px; }
+  .grille__cases :global(.case) { width: clamp(8px, 1.1vw, 13px); height: clamp(8px, 1.1vw, 13px); background: var(--yg-marine); }
+  .grille__cases :global(.case--dernier) { background: var(--yg-orange); }
+  .grille__cases :global(.case--suivant) { background: transparent; border: 1.5px dashed var(--yg-marine); }
+  .grille__texte { font: 600 clamp(16px, 1.8vw, 20px)/1.45 var(--yg-texte); max-width: 34ch; }
+
+  /* -- 06 Back to Run -------------------------------------------------------- */
+  .btr { justify-content: center; padding-top: 40px; }
+  .btr__col { display: flex; flex-direction: column; gap: clamp(16px, 2.6svh, 26px); }
+  .btr__tete { display: flex; align-items: center; gap: 14px; }
+  .btr__logo { width: 84px; height: auto; flex: none; }
+  .btr__sur { color: var(--yg-texte-clair); }
+  .btr__titre { font-size: clamp(26px, 4.6vw, 54px); line-height: 0.98; max-width: 22ch; }
+  .btr__grille { display: grid; gap: 16px 32px; align-items: start; }
+  .btr__bloc { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .btr__bloc h3 { margin: 0; color: var(--yg-orange); }
+  .btr__bloc p { font: 500 clamp(15px, 1.5vw, 18px)/1.5 var(--yg-texte); }
+  .btr__mascotte { width: auto; height: 120px; justify-self: center; }
+  .btr__chiffres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; border-top: 2px solid var(--yg-marine); padding-top: 14px; margin: 0; }
+  .btr__chiffres div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .btr__valeur { font-family: var(--yg-titre); font-weight: 900; font-stretch: 100%; font-size: clamp(32px, 5vw, 64px); line-height: 0.9; letter-spacing: -0.03em; }
+  .btr__chiffres dd { margin: 0; font: 600 13px/1.35 var(--yg-texte); color: var(--yg-texte-clair); }
+  .btr__bas { display: grid; gap: 16px; align-items: center; }
+  .btr__ligne { font-size: clamp(16px, 1.8vw, 22px); line-height: 1.12; padding-left: 14px; border-left: 4px solid var(--yg-orange); }
+  .btr__lien {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    min-height: 64px; padding: 12px 18px;
+    background: var(--yg-marine); color: #fff; text-decoration: none;
+    transition: background-color 0.15s ease;
+  }
+  .btr__lien:hover { background: var(--yg-orange); color: #fff; }
+  .btr__lien-texte { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .btr__lien-texte .yg-large { font-size: clamp(15px, 1.6vw, 18px); line-height: 1.1; }
+  .btr__lien-detail { font: 600 13px/1.3 var(--yg-texte); opacity: 0.75; }
+  .btr__lien-fleche { font: 900 22px/1 var(--yg-titre); flex: none; }
+
+  /* -- 08 Your turn ---------------------------------------------------------- */
+  .tour { justify-content: center; padding-top: 48px; }
+  .tour__col { display: flex; flex-direction: column; gap: 16px; }
+  .tour__titre { font-size: clamp(44px, 9vw, 112px); line-height: 0.88; }
+  .tour__question { font: 700 clamp(18px, 2.2vw, 24px)/1.35 var(--yg-texte); }
+  .tour__consigne { font: 500 14px/1.4 var(--yg-texte); color: var(--yg-texte-clair); margin-top: -8px; }
+  .tour__choix { display: grid; gap: 10px; }
+  .tour__bouton {
+    min-height: 52px; padding: 10px 16px;
+    border: 2px solid var(--yg-marine); background: transparent; color: var(--yg-marine);
+    font: 800 12px/1.25 var(--yg-titre); font-stretch: 115%; letter-spacing: 0.03em; text-transform: uppercase;
+    text-align: left; cursor: pointer;
+  }
+  .tour__bouton:hover { background: rgba(25, 39, 95, 0.08); }
+  .tour__bouton[aria-pressed='true'] { background: var(--yg-marine); color: #fff; }
+  /* Scène à hauteur fixe : le problème (en haut) et la réponse (en bas) ne
+     se chevauchent jamais, et rien ne saute pendant l'animation. */
+  .tour__scene { position: relative; height: clamp(250px, 24vw, 310px); text-align: center; }
+  .tour__mot {
+    position: absolute; left: 0; right: 0; top: 4px;
+    font-size: clamp(30px, 6vw, 78px); line-height: 0.95;
+    text-wrap: balance; overflow-wrap: anywhere;
+    transform-origin: 50% 0;
+    opacity: 0; transform: scale(0.94);
+    transition: transform 300ms ease-out, opacity 300ms ease-out;
+  }
+  /* Apparition douce + léger flottement : le problème préoccupe, sans
+     gêner la lecture. */
+  .tour__scene:global(.is-choisi) .tour__mot { opacity: 1; transform: scale(1); animation: inquiet 1.6s ease-in-out 250ms 2; }
+  @keyframes inquiet {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    25% { translate: -2px 0; rotate: -0.35deg; }
+    75% { translate: 2px 0; rotate: 0.35deg; }
+  }
+  /* Appui long (même courbe que les moments) */
+  .tour:global(.is-appui) .tour__mot,
+  .tour:global(.is-fait) .tour__mot { animation: none; transform: scale(0.42); }
+  .tour:global(.is-appui) .tour__mot { transition: transform 1200ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .tour:global(.is-fait) .tour__mot { opacity: 0.8; }
+  /* Rature dessinée de gauche à droite, ligne par ligne */
+  .tour__barre {
+    background: linear-gradient(var(--yg-orange), var(--yg-orange)) no-repeat 0 58% / 0% 0.1em;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+    transition: background-size 400ms ease-out;
+  }
+  .tour__scene:global(.is-barre) .tour__barre { background-size: 100% 0.1em; }
+  /* Réponse : texte, puis le logo dessous */
+  .tour__reponse {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    font-size: clamp(26px, 4.6vw, 60px); line-height: 0.95; color: var(--yg-orange);
+    text-wrap: balance;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 450ms ease-out, transform 450ms ease-out;
+  }
+  .tour__scene:global(.is-repondu) .tour__reponse { opacity: 1; transform: none; }
+  /* Les réponses peuvent tenir sur deux lignes (« You got this. » / « (Please.) »). */
+  .tour__reponse [data-tour-texte] { white-space: pre-line; }
+  .tour__tenir {
+    position: relative; overflow: hidden;
+    align-self: center; margin-top: 4px;
+    width: 100%; max-width: 380px; height: 60px;
+    border: 0; padding: 0;
+    background: var(--yg-marine); color: #fff;
+    cursor: pointer;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  .tour__tenir[hidden] { display: none; }
+  .tour__jauge { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--yg-orange); transition: width 250ms ease-out; }
+  .tour:global(.is-appui) .tour__jauge { width: 100%; transition: width 1200ms linear; }
+  .tour:global(.is-fait) .tour__jauge { width: 100%; }
+  .tour__libelle { position: relative; font: 900 15px var(--yg-titre); font-stretch: 125%; letter-spacing: 0.04em; text-transform: uppercase; }
+  /* Sans JS : la réponse s'affiche directement sous les choix. */
+  :global(html:not(.js)) .tour__reponse { position: static; opacity: 1; transform: none; }
+  :global(html:not(.js)) .tour__scene { height: auto; }
+
+  /* -- Fenêtre « Hire Alex directly » ------------------------------------------ */
+  .fenetre {
+    width: min(92vw, 460px);
+    margin: auto; padding: 28px 24px 22px;
+    border: 3px solid var(--yg-marine); background: var(--yg-blanc); color: var(--yg-marine);
+    box-shadow: 10px 10px 0 var(--yg-orange);
+  }
+  .fenetre:popover-open { display: flex; flex-direction: column; gap: 16px; }
+  .fenetre::backdrop { background: rgba(25, 39, 95, 0.55); }
+  .fenetre__titre { font-size: clamp(24px, 4vw, 34px); line-height: 1; }
+  .fenetre__texte { font: 600 17px/1.45 var(--yg-texte); }
+  .fenetre__fermer {
+    align-self: center; min-height: 44px; padding: 0 12px;
+    border: 0; background: none; color: var(--yg-texte-clair);
+    font: 700 14px var(--yg-texte); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+  }
+  .fenetre__fermer:hover { color: var(--yg-marine); }
+
+  /* -- 09 Next ----------------------------------------------------------------- */
+  .suite { justify-content: center; padding-top: 48px; padding-bottom: calc(var(--yg-barre) + 48px + env(safe-area-inset-bottom)); }
+  .suite__col { display: grid; gap: 36px; }
+  .suite__gauche { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .suite__gauche :global(.suite__logo) { color: var(--yg-marine); align-self: flex-start; }
+  .suite__sur { color: var(--yg-texte-clair); }
+  .suite__titre { font-stretch: 100%; font-size: clamp(26px, 8vw, 44px); line-height: 0.95; margin-top: -8px; }
+  .suite__finale { font-size: clamp(17px, 2vw, 24px); line-height: 1.15; max-width: 30ch; }
+  .suite__infos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .suite__infos li { font: 700 13px/1 var(--yg-texte); padding: 9px 12px; background: var(--yg-ciel); }
+  .suite__projection { font: 500 15px/1.45 var(--yg-texte); color: var(--yg-texte-clair); max-width: 40ch; }
+  .suite__droite { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .suite__actions-titre { color: var(--yg-texte-clair); margin-bottom: 4px; }
+  .action {
+    width: 100%; font: inherit; text-align: left; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    min-height: 76px; padding: 14px 18px;
+    border: 2px solid var(--yg-marine); color: var(--yg-marine);
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .action:hover { background: var(--yg-marine); color: #fff; }
+  .action--embauche { background: var(--yg-orange); border-color: var(--yg-orange); color: #fff; }
+  .action--embauche:hover { background: var(--yg-marine); border-color: var(--yg-marine); color: #fff; }
+  .action__texte { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .action__titre { font-size: clamp(14px, 1.5vw, 17px); line-height: 1.15; }
+  .action__clin { align-self: flex-start; font: 800 11px/1 var(--yg-titre); letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 7px; background: #fff; color: var(--yg-orange); transform: rotate(-2deg); }
+  .action__detail { font: 600 13px/1.3 var(--yg-texte); opacity: 0.75; overflow-wrap: anywhere; }
+  .action__fleche { font: 900 22px/1 var(--yg-titre); flex: none; }
+  .suite__mention { font: 500 12px/1.4 var(--yg-texte); color: var(--yg-texte-clair); border-top: 1px solid var(--yg-filet); padding-top: 14px; }
+
+  /* -- Barre fixe -------------------------------------------------------------- */
+  .barre { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--yg-marine); border-top: 1px solid #3d4a7a; padding-bottom: env(safe-area-inset-bottom); }
+  .barre__in { max-width: var(--yg-max); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .barre a { min-height: var(--yg-barre); display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font: 700 14px var(--yg-texte); }
+  .barre a + a { border-left: 1px solid #3d4a7a; }
+  .barre a:hover { color: var(--yg-orange-sur-marine); }
+  .barre .barre__mail { background: var(--yg-creme); color: var(--yg-marine); }
+  .barre .barre__mail:hover { color: var(--yg-orange); }
+
+  @media (min-width: 860px) {
+    .jour :global(.jour__filigrane) { display: block; }
+    .btr__grille { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+    .btr__mascotte { height: 190px; }
+    .btr__bas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
+    .tour__choix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .suite__col { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: center; }
+    .suite__titre { font-size: clamp(32px, 3.8vw, 52px); }
+    .suite__mention { grid-column: 1 / -1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tour__mot, .tour__reponse, .tour__barre, .tour__jauge { transition: none !important; animation: none !important; }
+    .jour__point { animation: none; }
+  }
+</style>

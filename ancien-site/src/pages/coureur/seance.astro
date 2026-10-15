@@ -1,0 +1,349 @@
+---
+import Base from '../../layouts/Base.astro';
+import Newsletter from '../../components/Newsletter.astro';
+---
+
+<Base
+  title="Séance"
+  description="Le détail d'une séance d'entraînement La Gamberge : intérêt, quand la placer, structure complète, personnalisation et export .FIT pour ta montre."
+>
+  <section class="section">
+    <div class="wrap">
+      <a class="s-back" href="/coureur#seances">← Toutes les séances</a>
+      <div id="seance-app">
+        <p class="s-loading">Chargement de la séance…</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .s-back {
+    display: inline-block; font-family: var(--font-display); font-weight: 700;
+    color: var(--tomato); text-decoration: none; margin-bottom: 1.25rem;
+  }
+  .s-back:hover { text-decoration: underline wavy var(--tomato); }
+  .s-loading { color: var(--ink-soft); }
+</style>
+
+<!-- Styles GLOBAUX : le détail est construit en JS (innerHTML). Les nœuds créés
+     n'ont pas l'attribut de scope Astro → il faut du :global (piège Astro). -->
+<style is:global>
+  #seance-app .s-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-bottom: 0.6rem; }
+  #seance-app .s-tag, #seance-app .s-target {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.7rem;
+    text-transform: uppercase; letter-spacing: 0.07em; padding: 0.2rem 0.6rem;
+    border-radius: 999px; border: 2px solid var(--ink);
+  }
+  #seance-app .s-tag { background: var(--cream-deep); }
+  #seance-app .s-target { background: var(--sun); }
+  #seance-app .s-title { font-size: clamp(2rem, 6vw, 3.2rem); margin: 0.3rem 0 0.5rem; }
+  #seance-app .s-desc { color: var(--ink-soft); font-size: 1.1rem; margin: 0 0 1rem; max-width: 62ch; }
+
+  #seance-app .s-summary {
+    display: flex; flex-wrap: wrap; gap: 0.4rem 0.55rem; align-items: center;
+    padding: 0.9rem 1.1rem; border: 2.5px solid var(--ink); border-radius: var(--radius);
+    background: var(--cream-deep); margin: 0.5rem 0 0.4rem; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  #seance-app .s-summary .chip {
+    background: var(--paper); border: 2px solid var(--ink); border-radius: 999px;
+    padding: 0.15rem 0.6rem; font-size: 0.9rem;
+  }
+  #seance-app .s-summary .sep { opacity: 0.4; font-weight: 800; }
+  #seance-app .s-totals { font-family: var(--font-display); font-weight: 700; color: var(--teal); margin: 0.6rem 0 0; }
+
+  /* Blocs éditoriaux */
+  #seance-app .s-edito { display: grid; gap: 1rem; margin: 1.8rem 0; }
+  @media (min-width: 720px) { #seance-app .s-edito { grid-template-columns: 1fr 1fr; } }
+  #seance-app .s-card {
+    padding: 1.2rem 1.35rem; border: 2.5px solid var(--ink); border-radius: var(--radius);
+    background: var(--paper); box-shadow: var(--shadow-sm);
+  }
+  #seance-app .s-card h3 {
+    font-size: 1.05rem; margin: 0 0 0.4rem; display: flex; align-items: center; gap: 0.5rem;
+  }
+  #seance-app .s-card p { margin: 0; color: var(--ink-soft); }
+  #seance-app .s-card .ico { font-size: 1.15rem; }
+
+  #seance-app .s-section-title {
+    font-family: var(--font-display); font-weight: 800; font-size: 1.4rem;
+    margin: 2rem 0 0.3rem;
+  }
+  #seance-app .s-hint { color: var(--ink-soft); font-size: 0.92rem; margin: 0 0 1rem; }
+
+  /* Objectifs d'allure */
+  #seance-app .s-goals { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0 1.2rem; }
+  #seance-app .s-goal {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    padding: 0.4rem 0.85rem; border-radius: 999px; border: 2.5px solid var(--ink);
+    background: var(--paper); box-shadow: var(--shadow-sm); transition: transform 0.1s ease;
+  }
+  #seance-app .s-goal:hover { transform: translate(-1px, -1px); }
+  #seance-app .s-goal.is-active { background: var(--teal); color: var(--cream); }
+
+  /* Aperçu éditable */
+  #seance-app .wk-steps { list-style: none; padding: 0; margin: 0.4rem 0 1.2rem; display: flex; flex-direction: column; gap: 0.55rem; }
+  #seance-app .wk-step {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.75rem;
+    padding: 0.7rem 0.9rem; border: 2.5px solid var(--ink); border-radius: 14px; background: var(--cream);
+  }
+  #seance-app .wk-step .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); flex: 0 0 auto; }
+  #seance-app .wk-step .lbl { font-family: var(--font-display); font-weight: 700; }
+  #seance-app .wk-step .grow { flex: 1; }
+  #seance-app .dot--warm { background: var(--sun); }
+  #seance-app .dot--effort { background: var(--tomato); }
+  #seance-app .dot--rest { background: var(--teal); }
+  #seance-app .dot--cool { background: var(--soon); }
+
+  #seance-app .wk-rep { border: 2.5px dashed var(--ink); border-radius: 16px; padding: 0.75rem; background: color-mix(in srgb, var(--cream-deep) 60%, var(--paper)); margin-bottom: 1.2rem; }
+  #seance-app .wk-rep-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.6rem; font-family: var(--font-display); font-weight: 800; }
+  #seance-app .wk-rep .wk-steps { margin: 0; }
+
+  #seance-app .stepper { display: inline-flex; align-items: center; gap: 0.35rem; }
+  #seance-app .stepper .val { min-width: 3.6em; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+  #seance-app .ctrl-label { font-size: 0.78rem; color: var(--ink-soft); font-weight: 600; }
+  #seance-app .step-btn {
+    width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid var(--ink);
+    background: var(--paper); font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
+    line-height: 1; cursor: pointer; display: inline-grid; place-items: center; padding: 0;
+  }
+  #seance-app .step-btn:hover { background: var(--sun); }
+  #seance-app .step-btn:active { transform: translateY(1px); }
+
+  #seance-app .wk-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 0.5rem; }
+  #seance-app .wk-reset { background: none; border: none; text-decoration: underline; cursor: pointer; color: var(--ink-soft); font-weight: 600; }
+
+  #seance-app .s-missing { color: var(--ink-soft); }
+  #seance-app .s-missing a { color: var(--tomato); font-weight: 700; }
+</style>
+
+<script>
+  import { downloadWorkoutFit } from '../../lib/fit.js';
+  import { loadWorkouts, esc, fmtPace, fmtTime, fmtDist, slug } from '../../lib/workouts-client.js';
+
+  const app = document.getElementById('seance-app');
+  const params = new URLSearchParams(location.search);
+  const wantedId = params.get('id');
+
+  let current = null; // séance
+  let custom = null;  // clone éditable de la structure
+  let activeGoal = -1;
+
+  // ---- Helpers de structure ----
+  const TYPE_META = {
+    echauffement: { lbl: 'Échauffement', dot: 'warm' },
+    effort: { lbl: 'Effort', dot: 'effort' },
+    recuperation: { lbl: 'Récupération', dot: 'rest' },
+    retour_calme: { lbl: 'Retour au calme', dot: 'cool' },
+  };
+  const metricText = (s) =>
+    s.duree_sec != null ? fmtTime(s.duree_sec) : (s.distance_m != null ? fmtDist(s.distance_m) : '');
+
+  // Résumé « en clair » de la séance.
+  function describe(st) {
+    const part = (s) => {
+      if (s.type === 'echauffement') return `échauffement ${metricText(s)}`;
+      if (s.type === 'retour_calme') return `retour au calme ${metricText(s)}`;
+      if (s.type === 'recuperation') return `récup ${metricText(s)}`;
+      if (s.type === 'effort') return metricText(s) + (s.allure_cible_sec_par_km ? ` à ${fmtPace(s.allure_cible_sec_par_km)}` : '');
+      return '';
+    };
+    return (st || []).map((s) => {
+      if (s.type === 'repetition_bloc') {
+        const inside = (s.etapes || []).map(part).filter(Boolean).join(' + ');
+        return `${s.nb_repetitions || 1} × (${inside})`;
+      }
+      return part(s);
+    }).filter(Boolean);
+  }
+
+  function applyPaceToEfforts(steps, pace) {
+    for (const s of steps) {
+      if (s.type === 'repetition_bloc') applyPaceToEfforts(s.etapes || [], pace);
+      else if (s.type === 'effort') s.allure_cible_sec_par_km = pace;
+    }
+  }
+
+  function computeTotals(steps) {
+    let t = 0, dist = 0;
+    const add = (s) => {
+      const pace = s.allure_cible_sec_par_km;
+      if (s.duree_sec != null) { t += s.duree_sec; if (pace) dist += (s.duree_sec / pace) * 1000; }
+      else if (s.distance_m != null) { dist += s.distance_m; if (pace) t += (s.distance_m / 1000) * pace; }
+    };
+    for (const s of steps) {
+      if (s.type === 'repetition_bloc') {
+        const n = Math.max(1, s.nb_repetitions || 1);
+        for (let k = 0; k < n; k++) (s.etapes || []).forEach(add);
+      } else add(s);
+    }
+    return { t: Math.round(t), dist: Math.round(dist / 100) * 100 };
+  }
+
+  // ---- Rendu des étapes éditables ----
+  function stepperInner(path, kind, valueText) {
+    return `<button class="step-btn" data-act="${kind}-minus" data-path="${path}">−</button>
+      <span class="val">${esc(valueText)}</span>
+      <button class="step-btn" data-act="${kind}-plus" data-path="${path}">+</button>`;
+  }
+  function stepHtml(s, path) {
+    const meta = TYPE_META[s.type] || { lbl: s.type, dot: 'rest' };
+    let metric = '';
+    if (s.duree_sec != null) metric = `<span class="stepper">${stepperInner(path, 'dur', fmtTime(s.duree_sec))}</span>`;
+    else if (s.distance_m != null) metric = `<span class="stepper">${stepperInner(path, 'dur', fmtDist(s.distance_m))}</span>`;
+    let paceCtrl = '';
+    if (s.type === 'effort') {
+      paceCtrl = s.allure_cible_sec_par_km
+        ? `<span class="stepper"><span class="ctrl-label">allure</span>${stepperInner(path, 'pace', fmtPace(s.allure_cible_sec_par_km))}</span>`
+        : `<button class="step-btn" data-act="pace-add" data-path="${path}" title="Ajouter une allure cible">🎯</button>`;
+    }
+    return `<li class="wk-step">
+      <span class="dot dot--${meta.dot}"></span>
+      <span class="lbl">${esc(meta.lbl)}</span>
+      <span class="grow"></span>
+      ${metric}
+      ${paceCtrl}
+    </li>`;
+  }
+
+  function editoCard(ico, title, body) {
+    if (!body) return '';
+    return `<div class="s-card"><h3><span class="ico" aria-hidden="true">${ico}</span>${esc(title)}</h3><p>${esc(body)}</p></div>`;
+  }
+
+  function render() {
+    const w = current;
+    const totals = computeTotals(custom);
+    const summary = describe(custom)
+      .map((p) => `<span class="chip">${esc(p)}</span>`).join('<span class="sep">·</span>');
+
+    const goals = (w.guidance || []).map((g, i) =>
+      `<button class="s-goal ${i === activeGoal ? 'is-active' : ''}" data-goal="${i}">
+        ${esc(g.objectif_label)} · ${esc(fmtPace(g.allure_recommandee_sec_par_km))}
+      </button>`).join('');
+
+    const stepsHtml = custom.map((s, i) => {
+      if (s.type === 'repetition_bloc') {
+        const subs = (s.etapes || []).map((sub, j) => stepHtml(sub, `${i}.${j}`)).join('');
+        return `<div class="wk-rep">
+          <div class="wk-rep-head">
+            <span>Bloc répété</span>
+            <span class="stepper">${stepperInner(String(i), 'rep', '× ' + (s.nb_repetitions || 1))}</span>
+          </div>
+          <ul class="wk-steps">${subs}</ul>
+        </div>`;
+      }
+      return `<ul class="wk-steps">${stepHtml(s, String(i))}</ul>`;
+    }).join('');
+
+    const edito = [
+      editoCard('🎯', "L'intérêt de la séance", w.interet),
+      editoCard('📅', 'Quand la placer', w.periode),
+      editoCard('🏃', 'Pour qui', w.pour_qui),
+      editoCard('💡', "Conseils d'exécution", w.conseils),
+    ].join('');
+
+    app.innerHTML = `
+      <div class="s-badges">
+        ${w.categorie ? `<span class="s-tag">${esc(w.categorie.nom)}</span>` : ''}
+        ${w.distance_cible_m ? `<span class="s-target">Orientée ${esc(fmtDist(w.distance_cible_m))}</span>` : ''}
+      </div>
+      <h1 class="s-title">${esc(w.titre)}</h1>
+      ${w.description ? `<p class="s-desc">${esc(w.description)}</p>` : ''}
+
+      <div class="s-summary">${summary}</div>
+      <p class="s-totals">≈ ${esc(fmtTime(totals.t))}${totals.dist ? ` · ~${esc(fmtDist(totals.dist))} au total` : ''}</p>
+
+      ${edito ? `<div class="s-edito">${edito}</div>` : ''}
+
+      <h2 class="s-section-title">Personnalise et exporte</h2>
+      <p class="s-hint">Ajuste échauffement, récup, allures et répétitions à ta main. Les changements se reflètent tout de suite, et le fichier .FIT en tiendra compte.</p>
+
+      ${goals ? `<div class="s-goals">${goals}</div>
+        <p class="ctrl-label" style="margin:-0.6rem 0 1rem">Clique un objectif : son allure s'applique à tous les efforts. Tu peux ensuite ajuster.</p>` : ''}
+
+      ${stepsHtml}
+
+      <div class="wk-actions">
+        <button class="btn btn--tomato" type="button" data-act="download">⌚ Télécharger pour ma montre (.FIT)</button>
+        <button class="wk-reset" type="button" data-act="reset">Réinitialiser</button>
+      </div>
+      <p class="ctrl-label" style="margin-top:0.6rem">Fichier .FIT universel — importe-le dans Garmin Connect, Coros ou l'appli de ta montre.</p>
+    `;
+  }
+
+  function itemAt(path) {
+    const parts = String(path).split('.').map(Number);
+    let node = custom[parts[0]];
+    if (parts.length > 1) node = node.etapes[parts[1]];
+    return node;
+  }
+
+  app?.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || !current) return;
+    const act = btn.dataset.act;
+
+    if (act === 'reset') { custom = JSON.parse(JSON.stringify(current.structure || [])); activeGoal = -1; render(); return; }
+    if (act === 'download') { downloadWorkoutFit({ name: current.titre, structure: custom }, slug(current.titre)); return; }
+    if (btn.dataset.goal != null) {
+      const g = current.guidance[Number(btn.dataset.goal)];
+      if (g) { applyPaceToEfforts(custom, g.allure_recommandee_sec_par_km); activeGoal = Number(btn.dataset.goal); render(); }
+      return;
+    }
+
+    if (!act || btn.dataset.path == null) return;
+    const s = itemAt(btn.dataset.path);
+    if (!s) return;
+    switch (act) {
+      case 'dur-plus':
+      case 'dur-minus': {
+        const sign = act === 'dur-plus' ? 1 : -1;
+        if (s.duree_sec != null) s.duree_sec = Math.max(15, s.duree_sec + sign * 15);
+        else if (s.distance_m != null) s.distance_m = Math.max(100, s.distance_m + sign * 100);
+        break;
+      }
+      case 'pace-plus':
+      case 'pace-minus': {
+        const sign = act === 'pace-plus' ? 1 : -1;
+        s.allure_cible_sec_par_km = Math.min(600, Math.max(120, (s.allure_cible_sec_par_km || 300) + sign * 5));
+        activeGoal = -1;
+        break;
+      }
+      case 'pace-add': { s.allure_cible_sec_par_km = 300; break; }
+      case 'rep-plus':
+      case 'rep-minus': {
+        const sign = act === 'rep-plus' ? 1 : -1;
+        s.nb_repetitions = Math.max(1, (s.nb_repetitions || 1) + sign);
+        break;
+      }
+      default: return;
+    }
+    render();
+  });
+
+  // ---- Chargement ----
+  function showMissing() {
+    app.innerHTML = `<p class="s-missing">Cette séance est introuvable (elle a peut-être été retirée).
+      <a href="/coureur#seances">Retour à la bibliothèque</a>.</p>`;
+  }
+
+  if (!wantedId) {
+    showMissing();
+  } else {
+    loadWorkouts().then((store) => {
+      current = store.workouts.find((w) => String(w.id) === String(wantedId));
+      if (!current) { showMissing(); return; }
+      custom = JSON.parse(JSON.stringify(current.structure || []));
+      document.title = `${current.titre} — Séance — La Gamberge`;
+      render();
+    });
+  }
+</script>
