@@ -18,7 +18,7 @@
      {n}     → nombre de jours validés d'affilée
      {proj}  → numéro du jour projeté au 1er mars 2027
      {team}  → intitulé de l'équipe
-   Un moment dont `voix` est vide n'est pas publié (écran non construit).
+   Un moment dont `grand` est vide n'est pas publié (écran non construit).
    ========================================================================== */
 
 const A = '/adidas';
@@ -79,7 +79,7 @@ export const commun = {
 
   // -- Les 4 moments de pression (moments VÉCUS, fournis par Alex) -------------
   //   tag : contexte · grand : LE PROBLÈME, en énorme, qui rétrécit
-  //   voix : la voix négative dans la tête
+  //   contexte : l'événement (date · lieu · moment), affiché au-dessus du problème
   //   seul / seulAccent : « It's only… » (accent = mot en orange, optionnel)
   //   preuve : le fait vérifiable
   boutons: {
@@ -91,33 +91,33 @@ export const commun = {
   moments: [
     {
       id: 'm1',
-      tag: 'Paris Marathon · April 2026 · KM 34',
+      tag: 'Paris Marathon',
+      contexte: 'April 2026 · Paris Marathon · Kilometre 34',
       grand: 'I’m going to crack.',
-      voix: 'No. You can’t crack now.',
       seul: 'It’s only a race.',
       preuve: 'The group blew up. I ran the last 8 km alone. Finished in 2:38:21.',
     },
     {
       id: 'm2',
-      tag: 'The streak · Just another day',
+      tag: 'The streak',
+      contexte: '2026 · The daily 5 km streak · Just another day',
       grand: 'Zero motivation.',
-      voix: 'You can’t crack now. You have to.',
       seul: 'It’s only 5 km.',
       preuve: 'No race, no reason. Motivation at zero. Still went. {jour}.',
     },
     {
       id: 'm3',
-      tag: 'Nice by UTMB · September 2026 · KM 30',
+      tag: 'Nice by UTMB',
+      contexte: 'September 2026 · Nice by UTMB · Kilometre 30',
       grand: 'I’m going to walk.',
-      voix: 'I can’t take it anymore.',
       seul: 'It’s only a few minutes.',
       preuve: 'My first trail. About 39 km.',
     },
     {
       id: 'm4',
       tag: 'This application',
+      contexte: 'October 2026 · My adidas application · Second try',
       grand: 'Round 2',
-      voix: 'I wasn’t ready last year. Why would I be now? I’ve got nothing good to send.',
       seul: 'It’s only a',
       seulAccent: 'game',
       seulFin: '.',
@@ -129,16 +129,19 @@ export const commun = {
   // Chiffres validés : ne jamais confondre inscrits, actifs et finishers.
   backToRun: {
     surTitre: 'Back to Run · 30 days · 5 km a day · September 2026',
-    titre: 'So I gave the same rule to',
+    // Titre sur toute la largeur : la règle est dite explicitement.
+    titre: '5 km a day for 30 days. I gave that rule to',
     titreAccent: '2,020',
-    titreFin: 'people.',
-    explication: 'Back to Run is the online challenge I built from scratch: run at least 5 km every day for 30 days, through September 2026, tracked via Strava or logged by hand.',
+    titreFin: 'runners.',
+    definitionTitre: 'What is Back to Run?',
+    explication: 'The online running challenge I built from scratch in September 2026. The rule: run at least 5 km every single day for 30 days. Runs were tracked via Strava or logged by hand.',
     // Chiffres validés : inscrits, finishers, kilomètres.
     chiffres: [
       { valeur: '2,020', legende: 'runners signed up' },
       { valeur: '~250', legende: 'finished all 30 days' },
       { valeur: '~100K', legende: 'km run together', accent: true },
     ],
+    texteTitre: 'Why it worked',
     texte: 'The rule made real pressure. So I turned it into a game: a beaver mascot, a Tribunal to plead a missed day, and Le Coffre, a weekend of missions.',
     logo: { src: `${A}/img/btr-logo.webp`, width: 480, height: 314, alt: 'Back to Run' },
     mascotte: { src: `${A}/img/btr-mascotte.webp`, width: 400, height: 650, alt: 'The Back to Run beaver mascot, waving.' },
@@ -164,7 +167,15 @@ export const commun = {
     titre: 'Your turn.',
     question: 'What feels huge for you today?',
     consigne: 'Pick one. Watch it shrink.',
-    reponse: 'You got this.',
+    reponse: 'You got this.', // réponse affichée sans JavaScript
+    // Problème (bouton) → réponse affichée quand il a rétréci (suivie du logo).
+    // ⚠️ Faits d'actualité fournis par Alex : à vérifier avant envoi.
+    choix: [
+      { probleme: 'Failing to break 2 hours in the marathon?', reponse: 'Sabastian Sawe got this.' },
+      { probleme: 'Not winning the World Cup?', reponse: 'Spain got this.' },
+      { probleme: 'Letting Alex go and losing a talent?', reponse: 'You got this.' },
+      { probleme: 'Not giving Alex a new pair of Adizero Adios Pro Evo 3?', reponse: 'You got this. (Please.)' },
+    ],
   },
 
   // -- Écran 9 : Next ------------------------------------------------------------
@@ -180,13 +191,32 @@ export const commun = {
     lienCv: 'Download my CV',
     lienCvDetail: 'PDF · 1 page',
     lienMail: 'Email me',
+    // Bouton-blague : ouvre un e-mail déjà rédigé vers Alex.
+    embauche: {
+      titre: 'Hire Alex directly',
+      detail: 'A ready-to-send email. Just hit send.',
+      sujet: 'Congratulations Alex, you’re hired! 🎉',
+      corps: [
+        'Hi Alex,',
+        '',
+        'Congratulations! After careful consideration (and a few long presses), we are delighted to offer you the 6-month {team} internship at adidas, starting 1 March 2027 in Herzogenaurach.',
+        '',
+        'Please bring your running shoes. The streak continues.',
+        '',
+        'You got this.',
+        '',
+        'Best regards,',
+        '[Your name]',
+        'adidas {team}',
+      ],
+    },
   },
 
   // -- Barre fixe -----------------------------------------------------------------
   barre: { pdf: 'One-pager ↓', cv: 'CV ↓', email: 'Email me' },
 };
 
-// -- Par équipe : intitulé, PDF, ligne Back to Run, 3 choix, phrase de fin -----
+// -- Par équipe : intitulé, PDF, ligne Back to Run, phrase de fin --------------
 // Textes validés provisoirement (à ajuster ici).
 export const equipes = {
   marketing: {
@@ -196,7 +226,6 @@ export const equipes = {
     description: 'My take on “You Got This”: four real moments of pressure, made small. Alex Bourbigot’s application for the adidas Marketing internship.',
     pdf: `${A}/pdf/Alex_Bourbigot_adidas_1-Pager_Marketing.pdf`,
     btrLine: 'An idea only counts if people join it, and keep showing up.',
-    choix: ['Launch day', 'A target to hit', 'A campaign nobody joins'],
     finale: 'I want to turn ideas into things people join. At adidas Marketing.',
   },
   brandCommunications: {
@@ -206,7 +235,6 @@ export const equipes = {
     description: 'My take on “You Got This”: four real moments of pressure, made small. Alex Bourbigot’s application for the adidas Brand Communications internship.',
     pdf: `${A}/pdf/Alex_Bourbigot_adidas_1-Pager_Brand_Communications.pdf`,
     btrLine: 'One rule. 2,020 different stories with it. Finding the ones that touch people is the job.',
-    choix: ['A blank page', 'A story that won’t land', 'Tomorrow’s deadline'],
     finale: 'I want to find the sport stories that touch people. At adidas Brand Communications.',
   },
   productManagement: {
@@ -216,7 +244,6 @@ export const equipes = {
     description: 'My take on “You Got This”: four real moments of pressure, made small. Alex Bourbigot’s application for the adidas Product Management internship.',
     pdf: `${A}/pdf/Alex_Bourbigot_adidas_1-Pager_Product_Management.pdf`,
     btrLine: 'Every runner started from a different place. Every drop-off was a friction worth understanding.',
-    choix: ['A tough trade-off', 'A runner who quit', 'Launch day'],
     finale: 'I want to build for runners who all start somewhere different. At adidas Product Management.',
   },
 };

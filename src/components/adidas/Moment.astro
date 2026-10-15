@@ -1,5 +1,5 @@
 ---
-/* Un moment de pression : contexte → voix négative → LE PROBLÈME en énorme →
+/* Un moment de pression : l'événement (date · lieu · moment) → LE PROBLÈME en énorme →
    appui long → le problème rétrécit → « It's only… » + preuve + signature
    « You got this. [logo] ». Sans JS : état final rendu directement.
    Les interactions sont dans le script de ShrinkIt.astro. */
@@ -18,7 +18,7 @@ const long = moment.grand.length > 14;
   <div class="yg-col moment__col">
     <div class="moment__tete yg-etiquette"><span>{moment.tag}</span><span>{String(index).padStart(2, '0')} / {String(total).padStart(2, '0')}</span></div>
     <div class="moment__corps">
-      <p class="moment__voix">“{moment.voix}”</p>
+      <p class="moment__contexte"><span class="moment__puce" aria-hidden="true"></span>{moment.contexte}</p>
       <div class="moment__scene">
         <p class:list={['moment__grand', 'yg-serre', { 'moment__grand--long': long }]}>{moment.grand}</p>
         <div class="moment__resultat">
@@ -52,11 +52,13 @@ const long = moment.grand.length > 14;
   /* Le contenu est centré verticalement : plus de grand vide entre le
      problème et le bouton. */
   .moment__corps { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(18px, 3svh, 32px); padding-block: 24px 8px; }
-  .moment__voix {
-    font: italic 600 clamp(18px, 2.4vw, 26px)/1.35 var(--yg-texte);
-    max-width: 32ch;
-    transition: opacity 500ms;
+  .moment__contexte {
+    display: flex; align-items: baseline; gap: 10px;
+    font: 700 clamp(17px, 2.2vw, 24px)/1.3 var(--yg-texte);
+    max-width: 40ch;
   }
+  .moment__puce { flex: none; width: 10px; height: 10px; background: var(--yg-orange); transform: translateY(-1px); }
+  .fond-marine .moment__puce { background: var(--yg-orange-sur-marine); }
   /* Scène : le problème en haut ; le résultat s'affiche en bas, sous le
      problème réduit. Hauteur réservée = problème réduit + résultat. */
   .moment__scene { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 210px; }
@@ -112,8 +114,6 @@ const long = moment.grand.length > 14;
   .moment:global(.is-fait) .moment__grand { transform: scale(0.18); }
   .moment:global(.is-appui) .moment__grand,
   .moment:global(.is-fait) .moment__grand { transition: transform 1200ms cubic-bezier(0.2, 0.7, 0.2, 1); }
-  .moment:global(.is-appui) .moment__voix,
-  .moment:global(.is-fait) .moment__voix { opacity: 0; }
   :global(html:not(.js)) .moment__resultat,
   .moment:global(.is-fait) .moment__resultat { opacity: 1; transform: none; pointer-events: auto; }
   .moment:global(.is-appui) .moment__jauge { width: 100%; transition: width 1200ms linear; }
@@ -124,7 +124,7 @@ const long = moment.grand.length > 14;
     .moment__scene { min-height: 260px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .moment__voix, .moment__grand, .moment__resultat, .moment__jauge,
+    .moment__grand, .moment__resultat, .moment__jauge,
     .moment:global(.is-appui) .moment__grand, .moment:global(.is-fait) .moment__grand,
     .moment:global(.is-appui) .moment__jauge { transition: none; }
   }
