@@ -566,6 +566,8 @@ const config = {
     transition: opacity 450ms ease-out, transform 450ms ease-out;
   }
   .tour__scene:global(.is-repondu) .tour__reponse { opacity: 1; transform: none; }
+  /* Les réponses peuvent tenir sur deux lignes (« You got this. » / « (Please.) »). */
+  .tour__reponse [data-tour-texte] { white-space: pre-line; }
   .tour__tenir {
     position: relative; overflow: hidden;
     align-self: center; margin-top: 4px;

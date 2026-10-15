@@ -161,7 +161,7 @@ export const commun = {
       { probleme: 'Failing to break 2 hours in the marathon?', reponse: 'Sabastian Sawe got this.' },
       { probleme: 'Not winning the World Cup?', reponse: 'Spain got this.' },
       { probleme: 'Letting Alex go and losing a talent?', reponse: 'You got this.' },
-      { probleme: 'Not giving Alex a new pair of Adizero Adios Pro Evo 3?', reponse: 'You got this. (Please.)' },
+      { probleme: 'Not giving Alex a new pair of Adizero Adios Pro Evo 3?', reponse: 'You got this.\n(Please.)' }, // \n = retour à la ligne
     ],
   },
 
