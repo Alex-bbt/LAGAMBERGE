@@ -21,6 +21,8 @@ import { lireSnapshotInstagram, ecrireBilan, lireSuivi, ecrireSuivi } from '../l
 // Compte rendu dans les journaux Vercel (jamais le jeton).
 const journal = (etat, details = {}) => console.log(JSON.stringify({ tache: 'instagram-sync', etat, ...details }));
 
+const DELAI_HOOK_MS = 10_000;
+
 const STORE = { lireSnapshotInstagram, ecrireBilan, lireSuivi, ecrireSuivi };
 
 export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now(), synchroniser = synchroniserInstagram, verifier = verifierJeton, store = STORE }) {
@@ -76,13 +78,16 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
     }
     const ecrit = await store.ecrireBilan(env, { ...bilan, jeton: etatDuJeton }, fetchFn);
 
+    // Le Deploy Hook peut mettre une vingtaine de secondes à répondre (constaté
+    // le 30/10/2026) : on n'attend pas plus de 10 s. Sans réponse, la demande
+    // est en général déjà prise en compte par Vercel.
     let construction = 'non_configuree';
     if (env.INSTAGRAM_DEPLOY_HOOK && ecrit) {
       try {
-        const r = await fetchFn(env.INSTAGRAM_DEPLOY_HOOK, { method: 'POST' });
+        const r = await fetchFn(env.INSTAGRAM_DEPLOY_HOOK, { method: 'POST', signal: AbortSignal.timeout(DELAI_HOOK_MS) });
         construction = r.ok ? 'relancee' : 'echec';
-      } catch {
-        construction = 'echec';
+      } catch (e) {
+        construction = e?.name === 'TimeoutError' ? 'demandee_sans_reponse' : 'echec';
       }
     }
 
