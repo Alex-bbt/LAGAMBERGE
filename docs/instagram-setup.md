@@ -78,6 +78,9 @@ autre indicateur ne passe en automatique qu'après validation d'Alex.
   ses raisons (`dernier_passage_echec_meta`, `tache_planifiee_muette`,
   `jeton_bientot_expire_ou_invalide`, `reconstruction_en_echec`). L'alerte
   jeton se déclenche 21 jours avant la première échéance.
+- Durée : la tâche doit tenir en 60 s (limite de `vercel.json`). Les lectures Meta
+  sont faites en parallèle (~30 s) et le Deploy Hook, qui peut mettre ~20 s à
+  répondre, n'est attendu que 10 s (`construction: demandee_sans_reponse`).
 - En cas d'échec, `instagram_snapshot` n'est pas touché : le site continue
   d'afficher le dernier relevé réussi avec sa vraie date.
 - Journaux Vercel : `{"tache":"instagram-sync","etat":…}` ; l'offre Hobby ne
