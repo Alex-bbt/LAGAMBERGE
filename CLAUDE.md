@@ -64,12 +64,16 @@ api/streak.js, lib/    Fonction Strava (identifiants en variables Vercel, jamais
                        (waitUntil, @vercel/functions) au-delà de 10 min. updatedAt = date réelle
                        de la dernière synchronisation. validatedDates = jours avec UNE course ≥ 5 km.
 api/instagram-sync.js  Tâche quotidienne (vercel.json → crons, protégée par CRON_SECRET) : lit
-lib/instagram*.mjs     l'API Instagram (connexion Instagram), enregistre un bilan dans lagamberge-db
-                       (instagram_snapshot / instagram_historique ; jeton renouvelé chaque semaine
-                       dans instagram_jeton). Maintient aussi l'activité de la base (pas de mise en
-                       pause). Affichage : seuls les abonnés et les vues 2026 Instagram sont lus
-                       au build (src/data/releve-instagram.js, repli sur les valeurs manuelles),
-                       avec leur propre date ; le reste reste manuel. Voir docs/instagram-setup.md.
+lib/instagram*.mjs     l'API Graph Meta (graph.facebook.com/v26.0/{ID compte Instagram pro}, jeton
+                       EAA… du Graph API Explorer, idéalement un jeton de Page sans expiration),
+                       enregistre un bilan dans lagamberge-db (instagram_snapshot = dernier relevé
+                       RÉUSSI ; instagram_historique = un par jour ; instagram_suivi = compte rendu
+                       du dernier passage et état du jeton), puis relance la construction
+                       (INSTAGRAM_DEPLOY_HOOK). Maintient aussi l'activité de la base (pas de mise
+                       en pause). Surveillance : /api/instagram-etat (alerte jeton 21 jours avant).
+                       Affichage : seuls les abonnés et les vues 2026 Instagram sont lus au build
+                       (src/data/releve-instagram.js, repli sur les valeurs manuelles), avec leur
+                       propre date ; le reste reste manuel. Voir docs/instagram-setup.md.
 ```
 
 ## Principe de mise en page (src/styles/site.css = système commun)

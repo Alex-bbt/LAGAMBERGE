@@ -5,24 +5,25 @@
 //    l'URL n'est pas un point d'accès public.
 // 2. Lit la base lagamberge-db à chaque passage : cette activité quotidienne
 //    évite aussi la mise en pause automatique du projet Supabase gratuit.
-// 3. Renouvelle le jeton tous les 7 jours s'il expire (jeton « connexion
-//    Instagram », 60 jours) ; le jeton d'utilisateur système de la connexion
-//    unifiée n'expire pas et n'est jamais renouvelé.
+// 3. Vérifie le jeton auprès de Meta (debug_token) : type, expiration, fin
+//    d'accès aux données → alerte ALERTE_JOURS jours avant l'échéance.
 // 4. Calcule le bilan (lib/instagram.mjs) et l'enregistre (snapshot + historique).
+//    En cas d'échec, le dernier bilan réussi reste en place avec sa vraie date.
 // 5. Si INSTAGRAM_DEPLOY_HOOK est défini, relance la construction du site pour
 //    qu'il affiche les nouveaux chiffres.
-// Le jeton n'apparaît jamais dans une réponse ni dans un journal.
+// 6. Écrit le compte rendu du passage dans instagram_suivi (lu par
+//    /api/instagram-etat) : les journaux Vercel Hobby ne durent qu'une heure.
+// Le jeton n'apparaît jamais dans une réponse, un journal ou la base.
 
-import { synchroniserInstagram, prolongerJeton, cibleDuJeton } from '../lib/instagram.mjs';
-import { lireJeton, ecrireJeton, lireSnapshotInstagram, ecrireBilan } from '../lib/instagram-store.mjs';
+import { synchroniserInstagram, verifierJeton, etatJeton } from '../lib/instagram.mjs';
+import { lireSnapshotInstagram, ecrireBilan, lireSuivi, ecrireSuivi } from '../lib/instagram-store.mjs';
 
-const RENOUVELLEMENT_MS = 7 * 24 * 3600 * 1000;
-
-// Compte rendu dans les journaux Vercel (jamais le jeton) : seul moyen de
-// savoir, a posteriori, ce qu'a donné un passage de la tâche planifiée.
+// Compte rendu dans les journaux Vercel (jamais le jeton).
 const journal = (etat, details = {}) => console.log(JSON.stringify({ tache: 'instagram-sync', etat, ...details }));
 
-export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now(), synchroniser = synchroniserInstagram, prolonger = prolongerJeton, store = { lireJeton, ecrireJeton, lireSnapshotInstagram, ecrireBilan } }) {
+const STORE = { lireSnapshotInstagram, ecrireBilan, lireSuivi, ecrireSuivi };
+
+export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now(), synchroniser = synchroniserInstagram, verifier = verifierJeton, store = STORE }) {
   return async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store');
     const secret = env.CRON_SECRET;
@@ -32,46 +33,48 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
       return;
     }
 
-    // Activité quotidienne sur la base (et état précédent pour le compte rendu).
-    const precedent = await store.lireSnapshotInstagram(env, fetchFn);
-
-    const enregistre = await store.lireJeton(env, fetchFn);
     const t = maintenant();
-    const enregistreValide = enregistre?.jeton && (!enregistre.expireLe || new Date(enregistre.expireLe).getTime() > t);
-    let courant = enregistreValide ? enregistre : env.INSTAGRAM_ACCESS_TOKEN ? { jeton: env.INSTAGRAM_ACCESS_TOKEN, expireLe: null, renouveleLe: null } : null;
-    if (!courant) {
-      journal('sans_jeton', { base: precedent ? 'lue' : 'vide' });
-      res.status(200).json({ ok: true, configured: false, base: precedent ? 'lue' : 'vide' });
+    // Activité quotidienne sur la base, et état précédent pour le compte rendu.
+    const precedent = await store.lireSnapshotInstagram(env, fetchFn);
+    const suiviPrecedent = await store.lireSuivi(env, fetchFn);
+    const echecsAvant = suiviPrecedent?.data?.echecsConsecutifs || 0;
+    const dernierReleve = precedent?.data?.releveIso || null;
+
+    const terminer = async (statut, etat, details) => {
+      const echecsConsecutifs = etat === 'releve_enregistre' ? 0 : echecsAvant + 1;
+      const compteRendu = { etat, echecsConsecutifs, dernierReleve, ...details };
+      await store.ecrireSuivi(env, compteRendu, fetchFn);
+      journal(etat, compteRendu);
+      res.status(statut).json({ ok: etat === 'releve_enregistre', ...compteRendu });
+    };
+
+    const jeton = env.INSTAGRAM_ACCESS_TOKEN;
+    if (!jeton) {
+      await terminer(200, 'sans_jeton', { base: precedent ? 'lue' : 'vide' });
       return;
     }
 
-    // Renouvellement : tous les 7 jours (l'API exige un jeton d'au moins 24 h),
-    // seulement pour les jetons qui expirent.
-    let renouvellement = 'inutile';
-    let renouvelable = false;
-    try { renouvelable = cibleDuJeton(courant.jeton, env.INSTAGRAM_USER_ID).renouvelable; } catch { /* signalé par la synchronisation */ }
-    const dernier = courant.renouveleLe ? new Date(courant.renouveleLe).getTime() : 0;
-    if (renouvelable && t - dernier > RENOUVELLEMENT_MS) {
-      try {
-        const nouveau = await prolonger(fetchFn, courant.jeton, t);
-        courant = { ...nouveau, renouveleLe: new Date(t).toISOString() };
-        renouvellement = (await store.ecrireJeton(env, courant, fetchFn)) ? 'fait' : 'fait_non_enregistre';
-      } catch {
-        renouvellement = 'echec'; // ex. jeton de moins de 24 h : nouvel essai demain
-        if (!enregistre) await store.ecrireJeton(env, courant, fetchFn);
-      }
-    }
+    // Jeton d'app facultatif : permet à Meta de décrire un jeton de Page.
+    const jetonApp = env.INSTAGRAM_APP_ID && env.INSTAGRAM_APP_SECRET ? `${env.INSTAGRAM_APP_ID}|${env.INSTAGRAM_APP_SECRET}` : null;
+    const etatDuJeton = etatJeton(await verifier(fetchFn, jeton, jetonApp), t);
+    if (etatDuJeton.alerte) journal('alerte_jeton', { jeton: etatDuJeton });
 
     let bilan;
     try {
-      bilan = await synchroniser({ fetchFn, jeton: courant.jeton, idCompte: env.INSTAGRAM_USER_ID, maintenant: t });
+      bilan = await synchroniser({ fetchFn, jeton, idCompte: env.INSTAGRAM_USER_ID, maintenant: t });
     } catch (e) {
-      const erreur = String(e.message || e).replace(courant.jeton, '***');
-      journal('echec_meta', { renouvellement, erreur, code: e.code ?? null, statut: e.statut ?? null, compteConfigure: Boolean(env.INSTAGRAM_USER_ID), essais: e.essais ?? null });
-      res.status(200).json({ ok: false, configured: true, renouvellement, error: erreur });
+      const masquer = (x) => String(x).split(jeton).join('***');
+      await terminer(200, 'echec_meta', {
+        jeton: etatDuJeton,
+        erreur: masquer(e.message || e),
+        code: e.code ?? null,
+        statut: e.statut ?? null,
+        compteConfigure: Boolean(env.INSTAGRAM_USER_ID),
+        diagnostic: e.diagnostic ? JSON.parse(masquer(JSON.stringify(e.diagnostic))) : null,
+      });
       return;
     }
-    const ecrit = await store.ecrireBilan(env, bilan, fetchFn);
+    const ecrit = await store.ecrireBilan(env, { ...bilan, jeton: etatDuJeton }, fetchFn);
 
     let construction = 'non_configuree';
     if (env.INSTAGRAM_DEPLOY_HOOK && ecrit) {
@@ -83,20 +86,16 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
       }
     }
 
-    journal(ecrit ? 'releve_enregistre' : 'releve_non_enregistre', {
-      renouvellement, construction, adresseApi: bilan.adresseApi, essais: bilan.essais, abonnes: bilan.abonnes,
-      publications2026: bilan.publications2026, publicationsAvecStats: bilan.publicationsAvecStats,
-      vuesCompte: bilan.vuesCompte2026 !== null, audience: Boolean(bilan.audience?.genre),
-    });
-    res.status(200).json({
-      ok: ecrit,
-      configured: true,
-      renouvellement,
+    await terminer(200, ecrit ? 'releve_enregistre' : 'releve_non_enregistre', {
+      dernierReleve: ecrit ? bilan.releveIso : dernierReleve,
       construction,
-      releve: bilan.releveIso,
+      jeton: etatDuJeton,
       abonnes: bilan.abonnes,
       publications2026: bilan.publications2026,
       publicationsAvecStats: bilan.publicationsAvecStats,
+      vuesCompte: bilan.vuesCompte2026 !== null,
+      interactionsCompte: bilan.interactionsCompte2026 !== null,
+      audience: Boolean(bilan.audience?.genre),
     });
   };
 }
