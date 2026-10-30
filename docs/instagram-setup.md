@@ -26,39 +26,48 @@ Tant que la comparaison avec les relevés manuels n'a pas été validée par Ale
 le site continue d'afficher les valeurs de `src/data/mediakit.js` : le bilan est
 seulement enregistré.
 
-## 1. Côté Meta (à faire par Alex, une fois)
+## 1. Côté Meta (fait le 30 octobre 2026)
 
-1. **Compte professionnel** : dans l'appli Instagram, Paramètres → Type de compte
-   et outils → le compte doit être « Créateur » ou « Entreprise ».
-2. **Créer l'application** : sur <https://developers.facebook.com/apps>, « Créer
-   une app » → cas d'utilisation « Gérer les messages et le contenu sur
-   Instagram » (API Instagram) → nom : `La Gamberge stats`.
-3. **Ajouter le compte comme testeur** : dans l'app, Rôles de l'app → Rôles →
-   Ajouter des personnes → « Testeur Instagram » → `lagambergee`. Puis, dans
-   l'appli Instagram : Paramètres → Apps et sites web → Invitations de testeur →
-   Accepter.
-4. **Générer le jeton** : dans l'app, Instagram → « Configuration de l'API avec
-   connexion Instagram » → « Générer des tokens d'accès » → Ajouter un compte →
-   se connecter avec `lagambergee` → accepter les autorisations
-   `instagram_business_basic` et `instagram_business_manage_insights` →
-   « Générer le token ». Le jeton affiché est valable 60 jours ; il est ensuite
-   renouvelé automatiquement chaque semaine par la tâche quotidienne.
+Meta n'ouvre plus la « connexion Instagram » aux nouvelles apps : l'app
+`La Gamberge stats` utilise la **connexion unifiée**, qui exige un portefeuille
+business (`La Gamberge`) et fournit un **jeton d'utilisateur système sans
+expiration** (graph.facebook.com).
 
-L'app reste en mode développement : pour son propre compte, aucune validation
-par Meta n'est nécessaire.
+1. Compte Instagram en mode professionnel (Créateur).
+2. developers.facebook.com → Créer une app → cas d'utilisation « Gérer les
+   messages et les contenus sur Instagram » → aucune entreprise à la création.
+3. Rôles dans l'application → Testeur Instagram `lagambergee` ; invitation
+   acceptée sur instagram.com/accounts/manage_access/ (onglet Tester Invites).
+4. Cas d'utilisation → Personnaliser → API setup with Unified login →
+   associer le portefeuille business `La Gamberge`.
+5. Autorisations et fonctionnalités : seules les autorisations de LECTURE
+   sont ajoutées (`instagram_basic`, `instagram_manage_insights`,
+   `instagram_business_basic`, `instagram_business_manage_insights`).
+6. Facebook Login for Business → Configurations → configuration
+   `Statistiques La Gamberge` : token d'utilisateur système, expiration
+   jamais, élément Comptes Instagram (requis), autorisations `instagram_basic`
+   + `instagram_manage_insights`. Ne pas utiliser le modèle par défaut (il
+   ajoute publicités, messages, commentaires et publication, sans statistiques).
+7. API setup with Unified login → étape 1 : choisir cette configuration ;
+   étape 2 : « Générer un token » sur la ligne lagambergee.
+
+Le code accepte aussi un jeton « connexion Instagram » (préfixe `IG`, renouvelé
+automatiquement), au cas où Meta le proposerait de nouveau.
 
 ## 2. Côté Vercel (projet `lagamberge`, environnement Production)
 
 | Variable | Valeur |
 |---|---|
-| `INSTAGRAM_ACCESS_TOKEN` | le jeton généré à l'étape 4 (à coller dans Vercel, jamais dans le code ni dans un message) |
+| `INSTAGRAM_ACCESS_TOKEN` | le jeton généré à l'étape 7 (à coller dans Vercel, jamais dans le code ni dans un message) |
+| `INSTAGRAM_USER_ID` | identifiant du compte Instagram pro : `17841477861354587` (non secret, affiché par Meta) |
 | `CRON_SECRET` | une longue chaîne aléatoire ; Vercel l'envoie à la tâche planifiée, tout autre appel est refusé |
 | `INSTAGRAM_DEPLOY_HOOK` | *(plus tard)* URL d'un Deploy Hook, pour reconstruire le site après chaque relevé quand l'affichage automatique sera activé |
 
 `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` existent déjà (cache Strava).
 
-Après le premier relevé, le jeton est conservé dans la table `instagram_jeton`
-(il change à chaque renouvellement). Pour en remettre un neuf, mettre à jour
+Jeton « connexion Instagram » uniquement : après le premier relevé, il est
+conservé dans la table `instagram_jeton` (il change à chaque renouvellement).
+Le jeton d'utilisateur système de la connexion unifiée reste dans Vercel. Pour en remettre un neuf, mettre à jour
 `INSTAGRAM_ACCESS_TOKEN` : il est utilisé dès que le jeton enregistré a expiré,
 ou après avoir vidé la table.
 

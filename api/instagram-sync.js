@@ -5,13 +5,15 @@
 //    l'URL n'est pas un point d'accès public.
 // 2. Lit la base lagamberge-db à chaque passage : cette activité quotidienne
 //    évite aussi la mise en pause automatique du projet Supabase gratuit.
-// 3. Renouvelle le jeton Instagram (valable 60 jours) tous les 7 jours.
+// 3. Renouvelle le jeton tous les 7 jours s'il expire (jeton « connexion
+//    Instagram », 60 jours) ; le jeton d'utilisateur système de la connexion
+//    unifiée n'expire pas et n'est jamais renouvelé.
 // 4. Calcule le bilan (lib/instagram.mjs) et l'enregistre (snapshot + historique).
 // 5. Si INSTAGRAM_DEPLOY_HOOK est défini, relance la construction du site pour
 //    qu'il affiche les nouveaux chiffres.
 // Le jeton n'apparaît jamais dans une réponse ni dans un journal.
 
-import { synchroniserInstagram, prolongerJeton } from '../lib/instagram.mjs';
+import { synchroniserInstagram, prolongerJeton, cibleDuJeton } from '../lib/instagram.mjs';
 import { lireJeton, ecrireJeton, lireSnapshotInstagram, ecrireBilan } from '../lib/instagram-store.mjs';
 
 const RENOUVELLEMENT_MS = 7 * 24 * 3600 * 1000;
@@ -37,10 +39,13 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
       return;
     }
 
-    // Renouvellement : tous les 7 jours (l'API exige un jeton d'au moins 24 h).
+    // Renouvellement : tous les 7 jours (l'API exige un jeton d'au moins 24 h),
+    // seulement pour les jetons qui expirent.
     let renouvellement = 'inutile';
+    let renouvelable = false;
+    try { renouvelable = cibleDuJeton(courant.jeton, env.INSTAGRAM_USER_ID).renouvelable; } catch { /* signalé par la synchronisation */ }
     const dernier = courant.renouveleLe ? new Date(courant.renouveleLe).getTime() : 0;
-    if (t - dernier > RENOUVELLEMENT_MS) {
+    if (renouvelable && t - dernier > RENOUVELLEMENT_MS) {
       try {
         const nouveau = await prolonger(fetchFn, courant.jeton, t);
         courant = { ...nouveau, renouveleLe: new Date(t).toISOString() };
@@ -53,7 +58,7 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
 
     let bilan;
     try {
-      bilan = await synchroniser({ fetchFn, jeton: courant.jeton, maintenant: t });
+      bilan = await synchroniser({ fetchFn, jeton: courant.jeton, idCompte: env.INSTAGRAM_USER_ID, maintenant: t });
     } catch (e) {
       res.status(200).json({ ok: false, configured: true, renouvellement, error: String(e.message || e).replace(courant.jeton, '***') });
       return;
