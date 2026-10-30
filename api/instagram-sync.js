@@ -18,11 +18,16 @@ import { lireJeton, ecrireJeton, lireSnapshotInstagram, ecrireBilan } from '../l
 
 const RENOUVELLEMENT_MS = 7 * 24 * 3600 * 1000;
 
+// Compte rendu dans les journaux Vercel (jamais le jeton) : seul moyen de
+// savoir, a posteriori, ce qu'a donné un passage de la tâche planifiée.
+const journal = (etat, details = {}) => console.log(JSON.stringify({ tache: 'instagram-sync', etat, ...details }));
+
 export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now(), synchroniser = synchroniserInstagram, prolonger = prolongerJeton, store = { lireJeton, ecrireJeton, lireSnapshotInstagram, ecrireBilan } }) {
   return async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store');
     const secret = env.CRON_SECRET;
     if (!secret || req.headers?.authorization !== `Bearer ${secret}`) {
+      journal('refus', { secretConfigure: Boolean(secret), entete: Boolean(req.headers?.authorization) });
       res.status(401).json({ ok: false, error: 'non_autorise' });
       return;
     }
@@ -35,6 +40,7 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
     const enregistreValide = enregistre?.jeton && (!enregistre.expireLe || new Date(enregistre.expireLe).getTime() > t);
     let courant = enregistreValide ? enregistre : env.INSTAGRAM_ACCESS_TOKEN ? { jeton: env.INSTAGRAM_ACCESS_TOKEN, expireLe: null, renouveleLe: null } : null;
     if (!courant) {
+      journal('sans_jeton', { base: precedent ? 'lue' : 'vide' });
       res.status(200).json({ ok: true, configured: false, base: precedent ? 'lue' : 'vide' });
       return;
     }
@@ -60,7 +66,9 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
     try {
       bilan = await synchroniser({ fetchFn, jeton: courant.jeton, idCompte: env.INSTAGRAM_USER_ID, maintenant: t });
     } catch (e) {
-      res.status(200).json({ ok: false, configured: true, renouvellement, error: String(e.message || e).replace(courant.jeton, '***') });
+      const erreur = String(e.message || e).replace(courant.jeton, '***');
+      journal('echec_meta', { renouvellement, erreur, code: e.code ?? null, statut: e.statut ?? null, compteConfigure: Boolean(env.INSTAGRAM_USER_ID) });
+      res.status(200).json({ ok: false, configured: true, renouvellement, error: erreur });
       return;
     }
     const ecrit = await store.ecrireBilan(env, bilan, fetchFn);
@@ -75,6 +83,11 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
       }
     }
 
+    journal(ecrit ? 'releve_enregistre' : 'releve_non_enregistre', {
+      renouvellement, construction, abonnes: bilan.abonnes,
+      publications2026: bilan.publications2026, publicationsAvecStats: bilan.publicationsAvecStats,
+      vuesCompte: bilan.vuesCompte2026 !== null, audience: Boolean(bilan.audience?.genre),
+    });
     res.status(200).json({
       ok: ecrit,
       configured: true,
