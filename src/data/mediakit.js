@@ -20,6 +20,8 @@
    ========================================================================== */
 
 // -- Identité -----------------------------------------------------------------
+import { releveInstagramAuto } from './releve-instagram.js';
+
 export const identite = {
   marque: 'LA GAMBERGE',
   positionnement: 'La performance, sans se prendre au sérieux.',
@@ -260,6 +262,22 @@ export const stats = {
   },
 };
 
+// Abonnés et vues 2026 Instagram : relevé automatique quotidien (API Meta)
+// quand il est disponible au moment de la construction ; sinon, valeurs
+// manuelles ci-dessus. Les autres indicateurs Instagram (médianes, seuils,
+// interactions, engagement, stories, audience) restent ceux du relevé manuel,
+// à la date `stats.instagram.releve`.
+const auto = await releveInstagramAuto();
+stats.instagram.abonnesVuesAuto = Boolean(auto);
+stats.instagram.releveAbonnesVues = auto ? auto.releve : stats.instagram.releve;
+stats.instagram.releveAbonnesVuesCourt = auto ? auto.releveCourt : stats.instagram.releve.replace(/ \d{4}$/, '');
+if (auto) {
+  stats.instagram.abonnes = auto.abonnes;
+  stats.instagram.vues = auto.vues;
+  stats.instagram.abonnesAffichage = `${(Math.floor(auto.abonnes / 1000) * 1000).toLocaleString('fr-FR')}+`;
+  stats.instagram.vuesAffichage = `${(Math.floor(auto.vues / 1e5) / 10).toLocaleString('fr-FR')} M`;
+}
+
 // Totaux cumulés Instagram + TikTok (accueil). Calculés à partir des relevés
 // ci-dessus : ce ne sont PAS des audiences dédupliquées, et les vues ne sont
 // pas des personnes uniques.
@@ -267,10 +285,11 @@ stats.cumul = {
   abonnes: stats.instagram.abonnes + stats.tiktok.abonnes, // 19 488
   abonnesLegende: 'Abonnements cumulés sur Instagram et TikTok',
   vues: stats.instagram.vues + stats.tiktok.vues, // 17 493 811
-  vuesAffichage: '17,5 M',
+  // Arrondi à la décimale inférieure : jamais de chiffre gonflé.
+  vuesAffichage: `${(Math.floor((stats.instagram.vues + stats.tiktok.vues) / 1e5) / 10).toLocaleString('fr-FR')} M`,
   vuesLegende: 'Vues cumulées sur Instagram et TikTok en 2026',
   note: 'Abonnements et vues additionnés sur les deux plateformes, pas des personnes uniques.',
-  periodes: 'Vues depuis le 1er janvier 2026. Instagram au 12 octobre ; TikTok au 10 octobre.',
+  periodes: `Vues depuis le 1er janvier 2026. Instagram au ${stats.instagram.releveAbonnesVuesCourt} ; TikTok au 10 octobre.`,
   // Prochain rafraîchissement global envisagé au passage des 20 000 abonnements cumulés.
 };
 // Stories TikTok : aucune story publiée (confirmé par Alex le 13 octobre 2026).
