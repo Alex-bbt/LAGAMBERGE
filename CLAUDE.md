@@ -67,8 +67,9 @@ api/instagram-sync.js  Tâche quotidienne (vercel.json → crons, protégée par
 lib/instagram*.mjs     l'API Instagram (connexion Instagram), enregistre un bilan dans lagamberge-db
                        (instagram_snapshot / instagram_historique ; jeton renouvelé chaque semaine
                        dans instagram_jeton). Maintient aussi l'activité de la base (pas de mise en
-                       pause). Le site affiche ENCORE les valeurs manuelles de mediakit.js tant
-                       qu'Alex n'a pas validé la comparaison. Voir docs/instagram-setup.md.
+                       pause). Affichage : seuls les abonnés et les vues 2026 Instagram sont lus
+                       au build (src/data/releve-instagram.js, repli sur les valeurs manuelles),
+                       avec leur propre date ; le reste reste manuel. Voir docs/instagram-setup.md.
 ```
 
 ## Principe de mise en page (src/styles/site.css = système commun)

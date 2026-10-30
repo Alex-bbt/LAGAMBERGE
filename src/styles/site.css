@@ -1428,3 +1428,5 @@ main > .chapitre--performances:first-child { padding-top: calc(var(--space-24) +
 @media (max-width: 420px) {
   .tableau-comparatif td { white-space: normal; overflow-wrap: anywhere; }
 }
+/* Date de relevé propre à une cellule (relevé automatique Instagram) */
+.cellule-releve { display: block; }
