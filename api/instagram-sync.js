@@ -67,7 +67,7 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
       bilan = await synchroniser({ fetchFn, jeton: courant.jeton, idCompte: env.INSTAGRAM_USER_ID, maintenant: t });
     } catch (e) {
       const erreur = String(e.message || e).replace(courant.jeton, '***');
-      journal('echec_meta', { renouvellement, erreur, code: e.code ?? null, statut: e.statut ?? null, compteConfigure: Boolean(env.INSTAGRAM_USER_ID) });
+      journal('echec_meta', { renouvellement, erreur, code: e.code ?? null, statut: e.statut ?? null, compteConfigure: Boolean(env.INSTAGRAM_USER_ID), essais: e.essais ?? null });
       res.status(200).json({ ok: false, configured: true, renouvellement, error: erreur });
       return;
     }
@@ -84,7 +84,7 @@ export function creerHandler({ env, fetchFn = fetch, maintenant = () => Date.now
     }
 
     journal(ecrit ? 'releve_enregistre' : 'releve_non_enregistre', {
-      renouvellement, construction, abonnes: bilan.abonnes,
+      renouvellement, construction, adresseApi: bilan.adresseApi, essais: bilan.essais, abonnes: bilan.abonnes,
       publications2026: bilan.publications2026, publicationsAvecStats: bilan.publicationsAvecStats,
       vuesCompte: bilan.vuesCompte2026 !== null, audience: Boolean(bilan.audience?.genre),
     });
