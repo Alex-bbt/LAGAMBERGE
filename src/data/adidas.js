@@ -44,7 +44,7 @@ export const commun = {
   streak: {
     debut: '2026-01-01',
     premierJour: '2027-03-01',
-    secours: { jours: 285, date: '2026-10-12' }, // relevé Strava : 285 jours validés au 12 oct. 2026
+    secours: { jours: 303, date: '2026-10-30' }, // relevé Strava : 303 jours validés au 30 oct. 2026
     libelleDirect: 'Live from Strava',
     libelleSecours: 'Verified on Strava',
     jourAujourdhui: 'Day {n} today',
