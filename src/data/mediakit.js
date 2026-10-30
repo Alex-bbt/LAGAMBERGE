@@ -368,6 +368,13 @@ export const audience = {
   },
 };
 
+// Pays des abonnés Instagram : relevé automatique quotidien (API Meta, % du
+// nombre total d'abonnés) quand il est disponible ; sinon, valeurs manuelles
+// ci-dessus. Âge et genre restent ceux du relevé manuel (`releve`).
+if (auto?.pays) audience.instagram.pays = auto.pays;
+audience.instagram.relevePays = auto?.pays ? auto.releve : audience.instagram.releve;
+stats.instagram.relevePays = audience.instagram.relevePays;
+
 // -- Vidéos -------------------------------------------------------------------
 // `url` et `miniature` restent à null tant que le lien exact n'est pas fourni :
 // la carte s'affiche alors sans faux lecteur.

@@ -109,7 +109,7 @@ const plateformes = [
       <h3 class="label audience-miroir__titre">Pays</h3>
       <div class="audience-miroir">
         {plateformes.map((p) => (
-          <div class="carte-plate"><Barres titre={p.nom} population={p.d.population} releve={p.d.releve} donnees={avecAutres(p.d.pays)} /></div>
+          <div class="carte-plate"><Barres titre={p.nom} population={p.d.population} releve={p.d.relevePays ?? p.d.releve} donnees={avecAutres(p.d.pays)} /></div>
         ))}
       </div>
       <a class="lien-fleche" href="/#statistiques">Retour à l’accueil</a>

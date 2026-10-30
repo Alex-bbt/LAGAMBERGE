@@ -71,9 +71,10 @@ lib/instagram*.mjs     l'API Graph Meta (graph.facebook.com/v26.0/{ID compte Ins
                        du dernier passage et état du jeton), puis relance la construction
                        (INSTAGRAM_DEPLOY_HOOK). Maintient aussi l'activité de la base (pas de mise
                        en pause). Surveillance : /api/instagram-etat (alerte jeton 21 jours avant).
-                       Affichage : seuls les abonnés et les vues 2026 Instagram sont lus au build
-                       (src/data/releve-instagram.js, repli sur les valeurs manuelles), avec leur
-                       propre date ; le reste reste manuel. Voir docs/instagram-setup.md.
+                       Affichage : abonnés, vues 2026 et pays des abonnés Instagram (% du total
+                       d'abonnés) lus au build (src/data/releve-instagram.js, repli sur les valeurs
+                       manuelles), chacun avec sa propre date ; le reste reste manuel.
+                       Voir docs/instagram-setup.md.
 ```
 
 ## Principe de mise en page (src/styles/site.css = système commun)

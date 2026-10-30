@@ -45,7 +45,7 @@ Code : `lib/instagram.mjs` (lecture + calculs), `lib/instagram-store.mjs`
 | Vues du compte 2026 | indicateur `views` du compte, par fenêtres de 30 jours (toutes surfaces) |
 | Genre | `follower_demographics`, « non renseigné » exclu (sa part est gardée dans `genreNonRenseigne`) |
 | Âge | tranches du site en % des abonnés de 18 ans et plus (part des 13–17 ans dans `moins18`) |
-| Pays, villes | deux bases gardées côte à côte : % des lignes renvoyées par Meta (`pays`) et % des abonnés (`paysSurAbonnes`) ; effectifs dans `audience.bases`. La bonne base reste à confirmer face à l'app (France 78,2 % au 12/10) |
+| Pays, villes | `follower_demographics` : % du nombre total d'abonnés (`paysSurAbonnes`, base retenue le 30/10/2026 ; Meta renvoie 45 pays couvrant ~99,5 % des abonnés) ; `pays` = ancienne base (% des lignes renvoyées) ; effectifs dans `audience.bases` |
 
 Reels d'essai : l'API ne permet pas de les reconnaître. Les lister à la main
 (code court du lien) dans `lib/instagram-reels-essai.mjs`.
@@ -53,8 +53,9 @@ Reels d'essai : l'API ne permet pas de les reconnaître. Les lister à la main
 Restent relevés à la main : l'engagement « interactions / couverture » (la
 couverture d'une année ne s'additionne pas) et les vues médianes des stories.
 
-Seuls les **abonnés** et les **vues 2026** sont affichés automatiquement ; tout
-autre indicateur ne passe en automatique qu'après validation d'Alex.
+Affichés automatiquement : **abonnés**, **vues 2026** et **pays des abonnés**
+(3 premiers pays, en % du total d'abonnés), chacun avec sa date de relevé.
+Tout autre indicateur ne passe en automatique qu'après validation d'Alex.
 
 ## Variables Vercel (projet `lagamberge`, Production)
 
@@ -113,8 +114,8 @@ revoke all on public.instagram_snapshot, public.instagram_historique, public.ins
 grant select, insert, update, delete on public.instagram_snapshot, public.instagram_historique, public.instagram_suivi to service_role;
 ```
 
-`instagram_jeton` (ancien renouvellement des jetons `IG…`) n'est plus utilisée
-et reste vide ; elle peut être supprimée.
+`instagram_jeton` (ancien renouvellement des jetons `IG…`) a été supprimée le
+30/10/2026.
 
 La tâche quotidienne lit la base à chaque passage : cette activité évite la
 mise en pause automatique du projet Supabase gratuit (7 jours sans activité).
