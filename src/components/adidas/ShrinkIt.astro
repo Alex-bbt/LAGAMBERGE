@@ -8,7 +8,8 @@
    Tout le texte vient de src/data/adidas.js ; seule l'équipe demandée est
    lue (aucune autre équipe dans le HTML).
    Rendu au build = valeurs de SECOURS (relevé Strava daté) ; le script
-   remplace par /api/streak quand il répond (2,5 s max).
+   remplace par /api/streak quand il répond (6 s max : un bilan d’un autre jour
+   est recalculé auprès de Strava avant d’être servi).
    ========================================================================== */
 import AdidasLayout from '../../layouts/AdidasLayout.astro';
 import { commun, equipes } from '../../data/adidas.js';
@@ -290,7 +291,7 @@ const config = {
   }
 
   const ctrl = new AbortController();
-  const minuteur = setTimeout(() => ctrl.abort(), 2500);
+  const minuteur = setTimeout(() => ctrl.abort(), 6000);
   fetch('/api/streak', { signal: ctrl.signal, headers: { Accept: 'application/json' } })
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
