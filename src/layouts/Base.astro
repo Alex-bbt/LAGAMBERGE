@@ -91,7 +91,7 @@ const insta = comptes.find((c) => c.id === 'instagram');
         <!-- Dates de relevé par type de données (chaque date reste celle du relevé réel) -->
         <p class="caption texte-muted pied__releves">
           {stats.instagram.abonnesVuesAuto
-            ? <>Abonnés et vues : Instagram au {stats.instagram.releveAbonnesVues}, TikTok au {stats.tiktok.releve}. Audience : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}.</>
+            ? <>Abonnés et vues : Instagram au {stats.instagram.releveAbonnesVues}, TikTok au {stats.tiktok.releve}. Audience : Instagram au {stats.instagram.releve}{stats.instagram.relevePays !== stats.instagram.releve && <> (pays au {stats.instagram.relevePays})</>}, TikTok au {stats.tiktok.releve}.</>
             : <>Abonnés, vues et audience : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}.</>}
           Vues des vidéos d’exemple : relevées le {videosAvant[0].releve}.
         </p>

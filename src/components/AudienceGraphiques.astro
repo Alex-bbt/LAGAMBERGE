@@ -38,7 +38,7 @@ const plateformes = [
       <h3 class="label graphiques__population">{p.d.population} <span class="texte-muted">· relevé du {p.d.releve}</span></h3>
       <div class="graphiques__grille">
         <div class="graphiques__barres">
-          <Barres titre="Pays" donnees={pays(p.d)} />
+          <Barres titre="Pays" donnees={pays(p.d)} note={p.d.relevePays && p.d.relevePays !== p.d.releve ? `Pays : relevé du ${p.d.relevePays}` : undefined} />
           <Barres titre="Genre" donnees={p.d.genre} />
         </div>
         {p.ages && <Colonnes titre="Âge" donnees={p.ages} />}
