@@ -90,6 +90,36 @@ Le compteur du site passe en direct. Règles appliquées :
 Le calcul se fait à la volée à chaque visite (avec un cache de 5 min), donc la
 mise à jour apparaît quelques minutes après que ta course soit sur Strava.
 
+---
+
+## Dernière valeur connue (plus de chiffre périmé au chargement)
+
+Pour éviter que la page affiche pendant quelques secondes une valeur de secours
+vieille de plusieurs jours (le temps que Strava réponde), chaque calcul réussi
+est **mémorisé** dans une petite table Supabase `streak_snapshot` (une seule
+ligne). Au chargement suivant, `/api/streak` sert d'abord cette dernière valeur
+validée — instantanément — puis la sync Strava confirme ou actualise.
+
+C'est **automatique** dès que Supabase est branché (mêmes variables que la
+newsletter : `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`). Rien à faire côté
+Strava. Si Supabase n'est pas configuré, tout continue de marcher comme avant
+(sync live directe, secours = `src/data/site.js`).
+
+La table (déjà créée) :
+
+```sql
+create table if not exists streak_snapshot (
+  id int primary key default 1,
+  data jsonb not null,                     -- dernier résultat /api/streak
+  updated_at timestamptz not null default now(),
+  constraint streak_snapshot_singleton check (id = 1)
+);
+alter table streak_snapshot enable row level security;
+```
+
+Strava reste la source de vérité : ce snapshot n'est qu'un cache de secours,
+réécrit à chaque sync réussie — il ne fige jamais rien.
+
 > Astuce : `activity:read_all` permet de lire aussi tes activités privées. Si tu
 > préfères ne partager que les publiques, remplace-le par `activity:read` à
 > l'étape 2 — mais assure-toi alors que tes courses ne sont pas en privé.

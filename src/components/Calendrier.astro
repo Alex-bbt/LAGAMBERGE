@@ -1,0 +1,30 @@
+---
+/* ==========================================================================
+   Calendrier — frise des prochaines courses.
+   Ne montre que les courses SANS résultat (les autres sont passées dans les
+   performances). Les courses `principal: true` sont mises en avant.
+   `detail` = true : affiche aussi le statut et le type (page /projets).
+   ========================================================================== */
+import { courses } from '../data/mediakit.js';
+
+const { detail = false } = Astro.props;
+const aVenir = courses.filter((c) => !c.resultat);
+const statuts = { prevu: 'Prévu', eventuel: 'Éventuel' };
+---
+
+<ol class="calendrier" role="list">
+  {aVenir.map((c) => (
+    <li class:list={['calendrier__course', { 'calendrier__course--principale': c.principal, 'calendrier__course--eventuelle': c.statut === 'eventuel' }]}>
+      <span class="calendrier__date">{c.date}</span>
+      <div class:list={['calendrier__carte', 'lg-glass', { 'lg-glass--royal': c.principal && c.id === 'saintelyon' }]}>
+        <h3 class="calendrier__nom">{c.nom}{c.format && ` · ${c.format}`}</h3>
+        {c.formatPrecision && <p class="caption texte-muted">Dénivelé : {c.formatPrecision}.</p>}
+        <p class="body">{c.sujet}</p>
+        {c.projet && <p class="caption calendrier__projet">{c.projet}</p>}
+        {(detail || c.statut === 'eventuel') && (
+          <p class="caption texte-muted">{statuts[c.statut]}{detail && ` · ${c.type}`}</p>
+        )}
+      </div>
+    </li>
+  ))}
+</ol>

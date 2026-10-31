@@ -1,0 +1,75 @@
+---
+/* ==========================================================================
+   Confidentialité (RGPD, art. 13) : uniquement les traitements réellement
+   présents sur le site — emails, hébergement et journaux techniques, page
+   Défi 2026, lecteur Instagram soumis à accord. Aucune mesure d'audience.
+   ========================================================================== */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import ConsentementVideos from '../components/ConsentementVideos.astro';
+import { editeur, hebergeur, miseAJourLegale } from '../data/mediakit.js';
+import { verifierMentions } from '../data/legal.js';
+
+verifierMentions();
+const e = editeur;
+const messagerie = e.messagerie ? `${e.messagerie.nom}${e.messagerie.pays ? ` (${e.messagerie.pays})` : ''}` : null;
+---
+
+<Base titre="Confidentialité" description="Données personnelles traitées par le site La Gamberge : finalités, bases légales, durées et droits.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-confidentialite">
+    <div class="chapitre__inner chapitre__inner--seul texte-legal">
+      <EnTete niveau="h1" id="titre-confidentialite" repere="Données personnelles" titre="Confidentialité"
+        chapeau={`Ce site traite peu de données, mais il en traite : voici lesquelles, pourquoi et pour combien de temps. Mise à jour : ${miseAJourLegale}.`} />
+
+      <section aria-labelledby="conf-responsable">
+        <h2 class="title" id="conf-responsable">Responsable du traitement</h2>
+        <p class="body">{[e.nom, e.statut?.toLowerCase()].filter(Boolean).join(", ")}{e.adresse && ` — ${e.adresse}`}. Contact : <a href={`mailto:${e.email}`}>{e.email}</a>.</p>
+      </section>
+
+      <section aria-labelledby="conf-emails">
+        <h2 class="title" id="conf-emails">1. Les échanges par email</h2>
+        <dl class="texte-legal__liste">
+          <div><dt>Données</dt><dd>Votre adresse email, votre nom, votre entreprise ou fonction s’il y a lieu, et le contenu de vos messages.</dd></div>
+          <div><dt>Finalités</dt><dd>Répondre à votre message, préparer, conclure et suivre une éventuelle collaboration.</dd></div>
+          <div><dt>Bases légales</dt><dd>Mesures précontractuelles prises à votre demande et exécution du contrat (RGPD, art. 6.1.b) ; intérêt légitime à suivre une relation professionnelle (art. 6.1.f).</dd></div>
+          <div><dt>Destinataires</dt><dd>{e.nom}, et son prestataire de messagerie électronique{messagerie && <> ({messagerie})</>}, qui héberge les emails. Aucune donnée n’est vendue ni cédée.</dd></div>
+          <div><dt>Durées</dt><dd>3 ans après le dernier échange s’il n’y a pas de collaboration. En cas de collaboration : la durée de celle-ci, puis 5 ans (délai de prescription, art. 2224 du Code civil) ; les factures sont conservées 10 ans (art. L123-22 du Code de commerce).</dd></div>
+        </dl>
+      </section>
+
+      <section aria-labelledby="conf-hebergement">
+        <h2 class="title" id="conf-hebergement">2. L’hébergement et les journaux techniques</h2>
+        <dl class="texte-legal__liste">
+          <div><dt>Données</dt><dd>À chaque visite, l’hébergeur enregistre des journaux techniques : adresse IP, date et heure, page demandée, navigateur utilisé.</dd></div>
+          <div><dt>Finalités</dt><dd>Afficher le site, en assurer la sécurité et prévenir les abus.</dd></div>
+          <div><dt>Base légale</dt><dd>Intérêt légitime à fournir un site fonctionnel et sûr (art. 6.1.f).</dd></div>
+          <div><dt>Destinataire</dt><dd>{hebergeur.nom}, hébergeur, établi aux États-Unis. Le transfert est encadré par le Data Privacy Framework UE–États-Unis, auquel Vercel est certifié.</dd></div>
+          <div><dt>Durée</dt><dd>Celle fixée par l’hébergeur (<a href={hebergeur.confidentialite} target="_blank" rel="noopener noreferrer">politique de Vercel<span class="sr-only"> (nouvel onglet)</span></a>). Ces journaux ne sont ni exportés ni conservés par l’éditeur.</dd></div>
+        </dl>
+      </section>
+
+      <section aria-labelledby="conf-defi">
+        <h2 class="title" id="conf-defi">3. La page Défi 2026</h2>
+        <p class="body">Elle affiche les sorties Strava d’{e.nom}, lues côté serveur : aucune donnée vous concernant n’est envoyée à Strava. Votre navigateur garde le dernier bilan affiché (stockage local « lg-defi-bilan ») pour l’afficher plus vite à la visite suivante ; il ne contient rien sur vous.</p>
+      </section>
+
+      <section aria-labelledby="videos">
+        <h2 class="title" id="videos">4. Les vidéos Instagram</h2>
+        <p class="body">Les vidéos s’affichent d’abord sous forme d’image hébergée sur ce site : rien n’est chargé depuis Instagram. Vous pouvez ensuite choisir de les lire sur place ou d’ouvrir Instagram.</p>
+        <p class="body">Si vous acceptez la lecture sur place, le lecteur d’Instagram est chargé : Meta Platforms Ireland Limited, responsable de ce service en Europe, peut alors déposer des cookies et collecter des données de navigation selon sa propre politique. Base légale : votre consentement (art. 6.1.a). Votre choix est mémorisé 6 mois dans votre navigateur (stockage local « lg-consentement-instagram »). Vous pouvez le retirer à tout moment :</p>
+        <ConsentementVideos />
+      </section>
+
+      <section aria-labelledby="conf-rien">
+        <h2 class="title" id="conf-rien">5. Ce que le site ne fait pas</h2>
+        <p class="body">Aucun outil de mesure d’audience, aucun pixel publicitaire, aucun formulaire. Le site lui-même ne dépose pas de cookie, et ses polices de caractères sont hébergées sur place.</p>
+      </section>
+
+      <section aria-labelledby="conf-droits">
+        <h2 class="title" id="conf-droits">Vos droits</h2>
+        <p class="body">Vous pouvez accéder à vos données, les rectifier, les effacer, en limiter le traitement, vous opposer à un traitement fondé sur l’intérêt légitime, demander leur portabilité, retirer votre consentement et définir des directives sur leur sort après votre décès. Écrivez à <a href={`mailto:${e.email}`}>{e.email}</a> : une réponse vous est apportée dans un délai d’un mois.</p>
+        <p class="body">Vous pouvez aussi adresser une réclamation à la CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">cnil.fr<span class="sr-only"> (nouvel onglet)</span></a>).</p>
+      </section>
+    </div>
+  </section>
+</Base>

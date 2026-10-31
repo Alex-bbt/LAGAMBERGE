@@ -1,125 +1,123 @@
-# CLAUDE.md — La Gamberge
+# CLAUDE.md — La Gamberge (media kit)
 
-Site personnel autour de la course à pied (**La Gamberge**). Landing page /
-carte de visite : présentation, deux défis en direct (streak + qualifs),
-actus/projets, conseils, réseaux, newsletter.
+Media kit web de **La Gamberge** (Alex Bourbigot), destiné aux marques.
+Positionnement : « La performance, sans se prendre au sérieux. »
+Objectif du site : obtenir un email de prise de contact qualifié.
 
-Production : **https://www.lagamberge.com** (déployée sur Vercel, branche `main`).
-
-## Stack technique
-
-- **Astro 5** en sortie **statique** (`output: 'static'`, défaut). Rendu
-  pré-généré → chargement très rapide, zéro JS par défaut, idéal pour le
-  trafic mobile venant d'Instagram.
-- **Fonctions serverless Vercel** dans `/api` (zéro-config, runtime Node) pour
-  les deux briques dynamiques : `api/streak.js` et `api/subscribe.js`. Elles
-  cohabitent avec le build Astro sans adaptateur.
-- **Google Fonts** : Bricolage Grotesque (titres) + Inter (texte).
-- Pas de framework CSS : un design system maison dans `src/styles/global.css`
-  (variables, `.card`, `.btn`, etc.).
-- Déploiement : push sur `main` → build de production automatique sur Vercel.
+## Stack
+- **Astro 5**, sortie statique. Déploiement Vercel (push sur `main` = production).
+- Pas de framework CSS : le design system de `lagamberge-design-system/design-system/`
+  (tokens.css + composants.css, classes `lg-*`) est importé tel quel par
+  `src/styles/site.css`. **Ne jamais modifier `lagamberge-design-system/`.**
+- Aucune couleur, taille, ombre ou police en dur : uniquement `var(--…)` et `lg-*`
+  (seule exception : `--bone: #F1E4D1`, défini dans site.css).
+- Palette : Royal Blue #162660, Powder Blue #D0E6FD, Bone #F1E4D1.
+- Accueil : fonds nets qui changent d'une section à l'autre —
+  `.fond-clair`, `.fond-poudre`, `.fond-accent` (Bone), `.fond-blanc`, `.fond-roi`.
+  Bone sert à une section et aux CTA (`.btn-accent`).
+- Échelle : `.section--ample` = au moins 100svh sur grand écran (≥ 1081 × 720 px),
+  hauteur naturelle sur mobile et en paysage bas ; jamais de contenu coupé,
+  pas de scroll-snap. Apparitions `[data-apparition]` discrètes, désactivées
+  avec prefers-reduced-motion (classe `apparitions` posée par Base.astro).
 
 ## Arborescence
-
 ```
-api/
-  streak.js          Endpoint GET /api/streak (streak + stats Strava en direct)
-  subscribe.js       Endpoint POST /api/subscribe (inscription newsletter → Supabase)
-lib/
-  strava.mjs         Logique Strava PURE + testable (importée par api/streak.js)
-src/
-  data/site.js       ⭐ SOURCE DE VÉRITÉ ÉDITABLE (voir plus bas)
-  styles/global.css  Design system (couleurs, typo, composants)
-  layouts/Base.astro Squelette HTML (head, métas, header/footer)
-  components/*.astro  Header, Footer, StreakCounter, SeasonStats, QualTracker,
-                      ProjectCard, Socials, Newsletter
-  pages/
-    index.astro      Accueil (hero, défis, chiffres, actus, réseaux, newsletter)
-    actus.astro      Projets par statut
-    conseils/        Liste + page article ([...slug].astro)
-  content/conseils/  Articles en Markdown (collection de contenu Astro)
-  content.config.ts  Schéma de la collection "conseils"
-docs/
-  strava-setup.md      Guide de configuration Strava (pour le propriétaire)
-  newsletter-setup.md  Guide de configuration Supabase (pour le propriétaire)
+src/data/mediakit.js   ⭐ TOUTES les données (identité, stats, audience, courses,
+                       défi, vidéos, Back to Run, offres, contact). null = non affiché.
+src/pages/index.astro  Six étapes : #profil (clair) → #statistiques (poudre, 2 chiffres
+                       dominants + graphiques Instagram/TikTok) → #pourquoi (blanc, crédibilité
+                       sportive + divertissement) → #back-to-run (Bone) → #objectifs (clair)
+                       → #collaborer (bleu roi, 3 offres + #contact).
+                       Nav : Profil, Audience, Projets, Collaborer. Pied : pages détaillées,
+                       réseaux, note unique des dates de relevé.
+src/pages/histoire.astro, communaute.astro, projets.astro, statistiques.astro
+                       Pages d'approfondissement (les détails quittent l'accueil pour y vivre)
+src/pages/performances.astro  Mur de cartes stables (aucune ne se déploie) + fenêtre <dialog>
+                              de détails ; ancres #marathon, #10-km, #5-km : saut natif seul
+                              (scroll-margin-top de la carte, :target), aucun script de défilement.
+                              Section en overflow: clip (jamais hidden : .lg-ambient en hidden
+                              devient un conteneur que le saut d'ancre fait défiler → haut masqué)
+src/pages/mentions-legales.astro, confidentialite.astro
+                       Données : `editeur` / `hebergeur` (mediakit.js). Champ null = non affiché ;
+                       build de PRODUCTION en échec tant qu'un champ obligatoire manque
+                       (src/data/legal.js). Jamais de valeur provisoire ni de TVA inexistante.
+                       Éditeur = même entreprise que Back to Run (EI « Roue Libre »,
+                       back-to-run/src/lib/legal-entity.ts) ; RCS non confirmé, donc non publié.
+src/styles/polices.css Unbounded 500/800 + Manrope 400/500/700 hébergées (public/fonts/la-gamberge/,
+                       licences OFL) ; l'@import Google de tokens.css est retiré au build par un
+                       plugin PostCSS (astro.config.mjs). Aucune requête vers Google.
+public/favicon.*       Monogramme « LG » (SVG, ICO, PNG 16/32, apple-touch-icon 180)
+src/pages/defi-2026.astro     Suivi du défi, lit /api/streak (dernier bilan affiché tout de suite)
+src/components/        EnTete, CarteChiffre, Barres, Colonnes, AudienceGraphiques (sélecteur
+                       Instagram/TikTok), Frise (calendrier horizontal de /projets),
+                       Reseaux (icônes SVG Simple Icons, CC0), DefiQuotidien, Progression,
+                       CarteVideo, Calendrier, Contact, Photo, VideoInstagram (miniature + lecteur
+                       chargé au clic ; `compact` = bloc Divertissement de l'accueil, videoDivertissement ;
+                       `fichier` = vidéo hébergée dans public/videos/, lue sur place, si Instagram
+                       refuse la lecture intégrée)
+src/assets/photos/     Photos ORIGINALES (conservées) ; Astro génère les WebP optimisés au build.
+                       Cadrage par photo (position / positionMobile) dans mediakit.js
+ancien-site/           Ancien site et premier aperçu, conservés (ne pas supprimer)
+api/streak.js, lib/    Fonction Strava (identifiants en variables Vercel, jamais côté client).
+                       Cache persistant Supabase (lib/snapshot.mjs, projet lagamberge-db) :
+                       dernier bilan servi immédiatement, Strava relancé en arrière-plan
+                       (waitUntil, @vercel/functions) au-delà de 10 min. updatedAt = date réelle
+                       de la dernière synchronisation. validatedDates = jours avec UNE course ≥ 5 km.
+api/instagram-sync.js  Tâche quotidienne (vercel.json → crons, protégée par CRON_SECRET) : lit
+lib/instagram*.mjs     l'API Graph Meta (graph.facebook.com/v26.0/{ID compte Instagram pro}, jeton
+                       EAA… du Graph API Explorer, idéalement un jeton de Page sans expiration),
+                       enregistre un bilan dans lagamberge-db (instagram_snapshot = dernier relevé
+                       RÉUSSI ; instagram_historique = un par jour ; instagram_suivi = compte rendu
+                       du dernier passage et état du jeton), puis relance la construction
+                       (INSTAGRAM_DEPLOY_HOOK). Maintient aussi l'activité de la base (pas de mise
+                       en pause). Surveillance : /api/instagram-etat (alerte jeton 21 jours avant).
+                       Affichage : abonnés, vues 2026 et pays des abonnés Instagram (% du total
+                       d'abonnés) lus au build (src/data/releve-instagram.js, repli sur les valeurs
+                       manuelles), chacun avec sa propre date ; le reste reste manuel.
+                       Voir docs/instagram-setup.md.
 ```
 
-## Défi #1 — Streak Strava EN DIRECT, sans base de données
+## Principe de mise en page (src/styles/site.css = système commun)
+- Même conteneur, même en-tête de section (repère + h2 display-l + intro),
+  mêmes espacements (--espace-section / --espace-bloc / --espace-interne).
+- Un seul chiffre principal (.chiffre + title) et un seul secondaire
+  (.chiffre-secondaire + lead). Panneau = regroupement ; encadré = aparté.
+- Compositions sur une grille commune (.compo, média 5/12 – contenu 7/12).
+- Photos : format choisi par photo ('naturel' quand le rognage coûte trop).
+- Les valeurs exactes, définitions et populations secondaires vont dans les
+  pages d'approfondissement (/statistiques, /communaute, /projets, /histoire).
 
-Le compteur « au moins 5 km chaque jour » est **recalculé à la volée** depuis
-l'historique Strava. **Strava est la seule source de vérité — rien n'est
-stocké.**
+- Exception : /communaute (Back to Run) suit la DA de Back to Run (dépôt Alex-bbt/back-to-run) :
+  styles `src/styles/back-to-run.css` rangés sous `.theme-btr` (tokens `--btr-*`),
+  Figtree + Caprasimo (chiffres seulement) dans `public/fonts/back-to-run/`,
+  poses de la mascotte dans `src/assets/back-to-run/`. Nav et pied restent La Gamberge.
+- Accueil : statistiques (faits) et « Pourquoi moi ? » (arguments) toujours séparés.
+  Totaux cumulés = non dédupliqués, avec leur note. Âge des abonnés TikTok et âge
+  des spectateurs TikTok (365 jours) sont deux populations : ne jamais les mélanger.
 
-- `lib/strava.mjs` : fonctions pures (`computeStreak`, `computeSeasonStats`,
-  `dayOfYear`, helpers de date) + `getStreakFromStrava(env)` qui rafraîchit le
-  token, récupère les activités et calcule tout.
-- `api/streak.js` : appelle `getStreakFromStrava` et renvoie le JSON. **Ne met
-  en cache QUE les réponses réussies** (`s-maxage` + `stale-while-revalidate`) ;
-  les échecs sont en `no-store` pour ne jamais figer un fallback.
-- Côté client, `StreakCounter.astro` et `SeasonStats.astro` **partagent un seul
-  appel** `/api/streak` (`window.__streakData`) et mettent à jour le DOM.
-  Si Strava n'est pas configuré / échoue, on garde les valeurs de secours
-  rendues côté serveur (aucune casse).
+- Pied de page : fond Powder et filet supérieur, distinct de toutes les sections.
+  Liens : pages détaillées (dont /performances), Mentions légales, Confidentialité ;
+  dates de relevé par type de données (abonnés/vues/audience, vidéos).
+- Vidéos : rien de tiers avant action. Lecteur Instagram seulement après accord
+  (« Lire ici » / « Non merci », mémorisé 6 mois, retrait sur /confidentialite#videos) ;
+  `lecture: 'externe'` = miniature locale + lien. Aucun outil de mesure d'audience.
+- Performances : temps réel = référence, temps officiel affiché à part ; aucune
+  médaille ni podium inventé ; données issues des diplômes (voir mediakit.js).
+- Tuiles : `.tuile-stat` = information, non cliquable (pas de lien, curseur normal) ;
+  `.tuile-chrono` = lien avec libellé de destination. Ne pas mélanger les deux.
 
-**Règles métier** (dans `computeStreak`) : une course **≥ 5 km** valide la
-journée ; **une seule fois par jour** ; **course à pied uniquement**
-(`Run`/`TrailRun`/`VirtualRun`, le vélo est ignoré) ; fuseau **Europe/Paris** ;
-message « défi perdu le X » si un jour terminé n'a pas de course validée.
-
-Variables d'environnement Vercel : `STRAVA_CLIENT_ID`,
-`STRAVA_CLIENT_SECRET`, `STRAVA_REFRESH_TOKEN` (+ optionnelles `STREAK_MIN_KM`,
-`STREAK_TZ`, `STREAK_START`).
-
-## Newsletter — Supabase, table `subscribers`
-
-- `api/subscribe.js` : POST `{ email, prenom }` → insertion dans la table
-  **`subscribers`** de Supabase via l'API REST PostgREST. La clé
-  **`service_role` reste côté serveur** (jamais exposée au navigateur).
-  Gère l'email en doublon (contrainte unique → 409 traité comme succès).
-  Un GET renvoie un booléen `ready` (Supabase configuré ou non).
-- `Newsletter.astro` : formulaire prénom + email → `/api/subscribe`, avec états
-  (succès / déjà inscrit / non configuré / erreur / email invalide).
-- Table (voir `docs/newsletter-setup.md`) : `id, email (unique), prenom, nom,
-  age, source, data jsonb, created_at`. La colonne **`data` (JSON)** est la
-  réserve pour des infos futures sans changer le schéma.
-- Variables d'environnement Vercel : `SUPABASE_URL`,
-  `SUPABASE_SERVICE_ROLE_KEY`.
-- Supabase **stocke** seulement ; l'envoi d'emails (Brevo/Resend) reste à
-  brancher plus tard par-dessus cette liste.
-
-## `src/data/site.js` — la source de vérité éditable
-
-Fichier unique, très commenté, pour tout le contenu qui bouge :
-`streak` (jour de secours), `season` (chiffres de secours), `quals` (état des 4
-qualifs), `socials` (liens réseaux), `projects` (actus). Les valeurs `streak`/
-`season` ne servent que de **secours** quand Strava est branché (Strava prime).
-
-## Conventions de code
-
-- **Tout le contenu éditable au quotidien vit dans `src/data/site.js`** (et les
-  `.md` de `src/content/conseils/`). Ne pas coder de contenu en dur ailleurs.
-- **Langue** : tout en **français** — UI, commentaires, textes. Ton du site :
-  léger, drôle, sincère, jamais « coach premium ».
-- **Logique serveur pure et testable** : garder le calcul dans `lib/*.mjs`
-  (fonctions pures) séparé des endpoints `api/*.js` (I/O). Tester la logique
-  pure avec un petit script Node avant de déployer.
-- **Robustesse d'abord** : les endpoints ne plantent jamais la page — en cas
-  d'erreur ils renvoient un état de repli et le front garde les valeurs de
-  secours.
-- **Secrets** : uniquement dans les variables d'environnement Vercel, jamais
-  dans le dépôt. Les clés sensibles restent côté serveur (`/api`, `/lib`).
-- **CSS** : réutiliser les variables et classes de `src/styles/global.css` ;
-  styles spécifiques dans le `<style>` scopé du composant Astro.
-- **Déploiement** : développer sur une branche, ouvrir une PR vers `main`, la
-  fusionner pour déclencher la production. ⚠️ Une variable d'environnement
-  ajoutée/modifiée sur Vercel n'est prise en compte **qu'au déploiement
-  suivant** (redéployer après tout changement de variable).
+## Règles éditoriales (non négociables)
+- N'inventer aucun chiffre, lien, texte personnel, logo ou témoignage.
+- Chaque statistique a sa période ou sa date de relevé.
+- Ne jamais promettre vues, ventes, ROI ni résultat sportif.
+- Défi quotidien : afficher uniquement un nombre de jours **validés** avec sa date ;
+  jamais le jour de l'année.
+- Résultats et objectifs toujours distingués visuellement.
+- Références de marques publiées seulement si leur nature est confirmée.
+- Tout en français, ton direct, chaleureux, sans jargon marketing.
 
 ## Commandes
-
 ```bash
-npm install        # dépendances
-npm run dev        # serveur de dev (localhost:4321)
-npm run build      # build de production → dist/
-npm run preview    # prévisualiser le build statique
+npm install && npm run dev   # localhost:4321
+npm run build                # contrôle principal (pas de lint configuré)
 ```
