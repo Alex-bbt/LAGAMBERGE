@@ -25,7 +25,7 @@ const avecAutres = (pays) => [
 
 // Lignes du tableau : [libellé, valeur Instagram, valeur TikTok]
 const lignes = [
-  ['Abonnés', { valeur: nombre(ig.abonnes), releve: ig.abonnesVuesAuto ? ig.releveAbonnesVues : null }, nombre(tt.abonnes)],
+  ['Abonnés', { valeur: nombre(ig.abonnes), releve: ig.abonnesVuesAuto ? ig.releveAbonnesVues : null }, { valeur: nombre(tt.abonnes), releve: tt.releveAbonnes !== tt.releve ? tt.releveAbonnes : null }],
   ['Vues en 2026', { valeur: nombre(ig.vues), releve: ig.abonnesVuesAuto ? ig.releveAbonnesVues : null }, nombre(tt.vues)],
   ['Vues médianes par publication de 2026', `≈ ${nombre(ig.vuesMedianesPublication)}`, tt.medianeVuesAffichage],
   ['Publications à plus de 10 000 vues', nombre(ig.publicationsPlus10k), nombre(tt.publicationsPlus10k)],
@@ -57,7 +57,7 @@ const plateformes = [
           </thead>
           <tbody>
             {lignes.map(([libelle, a, b]) => (
-              <tr><th scope="row">{libelle}</th><td>{typeof a === 'object' ? <>{a.valeur}{a.releve && <span class="caption texte-muted cellule-releve">au {a.releve}</span>}</> : a}</td><td>{b}</td></tr>
+              <tr><th scope="row">{libelle}</th><td>{typeof a === 'object' ? <>{a.valeur}{a.releve && <span class="caption texte-muted cellule-releve">au {a.releve}</span>}</> : a}</td><td>{typeof b === 'object' ? <>{b.valeur}{b.releve && <span class="caption texte-muted cellule-releve">au {b.releve}</span>}</> : b}</td></tr>
             ))}
           </tbody>
         </table>

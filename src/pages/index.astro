@@ -83,7 +83,7 @@ const marques = references.filter((r) => r.publier);
               <thead><tr><th scope="col">Plateforme</th><th scope="col">Abonnés</th><th scope="col">Vues 2026</th><th scope="col">Relevé</th></tr></thead>
               <tbody>
                 <tr><th scope="row">Instagram</th><td>{nombre(ig.abonnes)}</td><td>{nombre(ig.vues)}</td><td>{ig.releveAbonnesVues}</td></tr>
-                <tr><th scope="row">TikTok</th><td>{nombre(tt.abonnes)}</td><td>{nombre(tt.vues)}</td><td>{tt.releve}</td></tr>
+                <tr><th scope="row">TikTok</th><td>{nombre(tt.abonnes)}</td><td>{nombre(tt.vues)}</td><td>{tt.releveAbonnes === tt.releve ? tt.releve : `abonnés au ${tt.releveAbonnes}, vues au ${tt.releve}`}</td></tr>
               </tbody>
             </table>
           </div>

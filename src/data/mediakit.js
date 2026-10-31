@@ -237,7 +237,10 @@ export const stats = {
   tiktok: {
     releve: '10 octobre 2026',
     periode: 'du 1er janvier au 10 octobre 2026',
-    abonnes: 9254,
+    // Abonnés : relevé plus récent que le reste des chiffres TikTok (donné par
+    // Alex le 31 octobre 2026), avec sa propre date. Vues et audience : 10 octobre.
+    abonnes: 9863,
+    releveAbonnes: '31 octobre 2026',
     abonnesAffichage: '9 000+',
     vues: 5168694,
     vuesAffichage: '5,17 M',
@@ -282,14 +285,14 @@ if (auto) {
 // ci-dessus : ce ne sont PAS des audiences dédupliquées, et les vues ne sont
 // pas des personnes uniques.
 stats.cumul = {
-  abonnes: stats.instagram.abonnes + stats.tiktok.abonnes, // 19 488
+  abonnes: stats.instagram.abonnes + stats.tiktok.abonnes,
   abonnesLegende: 'Abonnements cumulés sur Instagram et TikTok',
-  vues: stats.instagram.vues + stats.tiktok.vues, // 17 493 811
+  vues: stats.instagram.vues + stats.tiktok.vues,
   // Arrondi à la décimale inférieure : jamais de chiffre gonflé.
   vuesAffichage: `${(Math.floor((stats.instagram.vues + stats.tiktok.vues) / 1e5) / 10).toLocaleString('fr-FR')} M`,
   vuesLegende: 'Vues cumulées sur Instagram et TikTok en 2026',
   note: 'Abonnements et vues additionnés sur les deux plateformes, pas des personnes uniques.',
-  periodes: `Vues depuis le 1er janvier 2026. Instagram au ${stats.instagram.releveAbonnesVuesCourt} ; TikTok au 10 octobre.`,
+  periodes: `Vues depuis le 1er janvier 2026. Instagram au ${stats.instagram.releveAbonnesVuesCourt} ; TikTok : abonnés au ${stats.tiktok.releveAbonnes.replace(/ \d{4}$/, '')}, vues au 10 octobre.`,
   // Prochain rafraîchissement global envisagé au passage des 20 000 abonnements cumulés.
 };
 // Stories TikTok : aucune story publiée (confirmé par Alex le 13 octobre 2026).
