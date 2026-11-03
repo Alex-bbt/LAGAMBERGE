@@ -1,8 +1,20 @@
 {
   "crons": [
-    { "path": "/api/instagram-sync", "schedule": "17 5 * * *" }
+    {
+      "path": "/api/instagram-sync",
+      "schedule": "17 5 * * *"
+    },
+    {
+      "path": "/api/strava-sync",
+      "schedule": "43 21 * * *"
+    }
   ],
   "functions": {
-    "api/instagram-sync.js": { "maxDuration": 60 }
+    "api/instagram-sync.js": {
+      "maxDuration": 60
+    },
+    "api/strava-sync.js": {
+      "maxDuration": 60
+    }
   }
 }

@@ -147,13 +147,18 @@ const pad = (n) => String(n).padStart(2, '0');
     if (valide(memo)) afficher(memo, { local: true });
   } catch { /* stockage indisponible : on attend le serveur */ }
 
-  fetch(bloc.dataset.api, { headers: { Accept: 'application/json' } })
+  // Synchronisation en cours côté serveur → nouvelle demande 15 s plus tard
+  // (3 au plus), pour afficher le bilan actualisé sans recharger la page.
+  const charger = (relance) => fetch(bloc.dataset.api, { headers: { Accept: 'application/json' }, cache: relance ? 'no-store' : 'default' })
     .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
     .then((d) => {
       if (!valide(d)) throw new Error('donnees');
       afficher(d);
       try { localStorage.setItem(CLE, JSON.stringify(d)); } catch { /* sans importance */ }
-    })
+      if (d.refreshing && relance < 3) setTimeout(() => charger(relance + 1).catch(() => {}), 15000);
+    });
+
+  charger(0)
     .catch(() => {
       if (affiche) {
         // Le bilan déjà affiché reste en place, avec sa vraie date.

@@ -15,6 +15,8 @@
 //      sert le snapshot daté et l'actualisation continue en arrière-plan.
 //   3. Aucun snapshot (premier appel) → calcul Strava direct, puis écriture.
 //   4. Strava en échec → on conserve le dernier snapshot, rien n'est effacé.
+// La tâche quotidienne /api/strava-sync actualise aussi le bilan chaque soir,
+// même sans visite (sinon il n'était recalculé qu'à l'ouverture de la page).
 // Les identifiants Strava ne quittent jamais le serveur.
 // Ne plante jamais la page.
 
@@ -28,11 +30,12 @@ const FRESH_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 // Snapshot d'un jour précédent : temps d'attente maximal de Strava avant de
 // servir quand même le snapshot (la page affiche alors sa date).
-const SYNC_MAX_MS = 4000;
+const SYNC_MAX_MS = 8000;
 
-// CDN : 5 min de cache, puis le dernier bilan reste servi pendant que le CDN
-// revalide en arrière-plan.
-const CACHE_OK = 'public, s-maxage=300, stale-while-revalidate=86400';
+// CDN : 5 min de cache, puis 10 min de bilan servi pendant que le CDN
+// revalide ; au-delà, le CDN redemande la fonction (jamais un bilan de la veille).
+const CACHE_OK = 'public, s-maxage=300, stale-while-revalidate=600';
+const CACHE_ACTUALISATION = 'public, s-maxage=10';
 
 // Logique testable : les dépendances (lecture/écriture du cache, Strava,
 // waitUntil) sont injectées. Voir l'export par défaut pour le branchement réel.
@@ -74,7 +77,9 @@ export function creerHandler({ lire, ecrire, strava, enArrierePlan, env, mainten
           }
         }
       }
-      res.setHeader('Cache-Control', CACHE_OK);
+      // Actualisation en cours : cache CDN court, pour que la page obtienne
+      // le nouveau bilan dès qu'il est enregistré.
+      res.setHeader('Cache-Control', aActualiser ? CACHE_ACTUALISATION : CACHE_OK);
       res.status(200).json({ ...snap.data, configured: true, cached: true, refreshing: aActualiser });
       return;
     }
