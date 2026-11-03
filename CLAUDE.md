@@ -61,8 +61,11 @@ ancien-site/           Ancien site et premier aperçu, conservés (ne pas suppri
 api/streak.js, lib/    Fonction Strava (identifiants en variables Vercel, jamais côté client).
                        Cache persistant Supabase (lib/snapshot.mjs, projet lagamberge-db) :
                        dernier bilan servi immédiatement, Strava relancé en arrière-plan
-                       (waitUntil, @vercel/functions) au-delà de 10 min. updatedAt = date réelle
-                       de la dernière synchronisation. validatedDates = jours avec UNE course ≥ 5 km.
+                       (waitUntil, @vercel/functions) au-delà de 10 min ; bilan d'un autre jour →
+                       Strava attendu 8 s avant de répondre. api/strava-sync.js : tâche quotidienne
+                       (22 h 43–23 h 43 heure de Paris, CRON_SECRET) qui actualise le bilan sans visite.
+                       updatedAt = date réelle de la dernière synchronisation.
+                       validatedDates = jours avec UNE course ≥ 5 km.
 api/instagram-sync.js  Tâche quotidienne (vercel.json → crons, protégée par CRON_SECRET) : lit
 lib/instagram*.mjs     l'API Graph Meta (graph.facebook.com/v26.0/{ID compte Instagram pro}, jeton
                        EAA… du Graph API Explorer, idéalement un jeton de Page sans expiration),
