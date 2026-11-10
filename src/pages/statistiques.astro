@@ -27,9 +27,9 @@ const avecAutres = (pays) => [
 const lignes = [
   ['Abonnés', { valeur: nombre(ig.abonnes), releve: ig.abonnesVuesAuto ? ig.releveAbonnesVues : null }, { valeur: nombre(tt.abonnes), releve: tt.releveAbonnes !== tt.releve ? tt.releveAbonnes : null }],
   ['Vues en 2026', { valeur: nombre(ig.vues), releve: ig.abonnesVuesAuto ? ig.releveAbonnesVues : null }, nombre(tt.vues)],
-  ['Vues médianes par publication de 2026', `≈ ${nombre(ig.vuesMedianesPublication)}`, tt.medianeVuesAffichage],
-  ['Publications à plus de 10 000 vues', nombre(ig.publicationsPlus10k), nombre(tt.publicationsPlus10k)],
-  ['Publications à plus de 100 000 vues', nombre(ig.publicationsPlus100k), nombre(tt.videosPlus100k)],
+  ['Vues médianes par publication de 2026', `≈ ${nombre(ig.vuesMedianesPublication)}`, { valeur: tt.medianeVuesAffichage, releve: tt.medianeReleve !== tt.releve ? tt.medianeReleve : null }],
+  ['Publications à plus de 10 000 vues', nombre(ig.publicationsPlus10k), { valeur: nombre(tt.publicationsPlus10k), releve: tt.relevePublicationsPlus10k !== tt.releve ? tt.relevePublicationsPlus10k : null }],
+  ['Publications à plus de 100 000 vues', nombre(ig.publicationsPlus100k), { valeur: nombre(tt.videosPlus100k), releve: tt.releveVideosPlus100k !== tt.releve ? tt.releveVideosPlus100k : null }],
   ['Interactions', nombre(ig.interactions), nombre(tt.interactions)],
   ['Engagement', ig.engagement, tt.engagementCourt],
   ['Vues médianes par story (30 derniers jours)', `≈ ${nombre(ig.vuesMedianesStory)}`, tt.vuesMedianesStory ? `≈ ${nombre(tt.vuesMedianesStory)}` : tt.storiesSansObjet],
@@ -95,7 +95,7 @@ const plateformes = [
       <h3 class="label audience-miroir__titre">Âge</h3>
       <div class="audience-miroir">
         {plateformes.map((p) => (
-          <div class="carte-plate"><Colonnes titre={p.nom} population={p.d.population} releve={p.d.releve} donnees={p.d.ages} note={p.d.repereAge} /></div>
+          <div class="carte-plate"><Colonnes titre={p.nom} population={p.d.population} releve={p.d.releveAges ?? p.d.releve} donnees={p.d.ages} note={p.d.repereAge} /></div>
         ))}
       </div>
 

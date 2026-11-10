@@ -2,7 +2,7 @@
 /* Squelette commun : métadonnées, navigation flottante, pied de page. */
 import '../styles/site.css';
 import Reseaux from '../components/Reseaux.astro';
-import { identite, contact, comptes, stats, videosAvant } from '../data/mediakit.js';
+import { identite, contact, comptes, stats, audience, videosAvant } from '../data/mediakit.js';
 
 // `corps` : classe ajoutée au <body> (ex. 'theme-btr' pour la page Back to Run).
 const { titre, description, corps } = Astro.props;
@@ -91,8 +91,8 @@ const insta = comptes.find((c) => c.id === 'instagram');
         <!-- Dates de relevé par type de données (chaque date reste celle du relevé réel) -->
         <p class="caption texte-muted pied__releves">
           {stats.instagram.abonnesVuesAuto
-            ? <>Abonnés et vues : Instagram au {stats.instagram.releveAbonnesVues} ; TikTok, abonnés au {stats.tiktok.releveAbonnes} et vues au {stats.tiktok.releve}. Audience : Instagram au {stats.instagram.releve}{stats.instagram.relevePays !== stats.instagram.releve && <> (pays au {stats.instagram.relevePays})</>}, TikTok au {stats.tiktok.releve}.</>
-            : <>Abonnés, vues et audience : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}{stats.tiktok.releveAbonnes !== stats.tiktok.releve && <> (abonnés au {stats.tiktok.releveAbonnes})</>}.</>}
+            ? <>Abonnés et vues : Instagram au {stats.instagram.releveAbonnesVues} ; TikTok, abonnés au {stats.tiktok.releveAbonnes} et vues au {stats.tiktok.releve}. Audience : Instagram au {stats.instagram.releve}{stats.instagram.relevePays !== stats.instagram.releve && <> (pays au {stats.instagram.relevePays})</>}, TikTok au {audience.tiktok.releve}{audience.tiktok.releveAges && audience.tiktok.releveAges !== audience.tiktok.releve && <> (âge au {audience.tiktok.releveAges})</>}.</>
+            : <>Abonnés, vues et audience : Instagram au {stats.instagram.releve}, TikTok au {stats.tiktok.releve}{stats.tiktok.releveAbonnes !== stats.tiktok.releve && <> (abonnés au {stats.tiktok.releveAbonnes})</>}{audience.tiktok.releveAges && audience.tiktok.releveAges !== audience.tiktok.releve && <> (âge des abonnés TikTok au {audience.tiktok.releveAges})</>}.</>}
           Vues des vidéos d’exemple : relevées le {videosAvant[0].releve}.
         </p>
         <p class="caption pied__legal">
