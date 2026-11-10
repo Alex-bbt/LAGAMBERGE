@@ -31,6 +31,7 @@ const ig = stats.instagram;
 const tt = stats.tiktok;
 const cumul = stats.cumul;
 const chronos = performances.filter((p) => p.accueil);
+const vedetteTrail = performances.find((p) => p.vedette);
 const projets = courses.filter((c) => !c.resultat && c.principal);
 const autresEcheances = courses.filter((c) => !c.resultat && !c.principal).length;
 // Chiffres de l'accueil (les valeurs exactes, dont 1 293 participants et
@@ -113,7 +114,7 @@ const marques = references.filter((r) => r.publier);
           <p class="lead intro">Je m’investis dans des objectifs préparés sur plusieurs mois, que je partage de la préparation jusqu’à la course.</p>
           <p class="lead"><a class="lien-defi" href="/defi-2026">Au moins 5 km chaque jour en 2026.</a></p>
           <!-- Tuiles cliquables : chaque chrono mène à sa fiche sur /performances -->
-          <ul class="chronos-tuiles" role="list" aria-label="Références sur route">
+          <ul class="chronos-tuiles" role="list" aria-label="Références sur route et en trail">
             {chronos.map((p) => (
               <li>
                 <a class="tuile-chrono" href={`/performances#${p.id}`}>
@@ -123,6 +124,15 @@ const marques = references.filter((r) => r.publier);
                 </a>
               </li>
             ))}
+            {vedetteTrail && (
+              <li class="chronos-tuiles__large">
+                <a class="tuile-chrono tuile-chrono--trail" href={`/performances#${vedetteTrail.id}`}>
+                  <span class="chiffre title">{vedetteTrail.resultat}</span>
+                  <span class="body">{vedetteTrail.court} · {vedetteTrail.course} · {vedetteTrail.tempsCourse.replace(/ /g, '\u00a0')}</span>
+                  <span class="tuile-chrono__destination caption">Mes performances</span>
+                </a>
+              </li>
+            )}
           </ul>
         </div>
       </article>

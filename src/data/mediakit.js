@@ -128,6 +128,23 @@ export const performances = [
     details: ['Premier marathon'], recompense: null,
   },
   {
+    // Capture du classement fournie par Alex (10 novembre 2026). Temps non
+    // qualifié de « réel » ni d'« officiel » : la capture n'en dit rien.
+    // 1 841 = nombre de finishers affiché ; effectifs Hommes et catégorie non
+    // affichés, donc non publiés.
+    // `vedette` : mise en avant sur l'accueil (ligne trail sous les chronos).
+    id: 'ecotrail-paris', type: 'trail', vedette: true,
+    course: 'EcoTrail Paris Automne 2026', epreuve: 'EcoTrail Paris Automne 2026, trail 50 km', court: 'Trail 50 km', distance: '50 km',
+    date: '17 octobre 2026', resultat: '4e / 1 841', tempsReel: null, tempsCourse: '3 h 14 min 11 s', tempsOfficiel: null,
+    classements: [
+      { libelle: 'Classement général', valeur: '4e / 1 841 finishers' },
+      { libelle: 'Hommes', valeur: '4e' },
+      { libelle: 'Catégorie 20-34 M', valeur: '4e' },
+    ],
+    details: ['Dénivelé positif affiché : 550 m'],
+    recompense: null,
+  },
+  {
     // « 50K » est le nom du format, pas une distance exacte.
     id: 'nice-utmb', type: 'trail',
     course: 'Nice Côte d’Azur by UTMB — Levens–Nice', epreuve: 'Nice Côte d’Azur by UTMB, format 50K', court: 'Trail', distance: null,
@@ -542,7 +559,7 @@ export const courses = [
     statut: 'prevu',
     sujet: 'Prochaine étape de ma découverte du trail.',
     accueil: true,
-    resultat: null,
+    resultat: '4e au général sur 1 841 finishers, en 3 h 14 min 11 s',
   },
   {
     id: '10k-paris-centre',
