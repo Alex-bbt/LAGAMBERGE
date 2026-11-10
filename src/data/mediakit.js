@@ -128,6 +128,23 @@ export const performances = [
     details: ['Premier marathon'], recompense: null,
   },
   {
+    // Capture du classement fournie par Alex (10 novembre 2026). Temps non
+    // qualifié de « réel » ni d'« officiel » : la capture n'en dit rien.
+    // 1 841 = nombre de finishers affiché ; effectifs Hommes et catégorie non
+    // affichés, donc non publiés.
+    // `vedette` : mise en avant sur l'accueil (ligne trail sous les chronos).
+    id: 'ecotrail-paris', type: 'trail', vedette: true,
+    course: 'EcoTrail Paris Automne 2026', epreuve: 'EcoTrail Paris Automne 2026, trail 50 km', court: 'Trail 50 km', distance: '50 km',
+    date: '17 octobre 2026', resultat: '4e / 1 841', tempsReel: null, tempsCourse: '3 h 14 min 11 s', tempsOfficiel: null,
+    classements: [
+      { libelle: 'Classement général', valeur: '4e / 1 841 finishers' },
+      { libelle: 'Hommes', valeur: '4e' },
+      { libelle: 'Catégorie 20-34 M', valeur: '4e' },
+    ],
+    details: ['Dénivelé positif affiché : 550 m'],
+    recompense: null,
+  },
+  {
     // « 50K » est le nom du format, pas une distance exacte.
     id: 'nice-utmb', type: 'trail',
     course: 'Nice Côte d’Azur by UTMB — Levens–Nice', epreuve: 'Nice Côte d’Azur by UTMB, format 50K', court: 'Trail', distance: null,
@@ -235,23 +252,29 @@ export const stats = {
     engagementDefinition: '(likes + commentaires + partages + enregistrements) / couverture',
   },
   tiktok: {
-    releve: '10 octobre 2026',
-    periode: 'du 1er janvier au 10 octobre 2026',
-    // Abonnés : relevé plus récent que le reste des chiffres TikTok (donné par
-    // Alex le 31 octobre 2026), avec sa propre date. Vues et audience : 10 octobre.
-    abonnes: 9863,
-    releveAbonnes: '31 octobre 2026',
+    // Relevé du 9 novembre 2026 (exports TikTok Studio fournis par Alex le
+    // 10 novembre) : abonnés (FollowerHistory), vues, likes, commentaires et
+    // partages = somme des jours du 1er janvier au 9 novembre (Overview).
+    // Même méthode que le relevé du 10 octobre (sommes identiques vérifiées).
+    releve: '9 novembre 2026',
+    periode: 'du 1er janvier au 9 novembre 2026',
+    abonnes: 9911,
+    releveAbonnes: '9 novembre 2026',
     abonnesAffichage: '9 000+',
-    vues: 5168694,
-    vuesAffichage: '5,17 M',
+    vues: 5365428,
+    vuesAffichage: '5,36 M',
+    // Seuils par vidéo : non fournis par les exports du 9 novembre, chacun
+    // garde la date de son relevé.
     videosPlus100k: 6,
-    likes: 454877,
-    partages: 8572,
-    commentaires: 1501,
+    releveVideosPlus100k: '10 octobre 2026',
+    likes: 470174,
+    partages: 8755,
+    commentaires: 1625,
     // Interactions = likes + commentaires + partages (les enregistrements ne
     // sont pas relevés sur TikTok, contrairement à Instagram).
-    interactions: 454877 + 1501 + 8572, // 464 950
+    interactions: 470174 + 1625 + 8755, // 480 554
     publicationsPlus10k: 32, // vidéos publiques 2026 (fichier TikTok Studio du 12/10/2026)
+    relevePublicationsPlus10k: '12 octobre 2026',
     engagement: 'environ 9 %',
     engagementCourt: '≈ 9 %',
     engagementDefinition: '(likes + commentaires + partages) / vues',
@@ -292,7 +315,7 @@ stats.cumul = {
   vuesAffichage: `${(Math.floor((stats.instagram.vues + stats.tiktok.vues) / 1e5) / 10).toLocaleString('fr-FR')} M`,
   vuesLegende: 'Vues cumulées sur Instagram et TikTok en 2026',
   note: 'Abonnements et vues additionnés sur les deux plateformes, pas des personnes uniques.',
-  periodes: `Vues depuis le 1er janvier 2026. Instagram au ${stats.instagram.releveAbonnesVuesCourt} ; TikTok : abonnés au ${stats.tiktok.releveAbonnes.replace(/ \d{4}$/, '')}, vues au 10 octobre.`,
+  periodes: `Vues depuis le 1er janvier 2026. Instagram au ${stats.instagram.releveAbonnesVuesCourt} ; ${stats.tiktok.releveAbonnes === stats.tiktok.releve ? `TikTok au ${stats.tiktok.releve.replace(/ \d{4}$/, '')}` : `TikTok : abonnés au ${stats.tiktok.releveAbonnes.replace(/ \d{4}$/, '')}, vues au ${stats.tiktok.releve.replace(/ \d{4}$/, '')}`}.`,
   // Prochain rafraîchissement global envisagé au passage des 20 000 abonnements cumulés.
 };
 // Stories TikTok : aucune story publiée (confirmé par Alex le 13 octobre 2026).
@@ -302,7 +325,7 @@ stats.tiktok.vuesMedianesStoryPeriode = null;
 stats.tiktok.storiesSansObjet = 'Non applicable — aucune story publiée';
 stats.instagram.engagementLegende = 'Engagement rapporté à la couverture';
 stats.tiktok.engagementLegende = 'Engagement rapporté aux vues';
-stats.tiktok.engagementDetail = '(Likes + commentaires + partages) / vues. Vidéos de 2026, du 1er janvier au 10 octobre.';
+stats.tiktok.engagementDetail = '(Likes + commentaires + partages) / vues. Vidéos de 2026, du 1er janvier au 9 novembre.';
 stats.instagram.engagementDetail =
   '(Likes + commentaires + partages + enregistrements) / couverture. Publications retenues de 2026, relevé du 12 octobre.';
 
@@ -333,19 +356,21 @@ export const audience = {
   },
   tiktok: {
     population: 'Abonnés TikTok',
-    releve: '10 octobre 2026',
+    // Genre et pays : exports TikTok Studio du 9 novembre 2026.
+    releve: '9 novembre 2026',
     genre: [
-      { libelle: 'Hommes', valeur: 57 },
-      { libelle: 'Femmes', valeur: 43 },
+      { libelle: 'Hommes', valeur: 58 },
+      { libelle: 'Femmes', valeur: 42 },
     ],
     pays: [
-      { libelle: 'France', valeur: 74.6 },
+      { libelle: 'France', valeur: 76.3 },
       { libelle: 'Belgique', valeur: 4.5 },
-      { libelle: 'Canada', valeur: 2.5 },
-      { libelle: 'Suisse', valeur: 1.2 },
+      { libelle: 'Canada', valeur: 2.6 },
+      { libelle: 'Suisse', valeur: 1.3 },
     ],
     // Âge des ABONNÉS TikTok (capture fournie par Alex le 13 octobre 2026,
-    // rattachée au relevé TikTok ci-dessus).
+    // relevé du 10 octobre) : absent des exports du 9 novembre.
+    releveAges: '10 octobre 2026',
     ages: [
       { libelle: '18–24', valeur: 42.8 },
       { libelle: '25–34', valeur: 42.3 },
@@ -534,7 +559,7 @@ export const courses = [
     statut: 'prevu',
     sujet: 'Prochaine étape de ma découverte du trail.',
     accueil: true,
-    resultat: null,
+    resultat: '4e au général sur 1 841 finishers, en 3 h 14 min 11 s',
   },
   {
     id: '10k-paris-centre',

@@ -896,6 +896,10 @@ a.encadre__titre { text-decoration: underline; text-underline-offset: 4px; }
 .tuile-chrono .chiffre { font-size: calc(var(--space-4) + var(--space-1)); }
 .tuile-chrono__destination { margin-top: auto; padding-top: var(--space-2); font-weight: 700; color: var(--royal-muted); text-decoration: underline; text-underline-offset: 3px; }
 .tuile-chrono__destination::after { content: " →"; }
+/* Référence trail : une ligne pleine largeur sous les chronos route. */
+.chronos-tuiles__large { grid-column: 1 / -1; }
+.tuile-chrono--trail { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-3); }
+.tuile-chrono--trail .tuile-chrono__destination { margin-left: auto; padding-top: 0; }
 .tuile-chrono:hover { background: var(--powder); }
 .tuile-chrono:focus-visible { outline: 3px solid var(--royal-hover); outline-offset: 3px; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {

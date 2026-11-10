@@ -8,7 +8,7 @@ import DefiQuotidien from '../components/DefiQuotidien.astro';
 import { identite, parcours, performances } from '../data/mediakit.js';
 
 const p = identite.personne;
-const trail = performances.find((x) => x.epreuve.includes('UTMB'));
+const trail = performances.find((x) => x.vedette) ?? performances.find((x) => x.epreuve.includes('UTMB'));
 const statutObjectif = { atteint: 'Atteint', manque: 'Manqué', en_cours: 'En cours' };
 ---
 
@@ -87,7 +87,8 @@ const statutObjectif = { atteint: 'Atteint', manque: 'Manqué', en_cours: 'En co
       {trail && (
         <div class="lg-glass lg-glass--royal perf perf--grand">
           <span class="perf__resultat title">{trail.resultat}</span>
-          <span class="perf__epreuve">{trail.epreuve}</span>
+          <span class="perf__epreuve">{trail.epreuve}{trail.tempsCourse && ` · ${trail.tempsCourse}`}</span>
+          <span class="perf__epreuve caption">{trail.date}</span>
         </div>
       )}
     </div>
