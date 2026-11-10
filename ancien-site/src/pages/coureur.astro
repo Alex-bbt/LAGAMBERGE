@@ -1,0 +1,224 @@
+---
+import Base from '../layouts/Base.astro';
+import PaceCalculator from '../components/PaceCalculator.astro';
+import Equivalences from '../components/coureur/Equivalences.astro';
+import TrainingPaces from '../components/coureur/TrainingPaces.astro';
+import Cotation from '../components/coureur/Cotation.astro';
+import NiveauFFA from '../components/coureur/NiveauFFA.astro';
+import Splits from '../components/coureur/Splits.astro';
+import Convertisseur from '../components/coureur/Convertisseur.astro';
+import WorkoutLibrary from '../components/WorkoutLibrary.astro';
+import Newsletter from '../components/Newsletter.astro';
+
+// Les onglets de la boîte à outils. `id` = ancre du panneau.
+const tabs = [
+  { id: 't-allure', label: 'Allure' },
+  { id: 't-equiv', label: 'Équivalences' },
+  { id: 't-train', label: 'Entraînement' },
+  { id: 't-cotation', label: 'Cotation' },
+  { id: 't-niveau', label: 'Niveau FFA' },
+  { id: 't-splits', label: 'Splits' },
+  { id: 't-convert', label: 'Convertisseur' },
+];
+---
+
+<Base
+  title="Espace coureur"
+  description="La boîte à outils du coureur La Gamberge : calculateur d'allure, équivalences VDOT/Riegel, allures Daniels, cotation World Athletics, age-grading, niveau FFA (pyramide départemental → international), splits et convertisseur — plus une bibliothèque de séances à exporter vers ta montre (.FIT). Fondé sur des modèles reconnus, sans conseil personnalisé."
+>
+  <section class="section">
+    <div class="wrap">
+      <header class="page-head">
+        <span class="eyebrow">Espace coureur</span>
+        <h1>La boîte à outils du coureur</h1>
+        <p class="lede">
+          Une petite suite d'outils fondés sur des modèles reconnus de la course
+          à pied. Ici, <strong>aucun conseil personnalisé</strong> et aucune
+          promesse : que des équivalences théoriques et des données factuelles,
+          chacune avec sa source affichée. Et juste en dessous, une
+          <a href="#seances">bibliothèque de séances</a> à régler à ta main puis
+          exporter pour ta montre.
+        </p>
+      </header>
+
+      <div class="c-tabs" id="coureur-tabs">
+        <div class="c-tablist" role="tablist" aria-label="Outils coureur" hidden>
+          {tabs.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`tab-${t.id}`}
+              aria-controls={t.id}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? '0' : '-1'}
+              data-target={t.id}
+            >{t.label}</button>
+          ))}
+        </div>
+
+        <div class="c-panels">
+          <section id="t-allure" class="c-panel" role="tabpanel" aria-labelledby="tab-t-allure"><PaceCalculator /></section>
+          <section id="t-equiv" class="c-panel" role="tabpanel" aria-labelledby="tab-t-equiv"><Equivalences /></section>
+          <section id="t-train" class="c-panel" role="tabpanel" aria-labelledby="tab-t-train"><TrainingPaces /></section>
+          <section id="t-cotation" class="c-panel" role="tabpanel" aria-labelledby="tab-t-cotation"><Cotation /></section>
+          <section id="t-niveau" class="c-panel" role="tabpanel" aria-labelledby="tab-t-niveau"><NiveauFFA /></section>
+          <section id="t-splits" class="c-panel" role="tabpanel" aria-labelledby="tab-t-splits"><Splits /></section>
+          <section id="t-convert" class="c-panel" role="tabpanel" aria-labelledby="tab-t-convert"><Convertisseur /></section>
+        </div>
+      </div>
+
+      <!-- Méthodes & sources : sourcing visible, replié par défaut -->
+      <details class="sources card">
+        <summary>
+          <span class="sources-title">Méthodes &amp; sources</span>
+          <span class="sources-chev" aria-hidden="true">▾</span>
+        </summary>
+        <div class="sources-body">
+        <p class="sources-intro">
+          Chaque outil s'appuie sur un référentiel publié. On recalcule à partir
+          des équations quand c'est possible (jamais de recopie de tables
+          protégées), et on cite la source des barèmes officiels.
+        </p>
+        <ul class="sources-list">
+          <li>
+            <strong>VDOT — Daniels &amp; Gilbert.</strong> Équivalences et allures
+            d'entraînement, reconstruites depuis les équations de coût en O₂ et la
+            courbe %VO₂max/durée.
+            <a href="https://en.wikipedia.org/wiki/Jack_Daniels_(coach)#VDOT" target="_blank" rel="noopener noreferrer">en savoir plus</a>
+          </li>
+          <li>
+            <strong>Formule de Riegel.</strong> T₂ = T₁·(D₂/D₁)^1,06, loi de
+            puissance empirique.
+            <a href="https://en.wikipedia.org/wiki/Peter_Riegel" target="_blank" rel="noopener noreferrer">en savoir plus</a>
+          </li>
+          <li>
+            <strong>Tables de cotation World Athletics (2025).</strong> Barème de
+            points officiel, piste &amp; route.
+            <a href="https://worldathletics.org/news/news/scoring-tables-2025" target="_blank" rel="noopener noreferrer">source</a>
+          </li>
+          <li>
+            <strong>Age-grading WMA/USATF (Alan Jones, éd. 2020).</strong>
+            Standards par âge et sexe.
+            <a href="https://github.com/AlanLyttonJones/Age-Grade-Tables" target="_blank" rel="noopener noreferrer">tables</a>
+          </li>
+          <li>
+            <strong>Karvonen (FC de réserve).</strong> Zones cardiaques
+            indicatives, avec la réserve d'usage sur la FC max théorique.
+          </li>
+          <li>
+            <strong>Barème de niveau FFA.</strong> Grille officielle de la
+            Fédération Française d'Athlétisme (route), des niveaux départementaux
+            aux niveaux internationaux. Seuils = temps maximums par niveau.
+            <a href="https://www.athle.fr/" target="_blank" rel="noopener noreferrer">source</a>
+          </li>
+        </ul>
+        <p class="sources-note">
+          Non inclus volontairement : les records du monde « du jour » — faute de
+          table officielle sourçable de façon fiable, on préfère ne rien afficher
+          plutôt qu'un chiffre approximatif.
+        </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- Bibliothèque de séances (section autonome, ancre #seances) -->
+  <WorkoutLibrary />
+
+  <section class="section">
+    <div class="wrap">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head { max-width: 64ch; margin-bottom: 2rem; }
+  .page-head h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 1rem 0 0.75rem; }
+  .lede { color: var(--ink-soft); font-size: 1.05rem; }
+
+  /* Onglets */
+  .c-tablist {
+    display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem;
+    margin-bottom: 1.25rem; scrollbar-width: thin;
+  }
+  .c-tablist[hidden] { display: none; }
+  .c-tablist button {
+    flex: 0 0 auto; font-family: var(--font-display); font-weight: 700;
+    font-size: 0.95rem; padding: 0.5rem 1.05rem; border-radius: 999px;
+    border: 2.5px solid var(--ink); background: var(--paper); color: var(--ink);
+    box-shadow: var(--shadow-sm); cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  }
+  .c-tablist button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+  .c-tablist button[aria-selected="true"] { background: var(--tomato); color: var(--cream); }
+
+  .c-panels > .c-panel + .c-panel { margin-top: 1.5rem; }
+  /* Sans JS : tous les panneaux sont empilés (accessible). JS masque les autres. */
+  .c-panels.is-tabbed > .c-panel { margin-top: 0; }
+  .c-panel[hidden] { display: none; }
+
+  /* Sources — liste dépliante (native <details>) */
+  .sources { margin-top: 2rem; padding: clamp(1.1rem, 3vw, 1.6rem) clamp(1.5rem, 4vw, 2.25rem); }
+  .sources > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; gap: 1rem;
+    font-family: var(--font-display); font-weight: 800; font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+  .sources > summary::-webkit-details-marker { display: none; }
+  .sources > summary:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; border-radius: 6px; }
+  .sources-chev { flex: 0 0 auto; font-size: 1.1rem; color: var(--ink-soft); transition: transform 0.18s ease; }
+  .sources[open] .sources-chev { transform: rotate(180deg); }
+  .sources-body { margin-top: 1.1rem; }
+  .sources-intro { color: var(--ink-soft); max-width: 65ch; margin-top: 0; }
+  .sources-list { display: grid; gap: 0.75rem; padding-left: 1.1rem; margin: 1rem 0; }
+  .sources-list li { line-height: 1.5; }
+  .sources-list a { text-decoration: underline wavy var(--teal); white-space: nowrap; }
+  .sources-note {
+    font-size: 0.9rem; color: var(--ink-soft); border-top: 1.5px dashed color-mix(in srgb, var(--ink) 25%, transparent);
+    padding-top: 0.85rem; margin-top: 0.5rem;
+  }
+</style>
+
+<script>
+  // Progressive enhancement : sans JS, tous les panneaux sont visibles (empilés).
+  // Avec JS, on active la navigation par onglets.
+  const root = document.getElementById('coureur-tabs');
+  if (root) {
+    const tablist = root.querySelector('.c-tablist');
+    const tabs = Array.from(root.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(root.querySelectorAll('.c-panel'));
+    const panelsWrap = root.querySelector('.c-panels');
+
+    function select(target, focus = false) {
+      tabs.forEach((t) => {
+        const on = t.dataset.target === target;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      panels.forEach((p) => { p.hidden = p.id !== target; });
+    }
+
+    // Révèle la barre d'onglets et bascule en mode « un panneau à la fois ».
+    tablist.hidden = false;
+    panelsWrap.classList.add('is-tabbed');
+    select(tabs[0].dataset.target);
+
+    tablist.addEventListener('click', (e) => {
+      const btn = e.target.closest('[role="tab"]');
+      if (btn) select(btn.dataset.target);
+    });
+
+    tablist.addEventListener('keydown', (e) => {
+      const i = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+      let next = null;
+      if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+      else if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
+      else if (e.key === 'Home') next = tabs[0];
+      else if (e.key === 'End') next = tabs[tabs.length - 1];
+      if (next) { e.preventDefault(); select(next.dataset.target, true); }
+    });
+  }
+</script>

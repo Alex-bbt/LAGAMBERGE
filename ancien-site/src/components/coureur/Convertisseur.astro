@@ -1,0 +1,141 @@
+---
+import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
+import { WMA_EVENT_LIST } from '../../../lib/running/agegrading.mjs';
+// Module 5 — Convertisseur d'unités + repère « % du niveau record ».
+---
+
+<div class="c-tool card">
+  <div class="c-head">
+    <span class="eyebrow">Outil coureur</span>
+    <h2>Convertisseur & repères</h2>
+    <p class="c-sub">
+      Passe d'une unité à l'autre en direct : allure au km, allure au mile,
+      vitesse, et % de ta VMA. Plus un petit repère factuel par rapport au
+      niveau record mondial.
+    </p>
+  </div>
+
+  <div class="c-fields" style="margin-top:1.25rem">
+    <div class="c-field">
+      <label>Allure / km</label>
+      <TimeField id="cv-km" mode="pace" />
+    </div>
+    <div class="c-field">
+      <label>Allure / mile</label>
+      <TimeField id="cv-mile" mode="pace" />
+    </div>
+    <div class="c-field">
+      <label for="cv-kmh">Vitesse</label>
+      <div class="c-input-wrap">
+        <input type="text" id="cv-kmh" class="c-input has-suffix" inputmode="decimal" placeholder="12" />
+        <span class="c-suffix">km/h</span>
+      </div>
+    </div>
+    <div class="c-field">
+      <label for="cv-vma">VMA (optionnel)</label>
+      <div class="c-input-wrap">
+        <input type="text" id="cv-vma" class="c-input has-suffix" inputmode="decimal" placeholder="18" />
+        <span class="c-suffix">km/h</span>
+      </div>
+      <span class="c-hint" id="cv-vma-out">renseigne ta VMA pour voir le % d'intensité</span>
+    </div>
+  </div>
+
+  <!-- Repère : % du niveau record mondial pour une distance -->
+  <div class="c-subcard" style="margin-top:1.25rem">
+    <h3>Repère : et à ce rythme, sur une distance ?</h3>
+    <div class="c-seg" role="group" aria-label="Sexe" data-seg="cv">
+      <button type="button" data-sex="men" class="is-on">Hommes</button>
+      <button type="button" data-sex="women">Femmes</button>
+    </div>
+    <div class="c-fields" style="margin-top:0.85rem">
+      <div class="c-field">
+        <label for="cv-event">Distance</label>
+        <div class="c-input-wrap">
+          <select id="cv-event" class="c-select">
+            {WMA_EVENT_LIST.map((e) => (<option value={e.key} selected={e.key === '10k'}>{e.label}</option>))}
+          </select>
+        </div>
+      </div>
+    </div>
+    <p class="c-lead" id="cv-rep" style="margin-top:1rem" hidden></p>
+    <SourceNote model="Standard « niveau record » WMA (open, éd. 2020)" href="https://github.com/AlanLyttonJones/Age-Grade-Tables">
+      % = standard open (niveau record mondial de la table) ÷ ton temps estimé.
+      Ce n'est pas le record du monde du jour, mais le repère de la table.
+    </SourceNote>
+  </div>
+</div>
+
+<script>
+  import {
+    kmhFromSecPerKm, secPerKmFromKmh,
+    secPerMileFromSecPerKm, secPerKmFromSecPerMile,
+    percentOfVma,
+  } from '../../../lib/running/units.mjs';
+  import { WMA_EVENTS, percentOfWorldClass } from '../../../lib/running/agegrading.mjs';
+  import { formatTime } from '../../../lib/running/format.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
+
+  const kmEl = initTimeField(document.getElementById('cv-km'));   // allure /km (pace)
+  const mileEl = initTimeField(document.getElementById('cv-mile')); // allure /mile (pace)
+  const kmhEl = document.getElementById('cv-kmh');
+  const vmaEl = document.getElementById('cv-vma');
+  const vmaOut = document.getElementById('cv-vma-out');
+  const eventEl = document.getElementById('cv-event');
+  const repEl = document.getElementById('cv-rep');
+
+  let secPerKm = null; // état central (secondes par km)
+
+  function render() {
+    // Reflète l'état central dans les trois champs (sans réémettre d'événement).
+    if (secPerKm && secPerKm > 0) {
+      kmEl._setSeconds(secPerKm, { silent: true });
+      mileEl._setSeconds(secPerMileFromSecPerKm(secPerKm), { silent: true });
+      kmhEl.value = kmhFromSecPerKm(secPerKm).toFixed(2).replace('.', ',');
+    }
+
+    // % VMA
+    const vma = Number(String(vmaEl.value).replace(',', '.').trim());
+    if (secPerKm && vma > 0) {
+      vmaOut.textContent = `≈ ${percentOfVma(secPerKm, vma).toFixed(0)} % de ta VMA`;
+    } else {
+      vmaOut.textContent = "renseigne ta VMA pour voir le % d'intensité";
+    }
+
+    renderRep();
+  }
+
+  function renderRep() {
+    if (!secPerKm || secPerKm <= 0) { repEl.hidden = true; return; }
+    const ev = WMA_EVENTS[eventEl.value];
+    if (!ev) { repEl.hidden = true; return; }
+    const time = (secPerKm * ev.meters) / 1000;
+    const res = percentOfWorldClass(eventEl.value, getSex(), time);
+    if (!res) { repEl.hidden = true; return; }
+    repEl.hidden = false;
+    repEl.innerHTML =
+      `Sur ${ev.label} à cette allure : <strong>${formatTime(time)}</strong> — ` +
+      `≈ <span class="c-big">${res.percent.toFixed(1)} %</span> du niveau record (standard open).`;
+  }
+
+  // Sexe (segmented)
+  let sex = 'men';
+  const seg = document.querySelector('[data-seg="cv"]');
+  seg.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-sex]');
+    if (!btn) return;
+    sex = btn.dataset.sex;
+    seg.querySelectorAll('button').forEach((b) => b.classList.toggle('is-on', b === btn));
+    renderRep();
+  });
+  const getSex = () => sex;
+
+  // Saisies : chaque champ pilote l'état central puis on re-render les autres.
+  // Les _setSeconds de render() sont « silent » → pas de boucle d'événements.
+  kmEl.addEventListener('input', () => { const v = kmEl._getSeconds(); if (typeof v === 'number' && v > 0) { secPerKm = v; render(); } });
+  mileEl.addEventListener('input', () => { const v = mileEl._getSeconds(); if (typeof v === 'number' && v > 0) { secPerKm = secPerKmFromSecPerMile(v); render(); } });
+  kmhEl.addEventListener('input', () => { const v = Number(String(kmhEl.value).replace(',', '.').trim()); if (v > 0) { secPerKm = secPerKmFromKmh(v); render(); } });
+  vmaEl.addEventListener('input', render);
+  eventEl.addEventListener('change', renderRep);
+</script>

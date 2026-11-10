@@ -1,0 +1,158 @@
+---
+import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
+import { WA_EVENTS } from '../../../lib/running/scoring.mjs';
+import { WMA_EVENT_LIST, WMA_EDITION } from '../../../lib/running/agegrading.mjs';
+// Module 3 — Cotation World Athletics + age-grading WMA. Données factuelles.
+---
+
+<div class="c-tool card">
+  <div class="c-head">
+    <span class="eyebrow">Outil coureur</span>
+    <h2>Cotation & classement</h2>
+    <p class="c-sub">
+      Deux données factuelles et normalisées : le <strong>score World
+      Athletics</strong> (barème de points officiel) et l'<strong>age-grading
+      WMA</strong> (% par rapport au niveau record de ta catégorie d'âge).
+      Aucun jugement, juste des repères chiffrés.
+    </p>
+  </div>
+
+  <div class="c-cards">
+    <!-- (a) Score World Athletics -->
+    <div class="c-subcard">
+      <h3>Score World Athletics</h3>
+      <div class="c-seg" role="group" aria-label="Sexe" data-seg="wa">
+        <button type="button" data-sex="men" class="is-on">Hommes</button>
+        <button type="button" data-sex="women">Femmes</button>
+      </div>
+      <div class="c-fields" style="margin-top:0.85rem">
+        <div class="c-field">
+          <label for="wa-event">Épreuve</label>
+          <div class="c-input-wrap">
+            <select id="wa-event" class="c-select">
+              {WA_EVENTS.map((e) => (<option value={e.key} selected={e.key === '10k'}>{e.label}</option>))}
+            </select>
+          </div>
+        </div>
+        <div class="c-field">
+          <label>Temps</label>
+          <TimeField id="wa-time" mode="time" />
+        </div>
+      </div>
+      <p class="c-lead" id="wa-result" style="margin-top:1rem" hidden></p>
+      <SourceNote model="Tables de cotation World Athletics (éd. 2025)" href="https://worldathletics.org/news/news/scoring-tables-2025">
+        barème de points officiel (piste & route).
+      </SourceNote>
+    </div>
+
+    <!-- (b) Age-grading WMA -->
+    <div class="c-subcard">
+      <h3>Age-grading (WMA)</h3>
+      <div class="c-seg" role="group" aria-label="Sexe" data-seg="ag">
+        <button type="button" data-sex="men" class="is-on">Hommes</button>
+        <button type="button" data-sex="women">Femmes</button>
+      </div>
+      <div class="c-fields" style="margin-top:0.85rem">
+        <div class="c-field">
+          <label for="ag-event">Épreuve</label>
+          <div class="c-input-wrap">
+            <select id="ag-event" class="c-select">
+              {WMA_EVENT_LIST.map((e) => (<option value={e.key} selected={e.key === '10k'}>{e.label}</option>))}
+            </select>
+          </div>
+        </div>
+        <div class="c-field">
+          <label for="ag-age">Âge</label>
+          <div class="c-input-wrap">
+            <input type="text" id="ag-age" class="c-input has-suffix" inputmode="numeric" placeholder="45" />
+            <span class="c-suffix">ans</span>
+          </div>
+        </div>
+        <div class="c-field">
+          <label>Temps</label>
+          <TimeField id="ag-time" mode="time" />
+        </div>
+      </div>
+      <p class="c-lead" id="ag-result" style="margin-top:1rem" hidden></p>
+      <p class="c-note" id="ag-detail" hidden></p>
+      <SourceNote model={`Tables d'age-grading WMA/USATF — ${WMA_EDITION}`} href="https://github.com/AlanLyttonJones/Age-Grade-Tables">
+        % = standard de la catégorie d'âge ÷ ton temps. Purement factuel.
+      </SourceNote>
+    </div>
+  </div>
+
+  <p class="c-note">
+    Envie de te situer dans la pyramide fédérale (départemental →
+    international) ? C'est l'objet de l'onglet <strong>Niveau FFA</strong>, juste
+    à côté.
+  </p>
+</div>
+
+<script>
+  import { formatTime } from '../../../lib/running/format.mjs';
+  import { waPoints } from '../../../lib/running/scoring.mjs';
+  import { ageGrade } from '../../../lib/running/agegrading.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
+
+  // Petit utilitaire : gère un sélecteur segmenté de sexe et renvoie l'état.
+  function segController(name, onChange) {
+    const group = document.querySelector(`[data-seg="${name}"]`);
+    let sex = 'men';
+    group.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-sex]');
+      if (!btn) return;
+      sex = btn.dataset.sex;
+      group.querySelectorAll('button').forEach((b) => b.classList.toggle('is-on', b === btn));
+      onChange();
+    });
+    return () => sex;
+  }
+
+  // -- (a) World Athletics ----------------------------------------------------
+  const waEvent = document.getElementById('wa-event');
+  const waTime = initTimeField(document.getElementById('wa-time'));
+  const waResult = document.getElementById('wa-result');
+  const getWaSex = segController('wa', () => recomputeWa());
+
+  function recomputeWa() {
+    const secs = waTime._getSeconds();
+    if (typeof secs !== 'number' || Number.isNaN(secs)) { waResult.hidden = true; return; }
+    const res = waPoints(waEvent.value, getWaSex(), secs);
+    if (!res) { waResult.hidden = true; return; }
+    waResult.hidden = false;
+    if (res.offScale) {
+      waResult.innerHTML = `<span class="c-big">0</span> point — temps hors barème pour cette épreuve.`;
+    } else {
+      waResult.innerHTML = `<span class="c-big">${res.points}</span> points World Athletics.`;
+    }
+  }
+  waEvent.addEventListener('change', recomputeWa);
+  waTime.addEventListener('input', recomputeWa);
+
+  // -- (b) Age-grading --------------------------------------------------------
+  const agEvent = document.getElementById('ag-event');
+  const agAge = document.getElementById('ag-age');
+  const agTime = initTimeField(document.getElementById('ag-time'));
+  const agResult = document.getElementById('ag-result');
+  const agDetail = document.getElementById('ag-detail');
+  const getAgSex = segController('ag', () => recomputeAg());
+
+  function recomputeAg() {
+    const age = Number(String(agAge.value).trim());
+    const secs = agTime._getSeconds();
+    agAge.classList.toggle('is-invalid', agAge.value !== '' && !(age > 0));
+    if (!(age > 0) || typeof secs !== 'number' || Number.isNaN(secs)) { agResult.hidden = true; agDetail.hidden = true; return; }
+    const res = ageGrade(agEvent.value, getAgSex(), age, secs);
+    if (!res) { agResult.hidden = true; agDetail.hidden = true; return; }
+    agResult.hidden = false;
+    agDetail.hidden = false;
+    agResult.innerHTML = `<span class="c-big">${res.percent.toFixed(1)} %</span> du niveau de la catégorie.`;
+    agDetail.textContent =
+      `Standard théorique pour cet âge : ${formatTime(res.ageStandard)}` +
+      (res.ageClamped ? ' (âge ramené dans la plage 5–100 ans).' : '.');
+  }
+  agEvent.addEventListener('change', recomputeAg);
+  agAge.addEventListener('input', recomputeAg);
+  agTime.addEventListener('input', recomputeAg);
+</script>

@@ -1,0 +1,146 @@
+---
+/* ==========================================================================
+   Page « La communauté » : Back to Run en détail, dans la DA de Back to Run
+   (palette Écorce & Ambre, Figtree + Caprasimo, mascotte castor).
+   Styles : src/styles/back-to-run.css, rangés sous .theme-btr.
+   Poses de la mascotte : src/assets/back-to-run/ (copiées du dépôt back-to-run).
+   Données : src/data/mediakit.js (backToRun).
+   ========================================================================== */
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Photo from '../components/Photo.astro';
+import { backToRun, nombre } from '../data/mediakit.js';
+import '../styles/back-to-run.css';
+
+import wordmark from '../assets/back-to-run/btr-wordmark-ecorce-transparent.png';
+import course from '../assets/back-to-run/mascotte-course-de-profil.png';
+import pointe from '../assets/back-to-run/pointe-du-doigt.png';
+import medaille from '../assets/back-to-run/medaille.png';
+import juge from '../assets/back-to-run/juge.png';
+import tapeCinq from '../assets/back-to-run/tape-m-en-cinq.png';
+
+const tribunal = backToRun.secondaires.find((s) => s.legende.includes('Tribunal'));
+const secondaires = backToRun.secondaires.filter((s) => s !== tribunal);
+const valeur = (v) => (typeof v === 'number' ? nombre(v) : v);
+---
+
+<Base corps="theme-btr" titre="La communauté" description="Back to Run : le défi collectif créé par La Gamberge, ses règles et les résultats de la première édition.">
+  <!-- ======================= HERO ======================= -->
+  <section class="btr-section btr-section--creme" aria-labelledby="titre-communaute">
+    <div class="btr-conteneur">
+      <div class="btr-hero">
+        <div class="btr-hero__texte">
+          <Image src={wordmark} alt="Back to Run" class="btr-hero__wordmark" width={336} format="webp" loading="eager" />
+          <p class="btr-etiquette">La communauté · Back to Run</p>
+          <h1 class="btr-display" id="titre-communaute">{backToRun.titre}</h1>
+          <p class="btr-texte">{backToRun.texte}</p>
+          <div class="btr-actions">
+            <a class="btr-btn btr-btn--ambre" href={backToRun.url} target="_blank" rel="noopener noreferrer">Découvrir backtorun.fr<span class="sr-only"> (nouvel onglet)</span></a>
+            <a class="btr-btn btr-btn--contour" href="#titre-resultats">Voir les chiffres</a>
+          </div>
+        </div>
+        <Image src={course} alt="" class="btr-hero__mascotte" widths={[320, 640, 840]} sizes="(max-width: 860px) 300px, 420px" format="webp" loading="eager" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= LE PRINCIPE ======================= -->
+  <section class="btr-section btr-section--profond" aria-labelledby="titre-principe">
+    <div class="btr-conteneur">
+      <div class="btr-entete">
+        <p class="btr-etiquette">Le principe</p>
+        <h2 class="btr-titre" id="titre-principe">Simple à dire. Moins simple à tenir.</h2>
+      </div>
+      <div class="btr-ticket" role="list" aria-label="La règle en trois chiffres">
+        <div role="listitem"><span class="btr-chiffre">30</span><span class="btr-legende">jours d’affilée</span></div>
+        <div role="listitem"><span class="btr-chiffre">5 km</span><span class="btr-legende">minimum par jour</span></div>
+        <div role="listitem"><span class="btr-chiffre">1</span><span class="btr-legende">Tribunal pour les écarts</span></div>
+      </div>
+      <div class="btr-bulle">
+        <Image src={pointe} alt="" class="btr-bulle__pose" width={176} format="webp" />
+        <p class="btr-bulle__texte">Trois étapes, pas une de plus.</p>
+      </div>
+      <ol class="btr-cartes btr-cartes--3" role="list">
+        <li class="btr-carte"><span class="btr-chiffre">1</span><h3 class="btr-carte__titre">S’inscrire</h3><p>sur backtorun.fr.</p></li>
+        <li class="btr-carte"><span class="btr-chiffre">2</span><h3 class="btr-carte__titre">Courir</h3><p>au moins 5 km par jour pendant 30 jours, et enregistrer ses courses.</p></li>
+        <li class="btr-carte"><span class="btr-chiffre">3</span><h3 class="btr-carte__titre">Plaider</h3><p>un écart ? Direction le Tribunal, où la communauté vote.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ======================= RÉSULTATS ======================= -->
+  <section class="btr-section btr-section--creme" aria-labelledby="titre-resultats">
+    <div class="btr-conteneur">
+      <div class="btr-entete">
+        <p class="btr-etiquette">Septembre 2026</p>
+        <h2 class="btr-titre" id="titre-resultats">La première édition, en chiffres.</h2>
+      </div>
+      <div class="btr-bulle">
+        <Image src={medaille} alt="" class="btr-bulle__pose" width={176} format="webp" />
+        <p class="btr-bulle__texte">Le bilan de la première édition.</p>
+      </div>
+      <ul class="btr-cartes btr-cartes--4 btr-cartes--chiffres" role="list" aria-label="Chiffres principaux">
+        {backToRun.principaux.map((c) => (
+          <li class="btr-carte">
+            <span class:list={['btr-chiffre', { 'btr-chiffre--fort': c.forte }]}>{valeur(c.valeur)}</span>
+            <span class="btr-legende">{c.legende}</span>
+            {c.definition && <span class="btr-definition">{c.definition}</span>}
+          </li>
+        ))}
+      </ul>
+      <ul class="btr-cartes btr-cartes--3 btr-cartes--chiffres btr-cartes--secondaires" role="list" aria-label="Autres chiffres">
+        {secondaires.map((c) => (
+          <li class="btr-carte">
+            <span class:list={['btr-chiffre', { 'btr-chiffre--fort': c.forte }]}>{valeur(c.valeur)}</span>
+            <span class="btr-legende">{c.legende}</span>
+            {c.definition && <span class="btr-definition">{c.definition}</span>}
+          </li>
+        ))}
+      </ul>
+      <div class="btr-duo">
+      <p class="btr-fine">
+        « Participants » : personnes ayant enregistré au moins une course. « Actifs sur le site » : au moins
+        une action sur le site dans la journée, pas forcément une course. Les 64 % mesurent la participation au
+        défi, pas un engagement sur les réseaux sociaux.
+      </p>
+      <div class="btr-photo">
+        <Photo photo={backToRun.photo} format="quatre-tiers" sizes="(max-width: 860px) 100vw, 640px" />
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= LE TRIBUNAL ======================= -->
+  <section class="btr-section btr-section--ecorce" aria-labelledby="titre-tribunal">
+    <div class="btr-conteneur btr-tribunal">
+      <Image src={juge} alt="" class="btr-tribunal__pose" widths={[320, 720]} sizes="(max-width: 860px) 240px, 360px" format="webp" />
+      <div class="btr-tribunal__texte">
+        <p class="btr-etiquette">Le Tribunal</p>
+        <h2 class="btr-titre" id="titre-tribunal">Défendre ses écarts devant la communauté.</h2>
+        <p class="btr-texte">Un écart ? On vient s’expliquer devant le Tribunal, et la communauté vote.</p>
+        {tribunal && (
+          <p class="btr-tribunal__chiffre">
+            <span class="btr-chiffre">{valeur(tribunal.valeur)}</span>
+            <span class="btr-legende">{tribunal.legende} · première édition, septembre 2026</span>
+          </p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= LA SUITE (seule surface ambre) ======================= -->
+  <section class="btr-section btr-section--ambre" aria-labelledby="titre-suite">
+    <div class="btr-conteneur btr-final">
+      <div class="btr-entete">
+        <p class="btr-etiquette">La suite</p>
+        <h2 class="btr-titre" id="titre-suite">{backToRun.suite}</h2>
+        <p class="btr-texte">{backToRun.produits}</p>
+        <div class="btr-actions">
+          <a class="btr-btn btr-btn--ecorce" href="/#collaborer">Construire l’édition 2 ensemble</a>
+          <a class="btr-btn btr-btn--contour" href={backToRun.url} target="_blank" rel="noopener noreferrer">backtorun.fr<span class="sr-only"> (nouvel onglet)</span></a>
+        </div>
+      </div>
+      <Image src={tapeCinq} alt="" class="btr-final__pose" width={440} format="webp" />
+    </div>
+  </section>
+</Base>

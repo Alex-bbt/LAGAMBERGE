@@ -1,0 +1,119 @@
+---
+/* ==========================================================================
+   Frise — calendrier horizontal des courses et projets (page /projets).
+   - La frise défile de gauche à droite (défilement natif : la molette et le
+     défilement vertical de la page ne sont jamais interceptés).
+   - Ordinateur : survol ou focus = événement mis en évidence, détails dans
+     un panneau stable sous la frise. Mobile : appui pour ouvrir les détails.
+   - Flèches précédent / suivant, clavier (← → Début Fin), indication des
+     événements hors écran (fondus sur les bords + compteur).
+   - Sans JavaScript : tous les détails restent lisibles sous la frise.
+   Données : `courses` dans src/data/mediakit.js. Statut : prévu, éventuel,
+   réalisé (course avec un `resultat`).
+   ========================================================================== */
+import { courses } from '../data/mediakit.js';
+
+const statuts = { prevu: 'Prévu', eventuel: 'Éventuel', realise: 'Réalisé' };
+const evenements = courses.map((c) => ({ ...c, etat: c.resultat ? 'realise' : c.statut }));
+---
+
+<div class="frise" data-frise>
+  <div class="frise__commandes">
+    <p class="caption texte-muted frise__indice" data-indice>{evenements.length} événements · faites défiler la frise</p>
+    <div class="frise__fleches" hidden data-fleches>
+      <button class="lg-btn lg-btn--glass frise__fleche" type="button" data-precedent aria-label="Événement précédent">←</button>
+      <button class="lg-btn lg-btn--glass frise__fleche" type="button" data-suivant aria-label="Événement suivant">→</button>
+    </div>
+  </div>
+
+  <div class="frise__fenetre peut-droite" data-fenetre>
+    <ol class="frise__piste" role="list" aria-label="Calendrier des courses et projets">
+      {evenements.map((c, i) => (
+        <li class:list={['frise__evt', `frise__evt--${c.etat}`, { 'frise__evt--principal': c.principal }]}>
+          <button class="frise__carte" type="button" data-carte data-index={i} aria-controls={`detail-${c.id}`} aria-expanded={i === 0 ? 'true' : 'false'}>
+            <span class="frise__date caption">{c.date}</span>
+            <span class="frise__nom">{c.nomCourt ?? c.nom}</span>
+            <span class="frise__statut caption">{statuts[c.etat]}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  </div>
+
+  <div class="frise__details" aria-live="polite">
+    {evenements.map((c, i) => (
+      <article class:list={['frise__detail', { 'est-actif': i === 0 }]} id={`detail-${c.id}`} data-detail aria-labelledby={`detail-titre-${c.id}`}>
+        <p class="label texte-muted">{c.date} · {statuts[c.etat]}</p>
+        <h3 class="title" id={`detail-titre-${c.id}`}>{c.nom}{c.format && ` · ${c.format}`}</h3>
+        <p class="lead">{c.resultat ? `Résultat : ${c.resultat}` : c.sujet}</p>
+        <ul class="frise__infos body" role="list">
+          <li><span class="frise__infos-cle">Type</span> {c.type}</li>
+          {c.projet && <li><span class="frise__infos-cle">Contenu</span> {c.projet}</li>}
+          {c.formatPrecision && <li><span class="frise__infos-cle">Dénivelé</span> {c.formatPrecision}</li>}
+          {c.reserve && <li><span class="frise__infos-cle">À noter</span> {c.reserve}</li>}
+        </ul>
+      </article>
+    ))}
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('[data-frise]').forEach((frise) => {
+    const fenetre = frise.querySelector('[data-fenetre]');
+    const cartes = [...frise.querySelectorAll('[data-carte]')];
+    const details = [...frise.querySelectorAll('[data-detail]')];
+    const indice = frise.querySelector('[data-indice]');
+    const prec = frise.querySelector('[data-precedent]');
+    const suiv = frise.querySelector('[data-suivant]');
+    const survol = matchMedia('(hover: hover) and (pointer: fine)');
+    const mouvementReduit = matchMedia('(prefers-reduced-motion: reduce)');
+    let actif = 0;
+
+    frise.classList.add('frise--active');
+    frise.querySelector('[data-fleches]').hidden = false;
+
+    const montrer = (i) => {
+      cartes[i].scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: mouvementReduit.matches ? 'auto' : 'smooth' });
+    };
+    const choisir = (i, { focus = false, defiler = true } = {}) => {
+      actif = Math.max(0, Math.min(cartes.length - 1, i));
+      cartes.forEach((c, j) => {
+        c.setAttribute('aria-expanded', String(j === actif));
+        c.parentElement.classList.toggle('est-actif', j === actif);
+      });
+      details.forEach((d, j) => d.classList.toggle('est-actif', j === actif));
+      indice.textContent = `Événement ${actif + 1} sur ${cartes.length} · faites défiler la frise`;
+      prec.disabled = actif === 0;
+      suiv.disabled = actif === cartes.length - 1;
+      if (focus) cartes[actif].focus({ preventScroll: true });
+      if (defiler) montrer(actif);
+    };
+
+    cartes.forEach((carte, i) => {
+      carte.addEventListener('click', () => choisir(i));
+      carte.addEventListener('focus', () => choisir(i, { defiler: false }));
+      // Survol : seulement quand la souris bouge vraiment (un défilement de la
+      // frise sous une souris immobile ne doit pas changer la sélection).
+      carte.addEventListener('mousemove', () => { if (survol.matches && actif !== i) choisir(i, { defiler: false }); });
+      carte.addEventListener('keydown', (e) => {
+        const cible = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: cartes.length - 1 }[e.key];
+        if (cible === undefined) return;
+        e.preventDefault();
+        choisir(cible, { focus: true });
+      });
+    });
+    prec.addEventListener('click', () => choisir(actif - 1));
+    suiv.addEventListener('click', () => choisir(actif + 1));
+
+    // Fondus sur les bords : il reste des événements hors écran de ce côté.
+    const bords = () => {
+      const max = fenetre.scrollWidth - fenetre.clientWidth;
+      fenetre.classList.toggle('peut-gauche', fenetre.scrollLeft > 24);
+      fenetre.classList.toggle('peut-droite', fenetre.scrollLeft < max - 24);
+    };
+    fenetre.addEventListener('scroll', bords, { passive: true });
+    addEventListener('resize', bords);
+    bords();
+    choisir(0, { defiler: false });
+  });
+</script>

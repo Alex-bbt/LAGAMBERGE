@@ -1,0 +1,18 @@
+---
+/* Page introuvable : même habillage que le site, retour vers l'accueil et le contact. */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+---
+
+<Base titre="Page introuvable" description="Cette page n’existe pas ou plus sur le site de La Gamberge.">
+  <section class="lg-ambient chapitre" aria-labelledby="titre-404">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete niveau="h1" id="titre-404" repere="Erreur 404" titre="Cette page n’existe pas."
+        chapeau="Le lien est peut-être ancien ou mal recopié. Le media kit, lui, est toujours là." />
+      <div class="actions">
+        <a class="lg-btn lg-btn--primary" href="/">Retour à l’accueil</a>
+        <a class="lg-btn btn-accent" href="/#contact">Me contacter</a>
+      </div>
+    </div>
+  </section>
+</Base>

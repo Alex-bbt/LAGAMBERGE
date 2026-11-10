@@ -1,0 +1,131 @@
+---
+import SourceNote from './SourceNote.astro';
+import TimeField from './TimeField.astro';
+import { DISTANCES } from '../../../lib/running/format.mjs';
+// Module 4 — Plan de splits (allure constante / négatif / positif).
+---
+
+<div class="c-tool card">
+  <div class="c-head">
+    <span class="eyebrow">Outil coureur</span>
+    <h2>Plan de splits</h2>
+    <p class="c-sub">
+      Un temps cible sur une distance → les temps de passage selon trois
+      stratégies, <strong>présentées côte à côte, sans en désigner une
+      meilleure</strong>. À toi de voir.
+    </p>
+  </div>
+
+  <div class="c-fields" style="margin-top:1.25rem">
+    <div class="c-field">
+      <label for="sp-dist">Distance</label>
+      <div class="c-input-wrap">
+        <select id="sp-dist" class="c-select">
+          {DISTANCES.filter((d) => d.meters >= 1500).map((d) => (
+            <option value={d.key} selected={d.key === 'marathon'}>{d.label}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+    <div class="c-field">
+      <label>Temps cible</label>
+      <TimeField id="sp-time" mode="time" />
+      <span class="c-hint">le chrono que tu vises</span>
+    </div>
+    <div class="c-field">
+      <label for="sp-delta">Écart des splits</label>
+      <div class="c-input-wrap">
+        <select id="sp-delta" class="c-select">
+          <option value="1">± 1 %</option>
+          <option value="2" selected>± 2 %</option>
+          <option value="3">± 3 %</option>
+        </select>
+      </div>
+    </div>
+    <div class="c-field">
+      <label>Unité</label>
+      <div class="c-seg" role="group" aria-label="Unité" data-seg="sp-unit">
+        <button type="button" data-unit="km" class="is-on">km</button>
+        <button type="button" data-unit="mile">mile</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="c-out" id="sp-out" hidden>
+    <p class="c-note">Temps de passage cumulés :</p>
+    <div class="c-table-wrap">
+      <table class="c-table">
+        <thead>
+          <tr>
+            <th id="sp-h0">Point</th>
+            <th class="num">Constant</th>
+            <th class="num">Négatif <span id="sp-hn"></span></th>
+            <th class="num">Positif <span id="sp-hp"></span></th>
+          </tr>
+        </thead>
+        <tbody id="sp-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <SourceNote model="Stratégies de split (even / negative / positive)" href="https://en.wikipedia.org/wiki/Negative_split">
+    repères arithmétiques décrits dans la littérature. Le négatif = 2ᵉ moitié
+    plus rapide ; le positif = 2ᵉ moitié plus lente. Aucune n'est « la bonne ».
+  </SourceNote>
+</div>
+
+<script>
+  import { DISTANCES, distanceByKey, formatTime, formatKm } from '../../../lib/running/format.mjs';
+  import { threeStrategies } from '../../../lib/running/splits.mjs';
+  import { initTimeField } from '../../../lib/running/timefield.mjs';
+
+  const distEl = document.getElementById('sp-dist');
+  const timeEl = initTimeField(document.getElementById('sp-time'));
+  const deltaEl = document.getElementById('sp-delta');
+  const out = document.getElementById('sp-out');
+  const rowsEl = document.getElementById('sp-rows');
+  const h0 = document.getElementById('sp-h0');
+  const hn = document.getElementById('sp-hn');
+  const hp = document.getElementById('sp-hp');
+
+  let unit = 'km';
+  const unitGroup = document.querySelector('[data-seg="sp-unit"]');
+  unitGroup.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-unit]');
+    if (!btn) return;
+    unit = btn.dataset.unit;
+    unitGroup.querySelectorAll('button').forEach((b) => b.classList.toggle('is-on', b === btn));
+    recompute();
+  });
+
+  function recompute() {
+    const ref = distanceByKey(distEl.value);
+    const secs = timeEl._getSeconds();
+    const delta = Number(deltaEl.value);
+    if (!ref || typeof secs !== 'number' || Number.isNaN(secs)) { out.hidden = true; return; }
+    out.hidden = false;
+    hn.textContent = `(−${delta} %)`;
+    hp.textContent = `(+${delta} %)`;
+    h0.textContent = unit === 'mile' ? 'Mile' : 'Kilomètre';
+
+    const s = threeStrategies(ref.meters, secs, { deltaPercent: delta, unit });
+    const n = s.even.length;
+    const suffix = unit === 'mile' ? 'mi' : 'km';
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      const isLast = i === n - 1;
+      const label = isLast
+        ? `Arrivée (${formatKm(ref.meters / 1000)} km)`
+        : `${i + 1} ${suffix}`;
+      html += `<tr${isLast ? ' class="is-ref"' : ''}><td>${label}</td>` +
+        `<td class="num">${formatTime(s.even[i].cumSec)}</td>` +
+        `<td class="num">${formatTime(s.negative[i].cumSec)}</td>` +
+        `<td class="num">${formatTime(s.positive[i].cumSec)}</td></tr>`;
+    }
+    rowsEl.innerHTML = html;
+  }
+
+  distEl.addEventListener('change', recompute);
+  timeEl.addEventListener('input', recompute);
+  deltaEl.addEventListener('change', recompute);
+</script>

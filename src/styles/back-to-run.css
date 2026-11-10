@@ -1,0 +1,222 @@
+/* ==========================================================================
+   BACK TO RUN — direction artistique de la page /communaute
+   --------------------------------------------------------------------------
+   Reprise fidèle de la charte du projet Back to Run (dépôt Alex-bbt/back-to-run,
+   src/app/globals.css et design_handoff_refonte_2026/README.md) :
+   palette « Écorce & Ambre », Figtree + Caprasimo (réservée aux chiffres),
+   rayons, ombre unique, mascotte qui annonce les sections.
+   Répartition : 60 % crème · 30 % marron · 10 % ambre ; une seule grande
+   surface ambre, en pied de page. Aucun dégradé.
+   Tout est rangé sous .theme-btr : le reste du site n'est pas touché.
+   ========================================================================== */
+
+@font-face { font-family: 'Figtree'; src: url('/fonts/back-to-run/Figtree-Regular.ttf') format('truetype'); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: 'Figtree'; src: url('/fonts/back-to-run/Figtree-ExtraBold.ttf') format('truetype'); font-weight: 600 900; font-display: swap; }
+@font-face { font-family: 'Caprasimo'; src: url('/fonts/back-to-run/Caprasimo-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+
+.theme-btr {
+  /* Palette officielle */
+  --btr-cream: #f5ead8;
+  --btr-cream-deep: #ebddc5;
+  --btr-cream-card: #f9f4ed;
+  --btr-ecorce: #402310;
+  --btr-castor: #b2622d;
+  --btr-castor-ink: #8c491a;
+  --btr-ambre: #f2b33d;
+  --btr-peach: #f6a06b;
+  --btr-body: #645c50;
+  --btr-taupe: #a19786;
+  --btr-cream-muted: #dcd3c4;
+  --btr-cream-faint: #c0b6a5;
+  --btr-ecorce-line: #643312;
+  --btr-dash: #dcd3c4;
+  --btr-blanc: #ffffff;
+
+  /* Typographie (échelle de la charte) */
+  --btr-sans: 'Figtree', system-ui, sans-serif;
+  --btr-chiffres: 'Caprasimo', Georgia, serif;
+  --btr-display: clamp(2.25rem, 3.4vw + 1.55rem, 3.5rem);
+  --btr-titre: clamp(1.75rem, 1.6vw + 1.4rem, 2.25rem);
+  --btr-carte: 1.0625rem;
+  --btr-corps: clamp(1rem, 0.28vw + 0.94rem, 1.0625rem);
+  --btr-fine: 0.8125rem;
+  --btr-etiquette: 0.6875rem;
+  --btr-chiffre: clamp(2.125rem, 1.9vw + 1.75rem, 3rem);
+  --btr-chiffre-sm: 1.625rem;
+  --btr-gouttiere: 20px;
+
+  /* Formes */
+  --btr-r-dossard: 24px;
+  --btr-r-carte: 22px;
+  --btr-r-bloc: 18px;
+  --btr-r-pill: 999px;
+  --btr-ombre: 0 4px 16px rgba(64, 35, 16, 0.07);
+  --btr-anneau: 0 0 0 1px rgba(64, 35, 16, 0.05);
+
+  background: var(--btr-cream);
+}
+
+.theme-btr main {
+  font-family: var(--btr-sans);
+  font-size: var(--btr-corps);
+  line-height: 1.6;
+  color: var(--btr-body);
+}
+
+/* ---------- Sections ---------- */
+.btr-section { padding: var(--space-16) var(--space-8); }
+.theme-btr main > .btr-section:first-child { padding-top: calc(var(--space-16) * 2 + var(--space-4)); }
+.btr-section--creme { background: var(--btr-cream); }
+.btr-section--profond { background: var(--btr-cream-deep); }
+.btr-section--ecorce { background: var(--btr-ecorce); color: var(--btr-cream-muted); }
+.btr-section--ambre { background: var(--btr-ambre); color: var(--btr-ecorce); }
+.btr-conteneur { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-8); }
+
+/* ---------- Typographie ---------- */
+.btr-etiquette {
+  margin: 0;
+  font-size: var(--btr-etiquette);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--btr-castor-ink);
+}
+.btr-section--ecorce .btr-etiquette { color: var(--btr-peach); }
+.btr-section--ambre .btr-etiquette { color: var(--btr-ecorce); }
+.btr-display, .btr-titre {
+  margin: 0;
+  font-family: var(--btr-sans);
+  font-weight: 800;
+  color: var(--btr-ecorce);
+}
+.btr-display { font-size: var(--btr-display); line-height: 1; letter-spacing: -0.04em; }
+.btr-titre { font-size: var(--btr-titre); line-height: 1.05; letter-spacing: -0.03em; }
+.btr-section--ecorce .btr-titre { color: var(--btr-cream); }
+.btr-section--ambre .btr-titre { color: var(--btr-ecorce); }
+.btr-texte { margin: 0; max-width: 60ch; }
+.btr-fine { margin: 0; font-size: var(--btr-fine); line-height: 1.5; color: var(--btr-body); max-width: 72ch; }
+.btr-entete { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* ---------- Boutons ---------- */
+.btr-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.btr-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 var(--space-6);
+  border-radius: var(--btr-r-pill);
+  font-family: var(--btr-sans); font-size: 1rem; font-weight: 800;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.btr-btn:hover { transform: translateY(-1px); }
+.btr-btn--ambre { background: var(--btr-ambre); color: var(--btr-ecorce); }
+.btr-btn--ecorce { background: var(--btr-ecorce); color: var(--btr-cream); }
+.btr-btn--contour { background: transparent; color: var(--btr-ecorce); box-shadow: inset 0 0 0 2px var(--btr-ecorce); }
+.theme-btr main a:focus-visible { outline: 3px solid var(--btr-castor-ink); outline-offset: 3px; }
+.btr-section--ecorce a:focus-visible, .btr-section--ambre a:focus-visible { outline-color: var(--btr-ecorce); }
+.btr-section--ecorce a:focus-visible { outline-color: var(--btr-ambre); }
+
+/* ---------- Hero ---------- */
+.btr-hero { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-8); align-items: end; }
+.btr-hero__texte { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-8); }
+.btr-hero__wordmark { width: 168px; height: auto; }
+.btr-hero__mascotte { width: 100%; max-width: 420px; height: auto; justify-self: center; }
+
+/* ---------- Mascotte + bulle ---------- */
+.btr-bulle { display: flex; gap: var(--space-3); align-items: flex-end; }
+.btr-bulle__pose { width: 88px; height: auto; flex: none; }
+.btr-bulle__texte {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 20px 20px 20px 6px;
+  background: var(--btr-blanc);
+  font-size: var(--btr-carte); font-weight: 700; line-height: 1.4;
+  color: var(--btr-ecorce);
+  max-width: 34ch;
+}
+.btr-section--profond .btr-bulle__texte { background: var(--btr-cream-card); }
+.btr-section--ecorce .btr-bulle__texte { background: var(--btr-cream); }
+.btr-section--ambre .btr-bulle__texte { background: var(--btr-cream-card); }
+
+/* ---------- Cartes ---------- */
+.btr-cartes { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
+.btr-cartes--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.btr-cartes--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.btr-carte {
+  background: var(--btr-cream-card);
+  border-radius: var(--btr-r-carte);
+  box-shadow: var(--btr-ombre), var(--btr-anneau);
+  padding: var(--space-6);
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+.btr-section--profond .btr-carte { background: var(--btr-cream-card); }
+.btr-carte__titre { margin: 0; font-size: var(--btr-carte); font-weight: 800; line-height: 1.4; color: var(--btr-ecorce); }
+.btr-carte p { margin: 0; }
+.btr-chiffre { font-family: var(--btr-chiffres); font-weight: 400; font-size: var(--btr-chiffre); line-height: 1; color: var(--btr-castor); }
+.btr-chiffre--fort { color: var(--btr-ecorce); }
+.btr-legende { font-size: var(--btr-fine); font-weight: 700; line-height: 1.4; color: var(--btr-ecorce); }
+.btr-definition { font-size: var(--btr-fine); line-height: 1.5; color: var(--btr-body); }
+
+/* Ticket des règles : filet pointillé, comme le dossard */
+.btr-ticket {
+  background: var(--btr-cream-card);
+  border-radius: var(--btr-r-dossard);
+  box-shadow: var(--btr-ombre), var(--btr-anneau);
+  padding: var(--space-6);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.btr-ticket > div { display: flex; flex-direction: column; gap: var(--space-1); padding: 0 var(--space-4); }
+.btr-ticket > div + div { border-left: 1px dashed var(--btr-dash); }
+.btr-ticket .btr-legende { text-transform: uppercase; letter-spacing: 0.12em; font-size: var(--btr-etiquette); color: var(--btr-castor-ink); }
+
+/* Chiffres secondaires : plus petits, sans ombre (hiérarchie) */
+.btr-cartes--secondaires .btr-carte { background: transparent; box-shadow: inset 0 0 0 1px var(--btr-dash); }
+.btr-cartes--secondaires .btr-chiffre { font-size: var(--btr-chiffre-sm); }
+
+/* Légende + photo côte à côte */
+.btr-duo { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-8); align-items: center; }
+
+/* ---------- Photo ---------- */
+.btr-photo .lg-photo { border-radius: var(--btr-r-carte); box-shadow: var(--btr-ombre); }
+
+/* ---------- Tribunal (fond écorce) ---------- */
+.btr-tribunal { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-8); align-items: center; }
+.btr-tribunal__pose { width: 100%; max-width: 360px; height: auto; justify-self: center; }
+.btr-tribunal__texte { display: flex; flex-direction: column; gap: var(--space-4); }
+.btr-tribunal__chiffre { display: flex; flex-direction: column; gap: var(--space-1); padding-top: var(--space-4); border-top: 1px dashed var(--btr-ecorce-line); }
+.btr-tribunal__chiffre .btr-chiffre { color: var(--btr-peach); }
+.btr-tribunal__chiffre .btr-legende { color: var(--btr-cream-faint); }
+
+/* ---------- Pied ambre ---------- */
+.btr-final { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-8); align-items: center; }
+.btr-final__pose { width: 220px; height: auto; }
+.btr-final .btr-texte { color: var(--btr-ecorce); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1080px) {
+  .btr-cartes--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .btr-section { padding: var(--space-12) var(--btr-gouttiere); }
+  .theme-btr main > .btr-section:first-child { padding-top: calc(var(--space-16) + var(--space-12)); }
+  .btr-hero, .btr-tribunal, .btr-final { grid-template-columns: minmax(0, 1fr); }
+  .btr-hero__texte { padding-bottom: 0; }
+  .btr-hero__mascotte { max-width: 300px; }
+  .btr-tribunal__pose { max-width: 240px; }
+  .btr-final__pose { width: 160px; justify-self: center; }
+  .btr-cartes--3 { grid-template-columns: minmax(0, 1fr); }
+  .btr-duo { grid-template-columns: minmax(0, 1fr); }
+  .btr-duo .btr-photo { order: -1; }
+  .btr-cartes--chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+  .btr-cartes--chiffres .btr-carte { padding: var(--space-4); }
+  .btr-cartes--chiffres .btr-chiffre { font-size: var(--btr-chiffre-sm); }
+  .btr-cartes--secondaires { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .btr-hero__mascotte { max-width: 240px; }
+  .btr-ticket { grid-template-columns: minmax(0, 1fr); padding: var(--space-4) var(--btr-gouttiere); }
+  .btr-ticket > div { padding: var(--space-3) 0; }
+  .btr-ticket > div + div { border-left: 0; border-top: 1px dashed var(--btr-dash); }
+  .btr-bulle__pose { width: 76px; }
+}
+@media (prefers-reduced-motion: reduce) { .btr-btn { transition: none; } .btr-btn:hover { transform: none; } }

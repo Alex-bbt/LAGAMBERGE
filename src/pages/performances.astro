@@ -1,0 +1,118 @@
+---
+/* ==========================================================================
+   Page « Mes performances » : mur de cartes stables + fenêtre de détails.
+   - Chaque carte : résultat principal, course, date, « Voir les détails ».
+     Aucune carte ne se déploie dans la grille ; survol = élévation légère.
+   - Clic / Entrée / Espace : fenêtre <dialog> centrée (focus dedans, Échap
+     pour fermer, retour du focus sur la carte, défilement intérieur).
+   - Accès par ancre (#marathon…) : saut natif du navigateur, la carte
+     (:target) est mise en évidence et s'arrête sous la navigation grâce à
+     son scroll-margin-top. Aucun script de défilement.
+   - Temps réel = référence ; temps officiel à part s'il existe ; aucune
+     médaille ni podium. Données : `performances` (src/data/mediakit.js).
+   ========================================================================== */
+import Base from '../layouts/Base.astro';
+import EnTete from '../components/EnTete.astro';
+import { performances, courses } from '../data/mediakit.js';
+
+const objectifs = courses.filter((c) => !c.resultat && c.principal);
+const groupes = [
+  { titre: 'Sur route', items: performances.filter((p) => p.type === 'route') },
+  { titre: 'En trail', items: performances.filter((p) => p.type === 'trail') },
+];
+// Espaces insécables : « 57 516 », « 2 h 38 min 21 s », « 12 avril 2026 » ne se coupent pas.
+const insec = (v) => (typeof v === 'string' ? v.replace(/ /g, ' ') : v);
+const lignes = (p) => [
+  ['Date', p.date],
+  ['Distance', p.distance],
+  [p.tempsReel ? 'Temps réel' : 'Temps', p.tempsReel ?? p.tempsCourse],
+  ['Temps officiel', p.tempsOfficiel && p.tempsOfficiel !== p.tempsReel ? p.tempsOfficiel : null],
+  ...p.classements.map((c) => [c.libelle, c.valeur]),
+  ['Récompense', p.recompense],
+].filter(([, v]) => v);
+---
+
+<Base titre="Mes performances" description="Les références de La Gamberge sur route et en trail : temps réels, classements et dates.">
+  <section class="lg-ambient chapitre chapitre--performances" aria-labelledby="titre-performances">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete niveau="h1" id="titre-performances" repere="Performances réalisées" titre="Mes performances"
+        chapeau="Mes références sur route et en trail." />
+
+      {groupes.map((g) => (
+        <div class="mur">
+          <h2 class="label mur__titre">{g.titre}</h2>
+          <ul class="mur__grille" role="list">
+            {g.items.map((p) => (
+              <li class="mur__case" id={p.id}>
+                <button class="perf-carte" type="button" data-ouvrir={`detail-${p.id}`} aria-haspopup="dialog">
+                  <span class="chiffre title perf-carte__resultat">{insec(p.resultat)}</span>
+                  <span class="lead perf-carte__course">{p.course}</span>
+                  <span class="caption texte-muted perf-carte__date">{insec(p.date)}</span>
+                  <span class="caption perf-carte__action">Voir les détails</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <p class="caption texte-muted">Temps réel : du passage sur la ligne de départ à l’arrivée. Temps officiel : depuis le coup de pistolet, quand il est indiqué.</p>
+    </div>
+  </section>
+
+  <!-- Objectifs : séparés des performances réalisées -->
+  <section class="lg-ambient lg-ambient--flip chapitre" aria-labelledby="titre-a-venir">
+    <div class="chapitre__inner chapitre__inner--seul">
+      <EnTete repere="À venir" id="titre-a-venir" titre="Prochains objectifs" />
+      <ul class="objectifs-perf" role="list">
+        {objectifs.map((c) => (
+          <li class="objectif-perf"><span class="label texte-muted">{c.dateCourte ?? c.date} · objectif</span><span class="lead">{c.nom} — {c.accrocheAccueil ?? c.accroche}</span></li>
+        ))}
+      </ul>
+      <a class="lg-btn lg-btn--glass" href="/projets">Tout le calendrier</a>
+    </div>
+  </section>
+
+  <!-- Fenêtres de détails (une par performance) -->
+  {performances.map((p) => (
+    <dialog class="perf-detail" id={`detail-${p.id}`} aria-labelledby={`detail-titre-${p.id}`}>
+      <div class="perf-detail__entete">
+        <h2 class="title" id={`detail-titre-${p.id}`}>{p.course}</h2>
+        <button class="perf-detail__fermer" type="button" data-fermer aria-label="Fermer les détails">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
+        </button>
+      </div>
+      <dl class="perf-detail__donnees">
+        {lignes(p).map(([l, v]) => <div><dt>{l}</dt><dd>{insec(v)}</dd></div>)}
+      </dl>
+      {(p.noteClassements || p.details.length > 0 || p.dateCommuniquee) && (
+        <ul class="perf-detail__notes caption texte-muted" role="list">
+          {p.noteClassements && <li>{p.noteClassements}</li>}
+          {p.dateCommuniquee && <li>Date communiquée par Alex.</li>}
+          {p.details.map((d) => <li>{d}</li>)}
+        </ul>
+      )}
+      {p.justificatif && <a class="lien-fleche" href={p.justificatif} target="_blank" rel="noopener noreferrer">Voir le justificatif<span class="sr-only"> (nouvel onglet)</span></a>}
+    </dialog>
+  ))}
+</Base>
+
+<script>
+  // Fenêtre de détails : ouverture au clic / clavier, fermeture par le bouton,
+  // Échap (natif) ou clic hors de la fenêtre ; le focus revient sur la carte.
+  let declencheur = null;
+  document.querySelectorAll('[data-ouvrir]').forEach((carte) => {
+    carte.addEventListener('click', () => {
+      const d = document.getElementById(carte.dataset.ouvrir);
+      if (!d) return;
+      declencheur = carte;
+      d.showModal();
+      d.querySelector('[data-fermer]')?.focus();
+    });
+  });
+  document.querySelectorAll('dialog.perf-detail').forEach((d) => {
+    d.querySelector('[data-fermer]')?.addEventListener('click', () => d.close());
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); }); // clic sur le voile
+    // preventScroll : rendre le focus ne fait pas bouger la page.
+    d.addEventListener('close', () => { declencheur?.focus({ preventScroll: true }); declencheur = null; });
+  });
+</script>

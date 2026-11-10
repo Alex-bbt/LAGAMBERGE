@@ -1,0 +1,31 @@
+---
+/* Logo adidas (« Badge of Sport », fichier fourni par Alex), utilisé comme
+   masque : il prend la couleur du texte (currentColor) de l'écran où il est
+   posé, sans modifier sa forme. `hauteur` : hauteur CSS (ex. '14px').
+   `decoratif` : filigrane sans valeur d'information (masqué aux lecteurs d'écran). */
+import { commun } from '../../data/adidas.js';
+
+const { hauteur = '1em', class: classe, decoratif = false } = Astro.props;
+const { logo } = commun;
+---
+
+{decoratif ? (
+  <span class:list={['logo', classe]} aria-hidden="true" style={`--h: ${hauteur}; --src: url('${logo.src}')`}></span>
+) : (
+  <span class:list={['logo', classe]} role="img" aria-label={logo.alt} style={`--h: ${hauteur}; --src: url('${logo.src}')`}></span>
+)}
+
+<style>
+  .logo {
+    display: inline-block;
+    flex: none;
+    height: var(--h);
+    aspect-ratio: 400 / 237;
+    background: currentColor;
+    -webkit-mask: var(--src) center / contain no-repeat;
+    mask: var(--src) center / contain no-repeat;
+    vertical-align: -0.1em;
+  }
+  /* Impression / masques non gérés : le nom reste lisible via aria-label. */
+  @media (forced-colors: active) { .logo { background: CanvasText; } }
+</style>

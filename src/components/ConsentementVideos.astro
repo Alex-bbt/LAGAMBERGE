@@ -1,0 +1,30 @@
+---
+/* Retrait (ou accord) pour le lecteur Instagram, depuis /confidentialite.
+   Même clé que VideoInstagram : lg-consentement-instagram. */
+---
+
+<div class="consentement-videos" data-consentement>
+  <p class="body" role="status" data-etat>Votre choix : aucun accord enregistré.</p>
+  <div class="actions">
+    <button class="lg-btn lg-btn--primary" type="button" data-retirer>Retirer mon accord</button>
+    <button class="lg-btn btn-accent" type="button" data-autoriser>Autoriser la lecture sur place</button>
+  </div>
+</div>
+
+<script>
+  const CLE = 'lg-consentement-instagram';
+  const SIX_MOIS = 182 * 24 * 3600 * 1000;
+  const bloc = document.querySelector('[data-consentement]');
+  const etat = bloc?.querySelector('[data-etat]');
+  const lire = () => { try { return JSON.parse(localStorage.getItem(CLE) || 'null'); } catch { return null; } };
+  const afficher = () => {
+    const v = lire();
+    const actif = v && v.accord === true && Date.now() - v.date < SIX_MOIS;
+    etat.textContent = actif
+      ? `Votre choix : lecture sur place autorisée (depuis le ${new Date(v.date).toLocaleDateString('fr-FR')}).`
+      : 'Votre choix : aucun accord enregistré. Le lecteur Instagram n’est pas chargé.';
+  };
+  bloc?.querySelector('[data-retirer]').addEventListener('click', () => { try { localStorage.removeItem(CLE); } catch {} afficher(); });
+  bloc?.querySelector('[data-autoriser]').addEventListener('click', () => { try { localStorage.setItem(CLE, JSON.stringify({ accord: true, date: Date.now() })); } catch {} afficher(); });
+  if (bloc) afficher();
+</script>

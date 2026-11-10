@@ -1,0 +1,54 @@
+---
+/* ==========================================================================
+   Streak — le compteur « au moins 5 km chaque jour », repris de l'ancien site.
+   - Rendu côté serveur avec la valeur de secours (src/data/chiffres.js).
+   - Dans le navigateur : on affiche d'abord la dernière valeur vue (cache
+     local), puis on demande la valeur à jour à /api/streak (Strava).
+   - Si l'API ne répond pas (Strava non configuré, serveur local…), on garde
+     la valeur de secours : rien ne casse.
+   ========================================================================== */
+import ARemplir from './ARemplir.astro';
+import { chiffres } from '../data/chiffres.js';
+---
+
+<div class="lg-glass lg-glass--royal lg-stat" data-streak>
+  <span class="lg-stat__value" data-streak-valeur>
+    {chiffres.streakSecours ?? <ARemplir texte="CHIFFRE À CONFIRMER" />}
+  </span>
+  <span class="lg-stat__label">jours d'affilée avec au moins 5 km de course</span>
+  <span class="lg-stat__source" data-streak-source>Strava</span>
+</div>
+
+<script>
+  const valeur = document.querySelector('[data-streak-valeur]');
+  const source = document.querySelector('[data-streak-source]');
+
+  // Affiche un résultat de /api/streak dans la carte.
+  function afficher(d) {
+    if (!d || !d.configured || typeof d.validatedDay !== 'number') return;
+    valeur.textContent = d.validatedDay.toLocaleString('fr-FR');
+    if (d.updatedAt) {
+      const date = new Date(d.updatedAt).toLocaleDateString('fr-FR', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      });
+      source.textContent = `Strava · au ${date}`;
+    }
+  }
+
+  // 1) Dernière valeur connue, gardée dans le navigateur (peut être absent).
+  try { afficher(JSON.parse(localStorage.getItem('lg_streak') || 'null')); } catch {}
+
+  // 2) Valeur à jour depuis Strava. En local (npm run dev / preview), /api
+  //    n'existe pas (ce sont des fonctions Vercel) : on ne l'appelle pas et on
+  //    reste sur la valeur de secours.
+  const enLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+  if (!enLocal) fetch('/api/streak', { headers: { Accept: 'application/json' } })
+    .then((r) => (r.ok && r.headers.get('content-type')?.includes('json') ? r.json() : null))
+    .then((d) => {
+      afficher(d);
+      if (d && d.configured) {
+        try { localStorage.setItem('lg_streak', JSON.stringify(d)); } catch {}
+      }
+    })
+    .catch(() => {});
+</script>

@@ -1,0 +1,16 @@
+---
+/* ==========================================================================
+   CarteChiffre — StatCard du design system (lg-glass lg-stat).
+   Une valeur, une légende qui dit ce qu'elle mesure, une précision ou une
+   source datée facultative. `royal` = carte forte (une seule par section).
+   ========================================================================== */
+import { nombre } from '../data/mediakit.js';
+
+const { valeur, legende, source, royal = false, petit = false } = Astro.props;
+---
+
+<div class:list={['lg-glass', 'lg-stat', { 'lg-glass--royal': royal, 'lg-stat--petit': petit }]}>
+  <span class={petit ? 'title' : 'lg-stat__value'}>{nombre(valeur)}</span>
+  <span class="lg-stat__label">{legende}</span>
+  {source && <span class="lg-stat__source">{source}</span>}
+</div>

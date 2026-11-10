@@ -1,0 +1,32 @@
+---
+// Champ de temps/allure segmenté (cases distinctes + steppers ▲▼).
+// mode="time" → h / min / sec ; mode="pace" → min / sec.
+// Le câblage se fait côté client via initTimeField(root) (lib/running/timefield.mjs).
+const { id, mode = 'time' } = Astro.props;
+const segs = mode === 'pace'
+  ? [{ unit: 'm', label: 'min' }, { unit: 's', label: 'sec' }]
+  : [{ unit: 'h', label: 'h' }, { unit: 'm', label: 'min' }, { unit: 's', label: 'sec' }];
+---
+<div class="c-timefield" id={id} data-mode={mode} role="group">
+  {segs.map((seg) => (
+    <div class="c-tf-seg">
+      <div class="c-tf-box">
+        <input
+          class="c-tf-input"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="2"
+          placeholder="0"
+          data-unit={seg.unit}
+          aria-label={seg.label}
+        />
+        <div class="c-tf-steppers">
+          <button type="button" class="c-tf-step" data-unit={seg.unit} data-dir="up" aria-label={`${seg.label} plus`} tabindex="-1">▲</button>
+          <button type="button" class="c-tf-step" data-unit={seg.unit} data-dir="down" aria-label={`${seg.label} moins`} tabindex="-1">▼</button>
+        </div>
+      </div>
+      <span class="c-tf-unit">{seg.label}</span>
+    </div>
+  ))}
+</div>

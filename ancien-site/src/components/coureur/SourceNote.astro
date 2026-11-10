@@ -1,0 +1,10 @@
+---
+// Ligne de source/méthode affichée sous chaque résultat d'outil (sourcing
+// visible, exigence transverse). `model` = nom du référentiel ; `href` = lien
+// vers une explication ; le slot = phrase courte de contexte.
+const { model, href } = Astro.props;
+---
+<p class="c-method">
+  <strong>Basé sur {href ? <a href={href} target="_blank" rel="noopener noreferrer">{model}</a> : model}.</strong>
+  <slot />
+</p>
